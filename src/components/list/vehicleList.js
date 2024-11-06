@@ -10,7 +10,7 @@ import { deleteVehicle } from '../../services/VehicleService';
 
 const { Title, Text } = Typography;
 
-const ListVehicle = ({ vehicle, onDelete }) => {
+  const ListVehicle = ({ vehicle, onDelete }) => {
   const [isModalVisible, setIsModalVisible] = useState(false); 
 
   const {
@@ -48,6 +48,7 @@ const ListVehicle = ({ vehicle, onDelete }) => {
           description: 'Xe đã được xóa khỏi hệ thống.',
         });
         onDelete(vehicle._id);
+        window.location.reload();
       } else {
         notification.error({
           message: 'Lỗi khi xóa xe',
@@ -61,7 +62,6 @@ const ListVehicle = ({ vehicle, onDelete }) => {
 
   return (
     <Card style={{ marginBottom: '20px', position: 'relative' }}>
-      <Link to={`/vehicle/detail/${vehicle._id}`}>
       <Button
         type="text"
         icon={<DeleteOutlined />}
@@ -75,85 +75,87 @@ const ListVehicle = ({ vehicle, onDelete }) => {
         }}
       />
 
-      <Row gutter={[16, 16]}>
-        {/* Image Column */}
-        <Col span={6}>
-          {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt="Vehicle"
-              style={{ width: '100%', height: 'auto', maxHeight: '180px', objectFit: 'cover' }}
-            />
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '180px', backgroundColor: '#f0f2f5' }}>
-              <Text>No Image Available</Text>
-            </div>
-          )}
-        </Col>
+      <Link to={`/vehicle/detail/${vehicle._id}`}>
+        <Row gutter={[16, 16]}>
+          {/* Image Column */}
+          <Col xs={24} sm={8} md={6}>
+            {imageUrl ? (
+              <Image
+                src={imageUrl}
+                alt="Vehicle"
+                style={{ width: '100%', height: 'auto', maxHeight: '180px', objectFit: 'cover' }}
+              />
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '180px', backgroundColor: '#f0f2f5' }}>
+                <Text>No Image Available</Text>
+              </div>
+            )}
+          </Col>
 
-        {/* Information Column */}
-        <Col span={18}>
-          <Title level={4}>
-            <Space>
-              <IoMdCar size={20} /> {licensePlate}
-            </Space>
-          </Title>
+          {/* Information Column */}
+          <Col xs={24} sm={16} md={18}>
+            <Title level={4}>
+              <Space>
+                <IoMdCar size={20} /> {licensePlate}
+              </Space>
+            </Title>
 
-          <Row gutter={[8, 8]}>
-            <Col span={12}>
-              <Space>
-                <MdEmojiTransportation size={18} />
-                <Text strong>Hãng xe:</Text> {brand}
-              </Space>
-            </Col>
-            <Col span={12}>
-              <Space>
-                <BsFillCalendarFill size={18} />
-                <Text strong>Loại xe:</Text> {typeLabels[type] || 'Không xác định'}
-              </Space>
-            </Col>
-          </Row>
+            <Row gutter={[8, 8]}>
+              <Col xs={24} sm={12}>
+                <Space>
+                  <MdEmojiTransportation size={18} />
+                  <Text strong>Hãng xe:</Text> {brand}
+                </Space>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Space>
+                  <BsFillCalendarFill size={18} />
+                  <Text strong>Loại xe:</Text> {typeLabels[type] || 'Không xác định'}
+                </Space>
+              </Col>
+            </Row>
 
-          <Row gutter={[8, 8]} style={{ marginTop: '10px' }}>
-            <Col span={12}>
-              <Space>
-                <BsCashStack size={18} />
-                <Text strong>Giá mua:</Text> {purchasePrice.toLocaleString()} VND
-              </Space>
-            </Col>
-            <Col span={12}>
-              <Space>
-                <Text strong>Trạng thái:</Text>
-                <Tag color={status === 0 ? 'green' : status === 1 ? 'blue' : status === 2 ? 'orange' : 'red'}>
-                  {statusLabels[status] || 'Không xác định'}
-                </Tag>
-              </Space>
-            </Col>
-          </Row>
+            <Row gutter={[8, 8]} style={{ marginTop: '10px' }}>
+              <Col xs={24} sm={12}>
+                <Space>
+                  <BsCashStack size={18} />
+                  <Text strong>Giá mua:</Text> {purchasePrice.toLocaleString()} VND
+                </Space>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Space>
+                  <Text strong>Trạng thái:</Text>
+                  <Tag color={status === 0 ? 'green' : status === 1 ? 'blue' : status === 2 ? 'orange' : 'red'}>
+                    {statusLabels[status] || 'Không xác định'}
+                  </Tag>
+                </Space>
+              </Col>
+            </Row>
 
-          <Row gutter={[8, 8]} style={{ marginTop: '10px' }}>
-            <Col span={12}>
-              <Space>
-                <Text strong>Thông số kỹ thuật:</Text> {technicalSpecifications || 'Không có'}
-              </Space>
-            </Col>
-            <Col span={12}>
-              <Space>
-                <Text strong>Độ mới của xe:</Text> {depreciationRate}% 
-              </Space>
-            </Col>
-          </Row>
+            <Row gutter={[8, 8]} style={{ marginTop: '10px' }}>
+              <Col xs={24} sm={12}>
+                <Space>
+                  <Text strong>Thông số kỹ thuật:</Text> {technicalSpecifications || 'Không có'}
+                </Space>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Space>
+                  <Text strong>Độ mới của xe:</Text> {depreciationRate}% 
+                </Space>
+              </Col>
+            </Row>
 
-          <Row gutter={[8, 8]} style={{ marginTop: '10px' }}>
-            <Col span={24}>
-              <Space>
-                <FiMapPin size={18} />
-                <Text strong>Vị trí:</Text> {address}
-              </Space>
-            </Col>
-          </Row>
-        </Col>
-      </Row>
+            <Row gutter={[8, 8]} style={{ marginTop: '10px' }}>
+              <Col xs={24}>
+                <Space>
+                  <FiMapPin size={18} />
+                  <Text strong>Vị trí:</Text> {address}
+                </Space>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+      </Link>
 
       {/* Confirmation Modal */}
       <Modal
@@ -163,11 +165,10 @@ const ListVehicle = ({ vehicle, onDelete }) => {
         onCancel={handleCancel}
         okText="Xóa"
         cancelText="Hủy"
-        centered // Ensure the modal is centered
+        centered
       >
         <p>Bạn chắc chắn muốn xóa xe này không?</p>
       </Modal>
-      </Link>
     </Card>
   );
 };

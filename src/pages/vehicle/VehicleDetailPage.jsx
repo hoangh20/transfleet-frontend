@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Card,
   Typography,
@@ -15,7 +15,9 @@ import {
   Select,
   InputNumber,
   Form,
-  message
+  message,
+  Modal,
+  notification
 } from 'antd';
 import { IoMdCar } from 'react-icons/io';
 import { MdEmojiTransportation } from 'react-icons/md';
@@ -25,12 +27,13 @@ import styled from '@emotion/styled';
 import L from 'leaflet';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet/dist/leaflet.css';
-import { getVehicleById, updateVehicle } from '../../services/VehicleService';
+import { getVehicleById, updateVehicle, deleteVehicle } from '../../services/VehicleService';
 
-const {  Text } = Typography;
+const { Text } = Typography;
 const { Option } = Select;
 
 const VehicleDetailPage = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [form] = Form.useForm();
   const [vehicle, setVehicle] = useState(null);
@@ -39,6 +42,13 @@ const VehicleDetailPage = () => {
   const [location, setLocation] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const statusLabels = {
+    0: 'Đang rảnh',
+    1: 'Đang thực hiện chuyến',
+    2: 'Bảo dưỡng',
+    3: 'Không còn sử dụng',
+  };
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -128,6 +138,28 @@ const VehicleDetailPage = () => {
     }
   };
 
+  const showDeleteModal = () => {
+    setIsDeleteModalVisible(true);
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteModalVisible(false);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteVehicle(vehicle._id);
+      setIsDeleteModalVisible(false);
+      notification.success({
+        message: 'Xóa xe thành công',
+        description: 'Xe đã được xóa khỏi hệ thống.',
+      });
+      navigate('/vehicle/list');
+    } catch (error) {
+      message.error('Xóa xe thất bại: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
   if (loading) {
     return (
       <PageWrapper>
@@ -152,9 +184,14 @@ const VehicleDetailPage = () => {
         </Col>
         <Col>
           {!isEditing ? (
-            <Button type="primary" onClick={handleEdit} size="large">
-              Chỉnh sửa thông tin
-            </Button>
+            <Space>
+              <Button type="primary" onClick={handleEdit} size="large">
+                Chỉnh sửa thông tin
+              </Button>
+              <Button type="primary" danger onClick={showDeleteModal} size="large">
+                Xóa xe
+              </Button>
+            </Space>
           ) : (
             <Space>
               <Button onClick={handleCancel} size="large">
@@ -210,24 +247,28 @@ const VehicleDetailPage = () => {
 
           <Row gutter={[16, 16]}>
             <Col span={12}>
-              <Form.Item
-                label={
-                  <Space>
-                    <BsFillCalendarFill size={20} /> Loại xe
-                  </Space>
-                }
-                name="type"
-                rules={[{ required: true, message: 'Vui lòng chọn loại xe' }]}
-              >
-                {isEditing ? (
-                  <Select size="large">
-                    <Option value={0}>Xe đầu kéo</Option>
-                    <Option value={1}>Rơ moóc</Option>
-                  </Select>
-                ) : (
-                  <Input readOnly value={vehicle.type === 0 ? 'Xe đầu kéo' : 'Rơ moóc'} size="large" />
-                )}
-              </Form.Item>
+            <Form.Item
+              label={
+                <Space>
+                  <BsFillCalendarFill size={20} /> Loại xe
+                </Space>
+              }
+              name="type"
+              rules={[{ required: true, message: 'Vui lòng chọn loại xe' }]}
+            >
+              {isEditing ? (
+                <Select size="large">
+                  <Option value={0}>Xe đầu kéo</Option>
+                  <Option value={1}>Rơ moóc</Option>
+                </Select>
+              ) : (
+                <Input
+                  readOnly
+                  value={vehicle.type === 0 ? 'Xe đầu kéo' : 'Rơ moóc'}
+                  size="large"
+                />
+              )}
+            </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
@@ -247,19 +288,7 @@ const VehicleDetailPage = () => {
                     <Option value={3}>Không còn sử dụng</Option>
                   </Select>
                 ) : (
-                  <Input 
-                    readOnly 
-                    value={
-                      vehicle.status === 0
-                        ? 'Đang rảnh'
-                        : vehicle.status === 1
-                        ? 'Đang thực hiện chuyến'
-                        : vehicle.status === 2
-                        ? 'Bảo dưỡng'
-                        : 'Không còn sử dụng'
-                    }
-                    size="large"
-                  />
+                  <Input readOnly value={statusLabels[vehicle.status] || 'Không xác định'} size="large" />
                 )}
               </Form.Item>
             </Col>
@@ -286,7 +315,7 @@ const VehicleDetailPage = () => {
                 ) : (
                   <Input
                     readOnly
-                    value={`${vehicle.purchasePrice.toLocaleString()} VND`}
+                    value={`${vehicle.purchasePrice.toLocaleString()} ` }
                     size="large"
                   />
                 )}
@@ -407,6 +436,16 @@ const VehicleDetailPage = () => {
           </Row>
         </Card>
       </Form>
+      <Modal
+        title="Xác nhận xóa xe"
+        visible={isDeleteModalVisible}
+        onOk={handleDelete}
+        onCancel={handleDeleteCancel}
+        okText="Xóa"
+        cancelText="Hủy"
+      >
+        <p>Bạn có chắc chắn muốn xóa xe này?</p>
+      </Modal>
     </PageWrapper>
   );
 };

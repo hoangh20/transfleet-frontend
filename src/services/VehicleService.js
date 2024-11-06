@@ -22,7 +22,7 @@ export const getVehicleById = async (id) => {
   return response.data;
 };
 
-export const updateVehicle = async (id) => {
-  const response = await axios.put(`${process.env.REACT_APP_API_URL}/vehicle/update/${id}`);
+export const updateVehicle = async (id, data) => {
+  const response = await axios.put(`${process.env.REACT_APP_API_URL}/vehicle/update/${id}`, data);
   return response.data;
 };
