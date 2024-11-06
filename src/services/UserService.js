@@ -23,9 +23,12 @@ export const getDetailsUser = async (id, access_token) => {
   return response.data;
 }
 
-export const refreshToken = async () => {
+export const refreshToken = async (access_token) => {
   const response = await axios.post(`${process.env.REACT_APP_API_URL}/user/refresh-token`, {
-    withCredentials: true
+    withCredentials: true,
+    headers: {
+      token: `Bearer ${access_token}`,
+    },
   });
   return response.data;
 }
