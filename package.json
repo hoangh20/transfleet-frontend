@@ -74,5 +74,5 @@
       "@babel/preset-react"
     ]
   },
-  "proxy": "http://localhost:3001"
+  "proxy": "https://transfleet-backend.onrender.com"
 }
