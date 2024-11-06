@@ -443,6 +443,7 @@ const VehicleDetailPage = () => {
         onCancel={handleDeleteCancel}
         okText="Xóa"
         cancelText="Hủy"
+        centered
       >
         <p>Bạn có chắc chắn muốn xóa xe này?</p>
       </Modal>
