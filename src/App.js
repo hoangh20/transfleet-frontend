@@ -6,8 +6,9 @@ import AuthLayout from './components/layout/AuthLayout';
 import ProtectedRoute from './components/route/ProtectedRoute'; 
 import * as UserService from './services/UserService';
 import { updateUser } from './redux/slice/userSlice';
-import { jwtDecode } from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 import { useDispatch } from 'react-redux';
+import LoadingPage from './components/loading/LoadingPage';
 
 function App() {
   const dispatch = useDispatch();
@@ -61,7 +62,7 @@ function App() {
   );
 
   // Optional: Show loading spinner while verifying token
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <LoadingPage />; // Replace placeholder with LoadingPage
 
   return (
     <div>
