@@ -92,7 +92,7 @@ const SignupPage = () => {
                 textAlign: 'center',
               }}
             >
-              SIGN UP
+              Đăng Ký
             </Title>
           </Flex>
 

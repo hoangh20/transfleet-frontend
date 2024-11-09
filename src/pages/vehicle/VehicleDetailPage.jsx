@@ -43,12 +43,8 @@ const VehicleDetailPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-  const statusLabels = {
-    0: 'Đang rảnh',
-    1: 'Đang thực hiện chuyến',
-    2: 'Bảo dưỡng',
-    3: 'Không còn sử dụng',
-  };
+  const statusLabels = ['Đang rảnh', 'Đang thực hiện chuyến', 'Bảo dưỡng', 'Không còn sử dụng'];
+  const typeLabels = ['Xe đầu kéo', 'Rơ moóc'];
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -175,7 +171,7 @@ const VehicleDetailPage = () => {
       </PageWrapper>
     );
   }
-
+  
   return (
     <PageWrapper>
       <Row gutter={[16, 16]} justify="space-between" align="middle">
@@ -264,7 +260,7 @@ const VehicleDetailPage = () => {
               ) : (
                 <Input
                   readOnly
-                  value={vehicle.type === 0 ? 'Xe đầu kéo' : 'Rơ moóc'}
+                  value={typeLabels[vehicle.type] || 'Không xác định'}
                   size="large"
                 />
               )}
