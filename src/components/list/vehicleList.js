@@ -10,7 +10,7 @@ import { deleteVehicle } from '../../services/VehicleService';
 
 const { Title, Text } = Typography;
 
-  const ListVehicle = ({ vehicle, onDelete }) => {
+const ListVehicle = ({ vehicle, onDelete }) => {
   const [isModalVisible, setIsModalVisible] = useState(false); 
 
   const {
@@ -28,16 +28,13 @@ const { Title, Text } = Typography;
   const typeLabels = ['Xe đầu kéo', 'Rơ moóc'];
   const statusLabels = ['Đang rảnh', 'Đang thực hiện chuyến', 'Bảo dưỡng', 'Không còn sử dụng'];
 
-
   const handleDeleteClick = () => {
     setIsModalVisible(true); 
   };
 
-
   const handleCancel = () => {
     setIsModalVisible(false);
   };
-
 
   const handleConfirmDelete = async () => {
     try {
@@ -47,8 +44,7 @@ const { Title, Text } = Typography;
           message: 'Xóa xe thành công',
           description: 'Xe đã được xóa khỏi hệ thống.',
         });
-        onDelete(vehicle._id);
-        window.location.reload();
+        onDelete(vehicle._id);  // Call onDelete to update the list in parent component
       } else {
         notification.error({
           message: 'Lỗi khi xóa xe',
@@ -56,6 +52,10 @@ const { Title, Text } = Typography;
         });
       }
     } catch (error) {
+      notification.error({
+        message: 'Lỗi hệ thống',
+        description: 'Có lỗi xảy ra khi xóa xe.',
+      });
     }
     setIsModalVisible(false); 
   };
@@ -174,3 +174,4 @@ const { Title, Text } = Typography;
 };
 
 export default ListVehicle;
+
