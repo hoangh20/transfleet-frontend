@@ -175,12 +175,12 @@ const SignupPage = () => {
 
             <Form.Item>
               <Button block type='primary' htmlType='submit'>
-                Sign Up
+                Đăng ký
               </Button>
               <Flex justify='center' style={{ marginTop: 16 }}>
                 or{' '}
                 <a href='/sign-in' style={{ marginLeft: 4 }}>
-                  Log in now!
+                  Đăng nhập ngay!
                 </a>
               </Flex>
             </Form.Item>

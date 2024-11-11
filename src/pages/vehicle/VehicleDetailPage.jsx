@@ -43,8 +43,6 @@ const VehicleDetailPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-  const statusLabels = ['Đang rảnh', 'Đang thực hiện chuyến', 'Bảo dưỡng', 'Không còn sử dụng'];
-  const typeLabels = ['Xe đầu kéo', 'Rơ moóc'];
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -243,28 +241,20 @@ const VehicleDetailPage = () => {
 
           <Row gutter={[16, 16]}>
             <Col span={12}>
-            <Form.Item
-              label={
-                <Space>
-                  <BsFillCalendarFill size={20} /> Loại xe
-                </Space>
-              }
-              name="type"
-              rules={[{ required: true, message: 'Vui lòng chọn loại xe' }]}
-            >
-              {isEditing ? (
-                <Select size="large">
+              <Form.Item
+                label={
+                  <Space>
+                    <BsFillCalendarFill size={20} /> Loại xe
+                  </Space>
+                }
+                name="type"
+                rules={[{ required: true, message: 'Vui lòng chọn loại xe' }]}
+              >
+                <Select size="large" disabled={!isEditing} defaultValue={vehicle.type}>
                   <Option value={0}>Xe đầu kéo</Option>
                   <Option value={1}>Rơ moóc</Option>
                 </Select>
-              ) : (
-                <Input
-                  readOnly
-                  value={typeLabels[vehicle.type] || 'Không xác định'}
-                  size="large"
-                />
-              )}
-            </Form.Item>
+              </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
@@ -276,16 +266,12 @@ const VehicleDetailPage = () => {
                 name="status"
                 rules={[{ required: true, message: 'Vui lòng chọn trạng thái xe' }]}
               >
-                {isEditing ? (
-                  <Select size="large">
-                    <Option value={0}>Đang rảnh</Option>
-                    <Option value={1}>Đang thực hiện chuyến</Option>
-                    <Option value={2}>Bảo dưỡng</Option>
-                    <Option value={3}>Không còn sử dụng</Option>
-                  </Select>
-                ) : (
-                  <Input readOnly value={statusLabels[vehicle.status] || 'Không xác định'} size="large" />
-                )}
+                <Select size="large" disabled={!isEditing} defaultValue={vehicle.status}>
+                  <Option value={0}>Đang rảnh</Option>
+                  <Option value={1}>Đang thực hiện chuyến</Option>
+                  <Option value={2}>Bảo dưỡng</Option>
+                  <Option value={3}>Không còn sử dụng</Option>
+                </Select>
               </Form.Item>
             </Col>
           </Row>
