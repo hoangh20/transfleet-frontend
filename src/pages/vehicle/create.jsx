@@ -23,6 +23,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import { createVehicle } from '../../services/VehicleService';
+import axios from 'axios';
 
 const { Option } = Select;
 
@@ -31,6 +32,7 @@ const CreateCarPage = () => {
   const [location, setLocation] = useState({ lat: 21.0067, lng: 105.8455 });
   const [cardepreciationRate, setCardepreciationRate] = useState(50);
   const [imageUrl, setImageUrl] = useState('');
+  const [address, setAddress] = useState('');
 
   const onFinish = async (values) => {
     try {
@@ -76,11 +78,43 @@ const CreateCarPage = () => {
     shadowSize: [41, 41],
   });
 
+  const GeocodeAPI = async (lat, lng) => {
+    try {
+      const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
+        params: {
+          lat,
+          lon: lng,
+          format: 'json',
+        },
+      });
+  
+      const address = response.data.address;
+      const ward = address.suburb || address.neighbourhood || '';
+      const district = address.city_district || address.district || '';
+      const city = address.city || address.town || address.village || address.state || '';
+  
+      const formattedAddress = [ward, district, city].filter(Boolean).join(', ');
+  
+      return formattedAddress;
+    } catch (error) {
+      console.error('Error fetching address:', error);
+      return '';
+    }
+  };
+  
+  
+
   const MapClickHandler = () => {
     useMapEvents({
-      click: (e) => {
-        setLocation(e.latlng);
-        form.setFieldsValue({ lat: e.latlng.lat, long: e.latlng.lng });
+      click: async (e) => {
+        const { lat, lng } = e.latlng;
+        setLocation({ lat, lng });
+        form.setFieldsValue({ lat, long: lng });
+        
+        // Gọi API Geocoding và cập nhật địa chỉ
+        const fetchedAddress = await GeocodeAPI(lat, lng);
+        setAddress(fetchedAddress);
+        form.setFieldsValue({ address: fetchedAddress });
       },
     });
     return null;
@@ -90,6 +124,7 @@ const CreateCarPage = () => {
     setLocation({ lat: 21.0067, lng: 105.8455 });
     setCardepreciationRate(50);
     setImageUrl('');
+    setAddress('');
     message.info('Đã xóa tất cả thông tin');
   };
 
@@ -274,26 +309,23 @@ const CreateCarPage = () => {
         </Card>
 
         {/* Vị trí */}
-        <Card title='Vị trí' bordered={false}>
+        <Card title="Vị trí" bordered={false}>
           <Form.Item
-            label='Địa chỉ'
-            name='address'
+            label="Địa chỉ"
+            name="address"
             rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
           >
-            <Input placeholder='Nhập địa chỉ' size='large' />
+            <Input placeholder="Chọn địa chỉ từ bản đồ" size="large" value={address} readOnly />
           </Form.Item>
           <Row gutter={[16, 16]}>
             <Col span={24}>
-              <Form.Item label='Vị trí trên bản đồ'>
+              <Form.Item label="Vị trí trên bản đồ">
                 <MapContainer
                   center={location}
                   zoom={13}
                   style={{ height: '350px', width: '100%' }}
                 >
-                  <TileLayer
-                    url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-                    attribution='&copy; OpenStreetMap contributors'
-                  />
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
                   <MapClickHandler />
                   <Marker position={location} icon={markerIcon} />
                 </MapContainer>
@@ -302,27 +334,18 @@ const CreateCarPage = () => {
           </Row>
           <Row gutter={[16, 16]}>
             <Col span={12}>
-              <Form.Item label='Latitude' name='lat'>
-                <Input
-                  placeholder='Latitude'
-                  value={location.lat}
-                  readOnly
-                  size='large'
-                />
+              <Form.Item label="Latitude" name="lat">
+                <Input placeholder="Latitude" value={location.lat} readOnly size="large" />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label='Longitude' name='long'>
-                <Input
-                  placeholder='Longitude'
-                  value={location.lng}
-                  readOnly
-                  size='large'
-                />
+              <Form.Item label="Longitude" name="long">
+                <Input placeholder="Longitude" value={location.lng} readOnly size="large" />
               </Form.Item>
             </Col>
           </Row>
         </Card>
+
 
         <Form.Item>
           <Row gutter={[16, 16]} style={{ marginTop: '24px' }}>

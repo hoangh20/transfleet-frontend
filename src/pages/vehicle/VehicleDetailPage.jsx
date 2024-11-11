@@ -7,7 +7,6 @@ import {
   Col,
   Space,
   Image,
-  Spin,
   Alert,
   Input,
   Slider,
@@ -25,10 +24,11 @@ import { BsFillCalendarFill, BsCashStack } from 'react-icons/bs';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import styled from '@emotion/styled';
 import L from 'leaflet';
+import axios from 'axios';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet/dist/leaflet.css';
 import { getVehicleById, updateVehicle, deleteVehicle } from '../../services/VehicleService';
-
+import LoadingPage from '../../components/loading/LoadingPage'
 const { Text } = Typography;
 const { Option } = Select;
 
@@ -43,6 +43,7 @@ const VehicleDetailPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [address, setAddress] = useState('');
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -70,6 +71,26 @@ const VehicleDetailPage = () => {
     fetchVehicle();
   }, [id, form]);
 
+  const GeocodeAPI = async (lat, lng) => {
+    try {
+      const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
+        params: {
+          lat,
+          lon: lng,
+          format: 'json',
+        },
+      });
+      const address = response.data.address;
+      const ward = address.suburb || address.neighbourhood || '';
+      const district = address.city_district || address.district || '';
+      const city = address.city || address.town || address.village || address.state || '';
+      return [ward, district, city].filter(Boolean).join(', ');
+    } catch (error) {
+      console.error('Error fetching address:', error);
+      return '';
+    }
+  };
+  
   const markerIcon = new L.Icon({
     iconUrl:
       'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
@@ -82,14 +103,15 @@ const VehicleDetailPage = () => {
 
   const MapClickHandler = () => {
     useMapEvents({
-      click: (e) => {
-        if (isEditing) {
-          setLocation(e.latlng);
-          form.setFieldsValue({
-            lat: e.latlng.lat,
-            lng: e.latlng.lng,
-          });
-        }
+      click: async (e) => {
+        const { lat, lng } = e.latlng;
+        setLocation({ lat, lng });
+        form.setFieldsValue({ lat, long: lng });
+        
+        // Gọi API Geocoding và cập nhật địa chỉ
+        const fetchedAddress = await GeocodeAPI(lat, lng);
+        setAddress(fetchedAddress);
+        form.setFieldsValue({ address: fetchedAddress });
       },
     });
     return null;
@@ -157,7 +179,7 @@ const VehicleDetailPage = () => {
   if (loading) {
     return (
       <PageWrapper>
-        <Spin tip="Loading vehicle details..." />
+        <LoadingPage/>
       </PageWrapper>
     );
   }
@@ -381,7 +403,7 @@ const VehicleDetailPage = () => {
             name="address"
             rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
           >
-            <Input readOnly={!isEditing} size="large" />
+            <Input placeholder="Chọn địa chỉ từ bản đồ" size="large" value={address} readOnly />
           </Form.Item>
 
           <Row gutter={[16, 16]}>
@@ -390,29 +412,26 @@ const VehicleDetailPage = () => {
                 {isEditing && <Text>Click trên bản đồ để cập nhật vị trí</Text>}
               </div>
               <MapContainer
-                center={location}
-                zoom={13}
-                style={{ height: '350px', width: '100%' }}
-              >
-                <TileLayer
-                  url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-                  attribution='&copy; OpenStreetMap contributors'
-                />
-                <MapClickHandler />
-                <Marker position={location} icon={markerIcon} />
-              </MapContainer>
+                  center={location}
+                  zoom={13}
+                  style={{ height: '350px', width: '100%' }}
+                >
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
+                  <MapClickHandler />
+                  <Marker position={location} icon={markerIcon} />
+                </MapContainer>
             </Col>
           </Row>
 
           <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
             <Col span={12}>
-              <Form.Item label="Latitude" name="lat">
-                <Input readOnly size="large" />
+            <Form.Item label="Latitude" name="lat">
+                <Input placeholder="Latitude" value={location.lat} readOnly size="large" />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="Longitude" name="lng">
-                <Input readOnly size="large" />
+              <Form.Item label="Longitude" name="long">
+                <Input placeholder="Longitude" value={location.lng} readOnly size="large" />
               </Form.Item>
             </Col>
           </Row>
