@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Avatar, Typography, Row, Col, Tag, Statistic,Select, Modal, Button, Form, Input, Spin, message } from 'antd';
 import { PhoneOutlined, IdcardOutlined, ExperimentOutlined, BankOutlined, CarOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getDriverDetails, updateDriver, deleteDriver } from '../../services/DriverService';
-
+import dayjs from 'dayjs';
 const { Title, Text } = Typography;
 
 const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
@@ -21,6 +21,7 @@ const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
         name: driverData.name,
         phone: driverData.phone,
         licenseType: driverData.licenseType,
+        birthDate: driverData.birthDate,
         bankAccount: driverData.bankAccount,
         yearsOfExperience: driverData.yearsOfExperience
       });
@@ -51,6 +52,9 @@ const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
     } finally {
       setLoading(false);
     }
+  };
+  const calculateAge = (birthDate) => {
+    return dayjs().diff(dayjs(birthDate), 'year');
   };
 
   const handleUpdateDriver = async (values) => {
@@ -250,9 +254,8 @@ const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
           }}
         />
         <Title level={3} style={{ marginBottom: 8 }}>
-          {driver.name}
+          {driver.name} ({calculateAge(driver.birthDate)} tuổi)
         </Title>
-        <Text>{driver.email}</Text>
       </div>
 
       {isEditing ? renderEditForm() : renderDriverInfo()}

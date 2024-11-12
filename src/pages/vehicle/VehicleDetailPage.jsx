@@ -18,9 +18,6 @@ import {
   Modal,
   notification
 } from 'antd';
-import { IoMdCar } from 'react-icons/io';
-import { MdEmojiTransportation } from 'react-icons/md';
-import { BsFillCalendarFill, BsCashStack } from 'react-icons/bs';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import styled from '@emotion/styled';
 import L from 'leaflet';
@@ -108,7 +105,6 @@ const VehicleDetailPage = () => {
         setLocation({ lat, lng });
         form.setFieldsValue({ lat, long: lng });
         
-        // Gọi API Geocoding và cập nhật địa chỉ
         const fetchedAddress = await GeocodeAPI(lat, lng);
         setAddress(fetchedAddress);
         form.setFieldsValue({ address: fetchedAddress });
@@ -228,102 +224,63 @@ const VehicleDetailPage = () => {
       >
         {/* Thông tin cơ bản */}
         <Card
-          title="Thông tin cơ bản"
+          title={<div style={{ textAlign: 'center' }}>Thông tin cơ bản</div>}
           bordered={false}
           style={{ marginBottom: '20px' }}
         >
           <Row gutter={[16, 16]}>
             <Col span={12}>
-              <Form.Item
-                label={
-                  <Space>
-                    <IoMdCar size={20} /> Biển số xe
-                  </Space>
-                }
-                name="licensePlate"
-                rules={[{ required: true, message: 'Vui lòng nhập biển số xe' }]}
-              >
-                <Input readOnly={!isEditing} size="large" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={
-                  <Space>
-                    <MdEmojiTransportation size={20} /> Hãng xe
-                  </Space>
-                }
-                name="brand"
-                rules={[{ required: true, message: 'Vui lòng nhập hãng xe' }]}
-              >
-                <Input readOnly={!isEditing} size="large" />
-              </Form.Item>
-            </Col>
-          </Row>
+              <Card title="Thông tin Đầu Kéo" bordered={false} style={{ marginBottom: '20px' }}>
+                <Form.Item
+                  label="Biển số đầu kéo"
+                  name="headPlate"
+                  rules={[{ required: true, message: 'Vui lòng nhập biển số đầu kéo' }]}
+                >
+                  <Input readOnly={!isEditing} size="large" />
+                </Form.Item>
+                <Form.Item
+                    label="Mã đăng ký đầu kéo"
+                    name="headRegCode"
+                    rules={[{ required: true, message: 'Vui lòng nhập mã đăng ký đầu kéo' }]}
+                  >
+                    <Input readOnly={!isEditing} size="large" />
+                  </Form.Item>
 
-          <Row gutter={[16, 16]}>
-            <Col span={12}>
-              <Form.Item
-                label={
-                  <Space>
-                    <BsFillCalendarFill size={20} /> Loại xe
-                  </Space>
-                }
-                name="type"
-                rules={[{ required: true, message: 'Vui lòng chọn loại xe' }]}
-              >
-                <Select size="large" disabled={!isEditing} defaultValue={vehicle.type}>
-                  <Option value={0}>Xe đầu kéo</Option>
-                  <Option value={1}>Rơ moóc</Option>
-                </Select>
-              </Form.Item>
+                  <Form.Item
+                    label="Ngày hết hạn đăng ký"
+                    name="headRegExpiry"
+                    rules={[{ required: true, message: 'Vui lòng chọn ngày hết hạn đăng ký' }]}
+                  >
+                    <Input readOnly={!isEditing} type="date" size="large" />
+                  </Form.Item>
+                </Card>
             </Col>
             <Col span={12}>
-              <Form.Item
-                label={
-                  <Space>
-                    <BsFillCalendarFill size={20} /> Trạng thái xe
-                  </Space>
-                }
-                name="status"
-                rules={[{ required: true, message: 'Vui lòng chọn trạng thái xe' }]}
-              >
-                <Select size="large" disabled={!isEditing} defaultValue={vehicle.status}>
-                  <Option value={0}>Đang rảnh</Option>
-                  <Option value={1}>Đang thực hiện chuyến</Option>
-                  <Option value={2}>Bảo dưỡng</Option>
-                  <Option value={3}>Không còn sử dụng</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
+              <Card title="Thông tin Rơ Moóc" bordered={false} style={{ marginBottom: '20px' }}>
+                <Form.Item
+                  label="Biển số rơ moóc"
+                  name="moocPlate"
+                  rules={[{ required: true, message: 'Vui lòng nhập biển số rơ moóc' }]}
+                >
+                  <Input readOnly={!isEditing} size="large" />
+                </Form.Item>
 
-          <Row gutter={[16, 16]}>
-            <Col span={24}>
-              <Form.Item
-                label={
-                  <Space>
-                    <BsCashStack size={20} /> Giá mua
-                  </Space>
-                }
-                name="purchasePrice"
-                rules={[{ required: true, message: 'Vui lòng nhập giá mua' }]}
-              >
-                {isEditing ? (
-                  <InputNumber
-                    style={{ width: '100%' }}
-                    size="large"
-                    formatter={value => `${value} VND`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={value => value.replace(/\s?VND\s?|(,*)/g, '')}
-                  />
-                ) : (
-                  <Input
-                    readOnly
-                    value={`${vehicle.purchasePrice.toLocaleString()} ` }
-                    size="large"
-                  />
-                )}
-              </Form.Item>
+                <Form.Item
+                  label="Mã đăng ký rơ moóc"
+                  name="moocRegCode"
+                  rules={[{ required: true, message: 'Vui lòng nhập mã đăng ký rơ moóc' }]}
+                >
+                  <Input readOnly={!isEditing} size="large" />
+                </Form.Item>
+
+                <Form.Item
+                  label="Ngày hết hạn đăng ký"
+                  name="moocRegExpiry"
+                  rules={[{ required: true, message: 'Vui lòng chọn ngày hết hạn đăng ký' }]}
+                >
+                  <Input readOnly={!isEditing} type="date" size="large" />
+                </Form.Item>
+              </Card>
             </Col>
           </Row>
         </Card>
@@ -335,19 +292,6 @@ const VehicleDetailPage = () => {
           style={{ marginBottom: '20px' }}
         >
           <Row gutter={[16, 16]}>
-            <Col span={12}>
-              <Form.Item
-                label={
-                  <Space>
-                    <BsCashStack size={20} /> Thông số kỹ thuật
-                  </Space>
-                }
-                name="technicalSpecifications"
-                rules={[{ required: true, message: 'Vui lòng nhập thông số kỹ thuật' }]}
-              >
-                <Input readOnly={!isEditing} size="large" />
-              </Form.Item>
-            </Col>
             <Col span={12}>
               <Form.Item
                 label="Độ mới của xe"
@@ -363,6 +307,34 @@ const VehicleDetailPage = () => {
                     100: 'Mới',
                   }}
                 />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <Form.Item
+                label='Trọng lượng (tấn)'
+                name='weight'
+                rules={[{ required: true, message: 'Vui lòng nhập trọng lượng' }]}
+              >
+                <InputNumber
+                  placeholder='Nhập trọng lượng'
+                  min={0}
+                  style={{ width: '100%' }}
+                  size='large'
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label='Loại rơ moóc'
+                name='moocType'
+                rules={[{ required: true, message: 'Vui lòng chọn loại rơ moóc' }]}
+              >
+                <Select placeholder='Chọn loại rơ moóc' size='large'>
+                  <Option value={0}>20''</Option>
+                  <Option value={1}>40''</Option>
+                </Select>
               </Form.Item>
             </Col>
           </Row>

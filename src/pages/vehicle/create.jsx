@@ -9,14 +9,11 @@ import {
   Col,
   Card,
   Typography,
-  Space,
   Slider,
   Image,
   message,
 } from 'antd';
-import { IoMdCar } from 'react-icons/io';
-import { MdEmojiTransportation } from 'react-icons/md';
-import { BsFillCalendarFill, BsCashStack } from 'react-icons/bs';
+
 import styled from '@emotion/styled';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -36,7 +33,7 @@ const CreateCarPage = () => {
 
   const onFinish = async (values) => {
     try {
-      const { licensePlate, brand, type, status, purchasePrice,depreciationRate,address, technicalSpecs } = values;
+      const { headPlate, headRegCode, headRegExpiry, moocPlate, moocRegCode, moocRegExpiry, moocType, depreciationRate, weight, hasDriver, address } = values;
   
       if (!location || !location.lat || !location.lng) {
         message.error('Vui lòng chọn vị trí trên bản đồ');
@@ -44,14 +41,17 @@ const CreateCarPage = () => {
       }
   
       const vehicleData = {
-        licensePlate,
-        brand,
-        technicalSpecifications: technicalSpecs, 
-        type,
-        status,
-        purchasePrice,
-        address,
+        headPlate,
+        headRegCode,
+        headRegExpiry,
+        moocPlate,
+        moocRegCode,
+        moocRegExpiry,
+        moocType,
         depreciationRate,
+        weight,
+        hasDriver,
+        address,
         location: {
           lat: location.lat,
           long: location.lng,
@@ -59,7 +59,7 @@ const CreateCarPage = () => {
         imageUrl,
       };
   
-      const response = await createVehicle(vehicleData); // Call the API function
+      const response = await createVehicle(vehicleData); 
       console.log('Vehicle created successfully:', response);
       form.resetFields();
       message.success('Tạo xe mới thành công!');
@@ -122,7 +122,7 @@ const CreateCarPage = () => {
   const handleReset = () => {
     form.resetFields();
     setLocation({ lat: 21.0067, lng: 105.8455 });
-    setCardepreciationRate(50);
+    setCardepreciationRate(0);
     setImageUrl('');
     setAddress('');
     message.info('Đã xóa tất cả thông tin');
@@ -144,98 +144,67 @@ const CreateCarPage = () => {
       >
         {/* Thông tin cơ bản */}
         <Card
-          title='Thông tin cơ bản'
+          title={<div style={{ textAlign: 'center' }}>Thông tin cơ bản</div>}
           bordered={false}
           style={{ marginBottom: '20px' }}
         >
           <Row gutter={[16, 16]}>
+            {/* Đầu Kéo Section */}
             <Col span={12}>
-              <Form.Item
-                label={
-                  <Space>
-                    <IoMdCar size={20} /> Biển số xe
-                  </Space>
-                }
-                name='licensePlate'
-                rules={[{ required: true, message: 'Vui lòng nhập biển số xe' }]}
-              >
-                <Input placeholder='Nhập biển số xe' size='large' />
-              </Form.Item>
+              <Card title="Thông tin Đầu Kéo" bordered={false} style={{ marginBottom: '20px' }}>
+                <Form.Item
+                  label="Biển số đầu kéo"
+                  name="headPlate"
+                  rules={[{ required: true, message: 'Vui lòng nhập biển số đầu kéo' }]}
+                >
+                  <Input placeholder="Nhập biển số đầu kéo" size="large" />
+                </Form.Item>
+
+                <Form.Item
+                  label="Mã đăng ký đầu kéo"
+                  name="headRegCode"
+                  rules={[{ required: true, message: 'Vui lòng nhập mã đăng ký đầu kéo' }]}
+                >
+                  <Input placeholder="Nhập mã đăng ký đầu kéo" size="large" />
+                </Form.Item>
+
+                <Form.Item
+                  label="Ngày hết hạn đăng ký"
+                  name="headRegExpiry"
+                  rules={[{ required: true, message: 'Vui lòng chọn ngày hết hạn đăng ký' }]}
+                >
+                  <Input placeholder="Chọn ngày hết hạn" type="date" size="large" />
+                </Form.Item>
+              </Card>
             </Col>
 
+            {/* Rơ Moóc Section */}
             <Col span={12}>
-              <Form.Item
-                label={
-                  <Space>
-                    <MdEmojiTransportation size={20} /> Hãng xe
-                  </Space>
-                }
-                name='brand'
-                rules={[{ required: true, message: 'Vui lòng nhập hãng xe' }]}
-              >
-                <Input placeholder='Nhập hãng xe' size='large' />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={[16, 16]}>
-            <Col span={12}>
-              <Form.Item
-                label={
-                  <Space>
-                    <BsFillCalendarFill size={20} /> Loại xe
-                  </Space>
-                }
-                name='type'
-                rules={[{ required: true, message: 'Vui lòng chọn loại xe' }]}
-              >
-                <Select placeholder='Chọn loại xe' size='large'>
-                  <Option value={0}>Xe đầu kéo</Option>
-                  <Option value={1}>Rơ moóc</Option>
-                </Select>
-              </Form.Item>
-            </Col>
+              <Card title="Thông tin Rơ Moóc" bordered={false} style={{ marginBottom: '20px' }}>
+                <Form.Item
+                  label="Biển số rơ moóc"
+                  name="moocPlate"
+                  rules={[{ required: true, message: 'Vui lòng nhập biển số rơ moóc' }]}
+                >
+                  <Input placeholder="Nhập biển số rơ moóc" size="large" />
+                </Form.Item>
 
-            <Col span={12}>
-              <Form.Item
-                label={
-                  <Space>
-                    <BsFillCalendarFill size={20} /> Trạng thái xe
-                  </Space>
-                }
-                name='status'
-                rules={[{ required: true, message: 'Vui lòng chọn trạng thái xe' }]}
-              >
-                <Select placeholder='Chọn trạng thái xe' size='large'>
-                  <Option value={0}>Đang rảnh</Option>
-                  <Option value={1}>Đang thực hiện chuyến</Option>
-                  <Option value={2}>Bảo dưỡng</Option>
-                  <Option value={3}>Không còn sử dụng</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={[16, 16]}>
-            <Col span={24}>
-              <Form.Item
-                label={
-                  <Space>
-                    <BsCashStack size={20} /> Giá mua
-                  </Space>
-                }
-                name='purchasePrice'
-                rules={[{ required: true, message: 'Vui lòng nhập giá mua' }]}
-              >
-                <InputNumber
-                  placeholder='Nhập giá mua'
-                  min={0}
-                  style={{ width: '100%' }}
-                  size='large'
-                  formatter={(value) =>
-                    `${value} VND`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                  }
-                  parser={(value) => value.replace(/VND\s?|(,*)/g, '')}
-                />
-              </Form.Item>
+                <Form.Item
+                  label="Mã đăng ký rơ moóc"
+                  name="moocRegCode"
+                  rules={[{ required: true, message: 'Vui lòng nhập mã đăng ký rơ moóc' }]}
+                >
+                  <Input placeholder="Nhập mã đăng ký rơ moóc" size="large" />
+                </Form.Item>
+
+                <Form.Item
+                  label="Ngày hết hạn đăng ký"
+                  name="moocRegExpiry"
+                  rules={[{ required: true, message: 'Vui lòng chọn ngày hết hạn đăng ký' }]}
+                >
+                  <Input placeholder="Chọn ngày hết hạn" type="date" size="large" />
+                </Form.Item>
+              </Card>
             </Col>
           </Row>
         </Card>
@@ -247,20 +216,6 @@ const CreateCarPage = () => {
           style={{ marginBottom: '20px' }}
         >
           <Row gutter={[16, 16]}>
-            <Col span={12}>
-              <Form.Item
-                label={
-                  <Space>
-                    <BsCashStack size={20} /> Thông số kỹ thuật
-                  </Space>
-                }
-                name='technicalSpecs'
-                rules={[{ required: true, message: 'Vui lòng nhập thông số kỹ thuật' }]}
-              >
-                <Input placeholder='Nhập thông số kỹ thuật' size='large' />
-              </Form.Item>
-            </Col>
-
             <Col span={12}>
               <Form.Item
                 label='Độ mới của xe'
@@ -281,7 +236,37 @@ const CreateCarPage = () => {
               </Form.Item>
             </Col>
           </Row>
+
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <Form.Item
+                label='Trọng lượng (tấn)'
+                name='weight'
+                rules={[{ required: true, message: 'Vui lòng nhập trọng lượng' }]}
+              >
+                <InputNumber
+                  placeholder='Nhập trọng lượng'
+                  min={0}
+                  style={{ width: '100%' }}
+                  size='large'
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label='Loại rơ moóc'
+                name='moocType'
+                rules={[{ required: true, message: 'Vui lòng chọn loại rơ moóc' }]}
+              >
+                <Select placeholder='Chọn loại rơ moóc' size='large'>
+                  <Option value={0}>20''</Option>
+                  <Option value={1}>40''</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
         </Card>
+
 
         {/* Ảnh */}
         <Card title="Ảnh" bordered={false} style={{ marginBottom: '20px' }}>

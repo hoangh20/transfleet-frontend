@@ -38,6 +38,7 @@ const CreateDriverModal = ({ visible, onCancel, onSuccess }) => {
       const formData = new FormData();
       formData.append('name', values.name.trim());
       formData.append('phone', values.phone.trim());
+      formData.append('hometown', values.hometown.trim());
       formData.append('birthDate', values.birthDate.toISOString());
       formData.append('licenseType', values.licenseType);
       formData.append('yearsOfExperience', values.yearsOfExperience);
@@ -156,6 +157,16 @@ const CreateDriverModal = ({ visible, onCancel, onSuccess }) => {
           ]}
         >
           <Input placeholder="Nhập số điện thoại" maxLength={10} />
+        </Form.Item>
+        <Form.Item
+          name="hometown"
+          label="Quê quán"
+          rules={[
+            { required: true, message: 'Vui lòng nhập quê quán lái xe' },
+            { whitespace: true, message: 'Không được chỉ nhập khoảng trắng!' }
+          ]}
+        >
+          <Input placeholder="Nhập quê quán lái xe" />
         </Form.Item>
 
         <Form.Item

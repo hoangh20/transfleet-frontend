@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Card, Avatar, Typography, Row, Col, Tag, Statistic, Modal } from 'antd';
-import { CarOutlined, PhoneOutlined, IdcardOutlined, ExperimentOutlined, BankOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { CarOutlined, PhoneOutlined, IdcardOutlined, ExperimentOutlined, BankOutlined, CloseCircleOutlined,EnvironmentOutlined,  } from '@ant-design/icons';
 import { deleteDriver } from '../../services/DriverService'; 
 import DriverDetail from '../popup/DriverDetail'; // Import DriverDetail
-
+import dayjs from 'dayjs';
 const { Title, Text } = Typography;
 
 const DriverCard = ({ driver }) => {
@@ -21,7 +21,9 @@ const DriverCard = ({ driver }) => {
     setIsModalVisible(true);
   };
 
-
+  const calculateAge = (birthDate) => {
+    return dayjs().diff(dayjs(birthDate), 'year');
+  };
   const handleDeleteDriver = async () => {
     setLoading(true);
     try {
@@ -79,7 +81,7 @@ const DriverCard = ({ driver }) => {
               onClick={showDetailModal}
             />
             <Title level={3} style={{ color: 'white', margin: 0, cursor: 'pointer' }} onClick={showDetailModal}>
-              {driver.name}
+              {driver.name} ({calculateAge(driver.birthDate)} tuổi)
             </Title>
           </div>
         }
@@ -123,6 +125,25 @@ const DriverCard = ({ driver }) => {
               <Text copyable>{driver.bankAccount}</Text>
             </div>
           </Col>
+          <Col span={24}>
+            <div>
+            {driver.hascar === 1 ? (
+                <>
+                  <CarOutlined style={{ color: '#52c41a', marginRight: 8 }} />
+                  Có xe
+                </>
+              ) : (
+                <>
+                  <CloseCircleOutlined style={{ color: '#f5222d', marginRight: 8 }} />
+                  Chưa có xe
+                </>
+              )}
+            </div>
+          </Col>
+          <Col span={24}>
+            <EnvironmentOutlined style={{ color: '#1890ff' }} />
+            <Text>Quê quán: {driver.hometown}</Text>
+          </Col>
 
           <Col span={8}>
             <Statistic
@@ -146,6 +167,7 @@ const DriverCard = ({ driver }) => {
               valueStyle={{ color: '#1890ff' }}
             />
           </Col>
+          
 
           <Col span={24}>
             <Card
