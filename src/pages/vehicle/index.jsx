@@ -16,6 +16,7 @@ const VehicleListPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(8);
   const [total, setTotal] = useState(0);
+  const [hasDriver, setHasDriver] = useState('');
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -41,7 +42,8 @@ const VehicleListPage = () => {
       (vehicle.headPlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
       vehicle.moocPlate.toLowerCase().includes(searchTerm.toLowerCase())) &&
       (type ? vehicle.moocType === Number(type) : true) &&
-      (status ? vehicle.status === Number(status) : true)
+      (status ? vehicle.status === Number(status) : true) &&
+      (hasDriver ? vehicle.hasDriver === Number(hasDriver) : true)
     );
   });
 
@@ -54,7 +56,7 @@ const VehicleListPage = () => {
       <Typography.Title level={2}>Danh sách xe</Typography.Title>
 
       <Row gutter={[16, 16]} style={{ marginBottom: '20px' }}>
-        <Col xs={24} sm={12} md={16}>
+        <Col xs={24} sm={12} md={12}>
           <Typography.Text>Tìm kiếm</Typography.Text>
           <Input
             placeholder="Tìm kiếm biển số xe"
@@ -62,6 +64,19 @@ const VehicleListPage = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ width: '100%' }}
           />
+        </Col>
+        <Col xs={24} sm={6} md={4}>
+          <Typography.Text>Lái xe</Typography.Text>
+          <Select
+            placeholder="Lái xe"
+            value={hasDriver}
+            onChange={value => setHasDriver(value)}
+            style={{ width: '100%' }}
+          >
+            <Option value="">Tất cả</Option>
+            <Option value="0">Chưa có</Option>
+            <Option value="1">Đã có</Option>
+          </Select>
         </Col>
 
         <Col xs={24} sm={6} md={4}>

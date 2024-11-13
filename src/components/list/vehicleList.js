@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Card, Row, Col, Typography,Tag, Space, Image, Button, Modal, notification } from 'antd';
 import { Link } from 'react-router-dom';
 import { IoMdCar } from 'react-icons/io';
@@ -6,13 +6,14 @@ import { MdEmojiTransportation } from 'react-icons/md';
 import { BsFillCalendarFill } from 'react-icons/bs';
 import { FiMapPin } from 'react-icons/fi';
 import { FaBalanceScale } from 'react-icons/fa';
-import { DeleteOutlined, UserOutlined, TruckOutlined,TagOutlined, PercentageOutlined } from '@ant-design/icons';
-import { deleteVehicle } from '../../services/VehicleService';
+import { DeleteOutlined, UserOutlined, TruckOutlined,TagOutlined, PercentageOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { deleteVehicle,getDriverByVehicleId  } from '../../services/VehicleService';
 
 const {  Text } = Typography;
 
 const ListVehicle = ({ vehicle, onDelete }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [driver, setDriver] = useState(null);
   const statusLabels = ['Đang rảnh', 'Đang thực hiện chuyến', 'Bảo dưỡng', 'Không còn sử dụng'];
   const {
     headPlate,
@@ -30,6 +31,58 @@ const ListVehicle = ({ vehicle, onDelete }) => {
   } = vehicle;
 
   const moocTypeLabels = ['20\'\'', '40\'\''];  
+  
+  useEffect(() => {
+    const fetchDriver = async () => {
+      try {
+        const result = await getDriverByVehicleId(vehicle._id);
+        if (result && result.data) {
+          setDriver(result.data);
+        } else {
+          setDriver(null);
+        }
+        console.log('Driver API Response:', result);
+      } catch (error) {
+        console.error('Error fetching driver by vehicle ID:', error);
+        setDriver(null);
+      }
+    };
+
+    if (vehicle._id && vehicle.hasDriver === 1) {
+      fetchDriver();
+    } else {
+      setDriver(null);
+    }
+  }, [vehicle._id, vehicle.hasDriver]);
+
+  const renderDriverInfo = () => {
+    if (vehicle.hasDriver === 1) {
+      if (driver) {
+        return (
+          <>
+            <UserOutlined style={{ color: '#52c41a', marginRight: 8 }} />
+            <span>
+            <Text strong>Lái xe</Text> {driver.name || 'N/A'}  <Text strong>Loại bằng:</Text> {driver.licenseType || 'N/A'}
+            </span>
+          </>
+        );
+      } else {
+        return (
+          <>
+            <UserOutlined style={{ color: '#faad14', marginRight: 8 }} />
+            <span>Đang tải thông tin lái xe...</span>
+          </>
+        );
+      }
+    } else {
+      return (
+        <>
+          <CloseCircleOutlined style={{ color: '#f5222d', marginRight: 8 }} />
+          Chưa có lái xe
+        </>
+      );
+    }
+  };
   
   const handleDeleteClick = () => {
     setIsModalVisible(true);
@@ -165,17 +218,7 @@ const ListVehicle = ({ vehicle, onDelete }) => {
               <Col xs={24} sm={12}>
                 <Space>
                   <div>
-                      {vehicle.hasdriver === 1 ? (
-                      <>
-                        <UserOutlined style={{ color: '#52c41a', marginRight: 8 }} />
-                        Có lái xe
-                      </>
-                    ) : (
-                      <>
-                        <UserOutlined style={{ color: '#f5222d', marginRight: 8 }} />
-                        <span style={{ color: '#f5222d' }}>Chưa có  lái xe</span>
-                      </>
-                    )}
+                      {renderDriverInfo()}
                   </div>
                 </Space>
               </Col>

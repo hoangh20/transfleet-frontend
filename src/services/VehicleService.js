@@ -29,3 +29,27 @@ export const updateVehicle = async (id, data) => {
     const response = await axios.put(`${process.env.REACT_APP_API_URL}/vehicle/update/${id}`, data);
     return response.data;
 };
+
+export const getDriverByVehicleId = async (vehicleId) => {
+    try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/vehicle/${vehicleId}/driver`);
+        return response.data; 
+    } catch (error) {
+        throw new Error(error.response ? error.response.data.message : 'Error fetching driver data');
+    }
+};
+export const linkDriverToVehicle = async (driverId, vehicleId) => {
+    try {
+        const response = await axios.post(`${process.env.REACT_APP_API_URL}/vehicle/link`, {
+            driverId,
+            vehicleId
+        });
+        return response.data;
+    } catch (error) {
+        if (error.response) {
+            return error.response.data;
+        } else {
+            return { status: 'ERR', message: 'Network error' };
+        }
+    }
+};

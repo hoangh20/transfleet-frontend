@@ -16,7 +16,9 @@ import {
   Form,
   message,
   Modal,
-  notification
+  notification,
+  List,
+  Avatar,  
 } from 'antd';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import styled from '@emotion/styled';
@@ -24,10 +26,12 @@ import L from 'leaflet';
 import axios from 'axios';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet/dist/leaflet.css';
-import { getVehicleById, updateVehicle, deleteVehicle } from '../../services/VehicleService';
-import LoadingPage from '../../components/loading/LoadingPage'
+import { getVehicleById, linkDriverToVehicle, updateVehicle, deleteVehicle, getDriverByVehicleId } from '../../services/VehicleService';
+import {getAllDrivers} from '../../services/DriverService'
+import LoadingPage from '../../components/loading/LoadingPage';
 const { Text } = Typography;
 const { Option } = Select;
+
 
 const VehicleDetailPage = () => {
   const navigate = useNavigate();
@@ -41,7 +45,12 @@ const VehicleDetailPage = () => {
   const [imageUrl, setImageUrl] = useState('');
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [address, setAddress] = useState('');
-
+  const [driver, setDriver] = useState(null);
+  const [selectedDriverId, setSelectedDriverId] = useState(null);
+  
+ 
+  const [errorDriver, setErrorDriver] = useState(null); 
+  const [listDrivers, setlistDrivers] = useState([]);
   useEffect(() => {
     const fetchVehicle = async () => {
       setLoading(true);
@@ -58,6 +67,8 @@ const VehicleDetailPage = () => {
           ...response.data,
           lat: response.data.location.lat,
           lng: response.data.location.long,
+          headRegExpiry: formatDate(response.data.headRegExpiry),
+          moocRegExpiry: formatDate(response.data.moocRegExpiry),
         });
       } catch (error) {
         setError('Failed to load vehicle details');
@@ -67,7 +78,56 @@ const VehicleDetailPage = () => {
     };
     fetchVehicle();
   }, [id, form]);
+  useEffect(() => {
+    const fetchDriver = async () => {
+        setErrorDriver(null);
+        try {
+            const result = await getDriverByVehicleId(id);
+            setDriver(result.data);
+        } catch (error) {
+            setErrorDriver(error.message);
+        } finally {
+        }
+    };
+    if (vehicle && vehicle.hasDriver === 1) {
+      fetchDriver();
+   }
+}, [vehicle, id]);
+  useEffect(() => {
+    const fetchlistDrivers = async () => {
+      try {
+        const listDrivers = await getAllDrivers();
+        const availablelistDrivers = listDrivers.filter(d => d.hasVehicle === 0);
+        setlistDrivers(availablelistDrivers);
+      } catch (error) {
+        console.error("Error fetching listdrivers:", error);
+      }
+    };
+    if (vehicle && vehicle.hasDriver === 0) {
+      fetchlistDrivers();
+    }
+  }, [vehicle]);
 
+  const handleDeliver = async () => {
+    if (!selectedDriverId) {
+        message.warning('Vui lòng chọn một tài xế trước khi giao xe!');
+        return;
+    }
+    
+    try {
+        const vehicleId = vehicle._id; 
+        const result = await linkDriverToVehicle(selectedDriverId, vehicleId);
+        
+        if (result.status !== 'ERR') {
+            message.success('Giao xe thành công!');
+            window.location.reload();
+        } else {
+            message.error(`Giao xe thất bại: ${result.message}`);
+        }
+    } catch (error) {
+        message.error('Đã xảy ra lỗi khi giao xe');
+    }
+};
   const GeocodeAPI = async (lat, lng) => {
     try {
       const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
@@ -116,6 +176,14 @@ const VehicleDetailPage = () => {
   const handleEdit = () => {
     setIsEditing(true);
   };
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   const handleCancel = () => {
     setIsEditing(false);
@@ -149,6 +217,9 @@ const VehicleDetailPage = () => {
       message.error('Cập nhật thất bại: ' + (error.response?.data?.message || error.message));
     }
   };
+  const handleDriverSelect = (driverId) => {
+    setSelectedDriverId(driverId);
+  };;
 
   const showDeleteModal = () => {
     setIsDeleteModalVisible(true);
@@ -171,6 +242,12 @@ const VehicleDetailPage = () => {
       message.error('Xóa xe thất bại: ' + (error.response?.data?.message || error.message));
     }
   };
+
+if (errorDriver) {
+    return <Alert message="Error" description={errorDriver} type="error" showIcon />;
+}
+
+
 
   if (loading) {
     return (
@@ -216,199 +293,252 @@ const VehicleDetailPage = () => {
           )}
         </Col>
       </Row>
-
-      <Form
-        form={form}
-        onFinish={handleSubmit}
-        layout="vertical"
-      >
-        {/* Thông tin cơ bản */}
-        <Card
-          title={<div style={{ textAlign: 'center' }}>Thông tin cơ bản</div>}
-          bordered={false}
-          style={{ marginBottom: '20px' }}
-        >
-          <Row gutter={[16, 16]}>
-            <Col span={12}>
-              <Card title="Thông tin Đầu Kéo" bordered={false} style={{ marginBottom: '20px' }}>
-                <Form.Item
-                  label="Biển số đầu kéo"
-                  name="headPlate"
-                  rules={[{ required: true, message: 'Vui lòng nhập biển số đầu kéo' }]}
-                >
-                  <Input readOnly={!isEditing} size="large" />
-                </Form.Item>
-                <Form.Item
-                    label="Mã đăng ký đầu kéo"
-                    name="headRegCode"
-                    rules={[{ required: true, message: 'Vui lòng nhập mã đăng ký đầu kéo' }]}
-                  >
-                    <Input readOnly={!isEditing} size="large" />
-                  </Form.Item>
-
-                  <Form.Item
-                    label="Ngày hết hạn đăng ký"
-                    name="headRegExpiry"
-                    rules={[{ required: true, message: 'Vui lòng chọn ngày hết hạn đăng ký' }]}
-                  >
-                    <Input readOnly={!isEditing} type="date" size="large" />
-                  </Form.Item>
-                </Card>
-            </Col>
-            <Col span={12}>
-              <Card title="Thông tin Rơ Moóc" bordered={false} style={{ marginBottom: '20px' }}>
-                <Form.Item
-                  label="Biển số rơ moóc"
-                  name="moocPlate"
-                  rules={[{ required: true, message: 'Vui lòng nhập biển số rơ moóc' }]}
-                >
-                  <Input readOnly={!isEditing} size="large" />
-                </Form.Item>
-
-                <Form.Item
-                  label="Mã đăng ký rơ moóc"
-                  name="moocRegCode"
-                  rules={[{ required: true, message: 'Vui lòng nhập mã đăng ký rơ moóc' }]}
-                >
-                  <Input readOnly={!isEditing} size="large" />
-                </Form.Item>
-
-                <Form.Item
-                  label="Ngày hết hạn đăng ký"
-                  name="moocRegExpiry"
-                  rules={[{ required: true, message: 'Vui lòng chọn ngày hết hạn đăng ký' }]}
-                >
-                  <Input readOnly={!isEditing} type="date" size="large" />
-                </Form.Item>
-              </Card>
-            </Col>
-          </Row>
-        </Card>
-
-        {/* Thông tin kỹ thuật */}
-        <Card
-          title="Thông tin kỹ thuật"
-          bordered={false}
-          style={{ marginBottom: '20px' }}
-        >
-          <Row gutter={[16, 16]}>
-            <Col span={12}>
-              <Form.Item
-                label="Độ mới của xe"
-                name="depreciationRate"
-                rules={[{ required: true, message: 'Vui lòng chọn độ mới của xe' }]}
-              >
-                <Slider
-                  min={0}
-                  max={100}
-                  disabled={!isEditing}
-                  marks={{
-                    0: 'Cũ',
-                    100: 'Mới',
-                  }}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={[16, 16]}>
-            <Col span={12}>
-              <Form.Item
-                label='Trọng lượng (tấn)'
-                name='weight'
-                rules={[{ required: true, message: 'Vui lòng nhập trọng lượng' }]}
-              >
-                <InputNumber
-                  placeholder='Nhập trọng lượng'
-                  min={0}
-                  style={{ width: '100%' }}
-                  size='large'
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label='Loại rơ moóc'
-                name='moocType'
-                rules={[{ required: true, message: 'Vui lòng chọn loại rơ moóc' }]}
-              >
-                <Select placeholder='Chọn loại rơ moóc' size='large'>
-                  <Option value={0}>20''</Option>
-                  <Option value={1}>40''</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-        </Card>
-
-        {/* Ảnh */}
-        <Card title="Ảnh" bordered={false} style={{ marginBottom: '20px' }}>
-          <Row gutter={[16, 16]}>
-            <Col span={24}>
-              <Form.Item
-                label="URL Ảnh"
-                name="imageUrl"
-                rules={[{ type: 'url', message: 'Vui lòng nhập URL hợp lệ' }]}
-              >
-                <Input
-                  readOnly={!isEditing}
-                  size="large"
-                  onChange={e => setImageUrl(e.target.value)}
-                />
-              </Form.Item>
-              {imageUrl && (
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
-                  <Image
-                    src={imageUrl}
-                    alt="Vehicle"
-                    style={{ width: '100%', maxWidth: '300px', maxHeight: '300px', objectFit: 'cover' }}
-                  />
-                </div>
-              )}
-            </Col>
-          </Row>
-        </Card>
-
-        {/* Vị trí */}
-        <Card title="Vị trí" bordered={false}>
-          <Form.Item
-            label="Địa chỉ"
-            name="address"
-            rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
+      <Row gutter={[24, 24]}>
+      <Col span={18}>
+          <Form
+            form={form}
+            onFinish={handleSubmit}
+            layout="vertical"
           >
-            <Input placeholder="Chọn địa chỉ từ bản đồ" size="large" value={address} readOnly />
-          </Form.Item>
+            {/* Thông tin cơ bản */}
+            <Card
+              title={<div style={{ textAlign: 'center' }}>Thông tin cơ bản</div>}
+              bordered={false}
+              style={{ marginBottom: '20px' }}
+            >
+              <Row gutter={[16, 16]}>
+                <Col span={12}>
+                  <Card title="Thông tin Đầu Kéo" bordered={false} style={{ marginBottom: '20px' }}>
+                    <Form.Item
+                      label="Biển số đầu kéo"
+                      name="headPlate"
+                      rules={[{ required: true, message: 'Vui lòng nhập biển số đầu kéo' }]}
+                    >
+                      <Input readOnly={!isEditing} size="large" />
+                    </Form.Item>
+                    <Form.Item
+                        label="Mã đăng ký đầu kéo"
+                        name="headRegCode"
+                        rules={[{ required: true, message: 'Vui lòng nhập mã đăng ký đầu kéo' }]}
+                      >
+                        <Input readOnly={!isEditing} size="large" />
+                      </Form.Item>
 
-          <Row gutter={[16, 16]}>
-            <Col span={24}>
-              <div style={{ marginBottom: '16px' }}>
-                {isEditing && <Text>Click trên bản đồ để cập nhật vị trí</Text>}
+                      <Form.Item
+                        label="Ngày hết hạn đăng ký"
+                        name="headRegExpiry"
+                        rules={[{ required: true, message: 'Vui lòng chọn ngày hết hạn đăng ký' }]}
+                      >
+                        <Input readOnly={!isEditing} type="date" size="large" />
+                      </Form.Item>
+                    </Card>
+                </Col>
+                <Col span={12}>
+                  <Card title="Thông tin Rơ Moóc" bordered={false} style={{ marginBottom: '20px' }}>
+                    <Form.Item
+                      label="Biển số rơ moóc"
+                      name="moocPlate"
+                      rules={[{ required: true, message: 'Vui lòng nhập biển số rơ moóc' }]}
+                    >
+                      <Input readOnly={!isEditing} size="large" />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Mã đăng ký rơ moóc"
+                      name="moocRegCode"
+                      rules={[{ required: true, message: 'Vui lòng nhập mã đăng ký rơ moóc' }]}
+                    >
+                      <Input readOnly={!isEditing} size="large" />
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Ngày hết hạn đăng ký"
+                        name="moocRegExpiry"
+                        rules={[{ required: true, message: 'Vui lòng chọn ngày hết hạn đăng ký' }]}
+                    >
+                        <Input
+                            readOnly={!isEditing}
+                            type="date"
+                            size="large"
+                            value={formatDate(vehicle.moocRegExpiry)}
+                            />
+                    </Form.Item>
+                  </Card>
+                </Col>
+              </Row>
+            </Card>
+
+            {/* Thông tin kỹ thuật */}
+            <Card
+              title="Thông tin kỹ thuật"
+              bordered={false}
+              style={{ marginBottom: '20px' }}
+            >
+              <Row gutter={[16, 16]}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Độ mới của xe"
+                    name="depreciationRate"
+                    rules={[{ required: true, message: 'Vui lòng chọn độ mới của xe' }]}
+                  >
+                    <Slider
+                      min={0}
+                      max={100}
+                      disabled={!isEditing}
+                      marks={{
+                        0: 'Cũ',
+                        100: 'Mới',
+                      }}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={[16, 16]}>
+                <Col span={12}>
+                  <Form.Item
+                    label='Trọng lượng (tấn)'
+                    name='weight'
+                    rules={[{ required: true, message: 'Vui lòng nhập trọng lượng' }]}
+                  >
+                    <InputNumber
+                      placeholder='Nhập trọng lượng'
+                      min={0}
+                      style={{ width: '100%' }}
+                      size='large'
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label='Loại rơ moóc'
+                    name='moocType'
+                    rules={[{ required: true, message: 'Vui lòng chọn loại rơ moóc' }]}
+                  >
+                    <Select placeholder='Chọn loại rơ moóc' size='large'>
+                      <Option value={0}>20''</Option>
+                      <Option value={1}>40''</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+
+            {/* Ảnh */}
+            <Card title="Ảnh" bordered={false} style={{ marginBottom: '20px' }}>
+              <Row gutter={[16, 16]}>
+                <Col span={24}>
+                  <Form.Item
+                    label="URL Ảnh"
+                    name="imageUrl"
+                    rules={[{ type: 'url', message: 'Vui lòng nhập URL hợp lệ' }]}
+                  >
+                    <Input
+                      readOnly={!isEditing}
+                      size="large"
+                      onChange={e => setImageUrl(e.target.value)}
+                    />
+                  </Form.Item>
+                  {imageUrl && (
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+                      <Image
+                        src={imageUrl}
+                        alt="Vehicle"
+                        style={{ width: '100%', maxWidth: '300px', maxHeight: '300px', objectFit: 'cover' }}
+                      />
+                    </div>
+                  )}
+                </Col>
+              </Row>
+            </Card>
+
+            {/* Vị trí */}
+            <Card title="Vị trí" bordered={false}>
+              <Form.Item
+                label="Địa chỉ"
+                name="address"
+                rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
+              >
+                <Input placeholder="Chọn địa chỉ từ bản đồ" size="large" value={address} readOnly />
+              </Form.Item>
+
+              <Row gutter={[16, 16]}>
+                <Col span={24}>
+                  <div style={{ marginBottom: '16px' }}>
+                    {isEditing && <Text>Click trên bản đồ để cập nhật vị trí</Text>}
+                  </div>
+                  <MapContainer
+                      center={location}
+                      zoom={13}
+                      style={{ height: '350px', width: '100%' }}
+                    >
+                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
+                      <MapClickHandler />
+                      <Marker position={location} icon={markerIcon} />
+                    </MapContainer>
+                </Col>
+              </Row>
+
+              <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+                <Col span={12}>
+                <Form.Item label="Latitude" name="lat">
+                    <Input placeholder="Latitude" value={location.lat} readOnly size="large" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item label="Longitude" name="long">
+                    <Input placeholder="Longitude" value={location.lng} readOnly size="large" />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+          </Form>
+        </Col>
+        <Col span={6}>  
+        {/*Xử lý lái xe*/}
+        <Card title={vehicle.hasDriver === 1 ? "Thông tin tài xế của xe" : "Danh sách các lái xe"} bordered={false}>
+      {vehicle.hasDriver === 1 ? (
+        driver && (
+          <Card>
+            <Space align="center">
+              <Avatar size={64} src={driver.avatar} />
+              <div>
+                <Typography.Text strong>{driver.name}</Typography.Text>
+                <br />
+                <Typography.Text type="secondary">{driver.phone}</Typography.Text>
+                <br />
               </div>
-              <MapContainer
-                  center={location}
-                  zoom={13}
-                  style={{ height: '350px', width: '100%' }}
-                >
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
-                  <MapClickHandler />
-                  <Marker position={location} icon={markerIcon} />
-                </MapContainer>
-            </Col>
-          </Row>
-
-          <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
-            <Col span={12}>
-            <Form.Item label="Latitude" name="lat">
-                <Input placeholder="Latitude" value={location.lat} readOnly size="large" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="Longitude" name="long">
-                <Input placeholder="Longitude" value={location.lng} readOnly size="large" />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Card>
-      </Form>
+            </Space>
+          </Card>
+        )
+        
+      ) : (
+        <div>
+            <List
+                itemLayout="horizontal"
+                dataSource={listDrivers}
+                renderItem={listDrivers => (
+                    <List.Item
+                    key={listDrivers._id}
+                    onClick={() => handleDriverSelect(listDrivers._id)} 
+                    style={{ cursor: 'pointer', backgroundColor: selectedDriverId === listDrivers._id ? '#f0f0f0' : 'transparent' }}>
+                        <List.Item.Meta
+                            avatar={<Avatar size={64} src={listDrivers.avatar} />}
+                            title={<Typography.Text strong>{listDrivers.name}</Typography.Text>}
+                            description={<Typography.Text type="secondary">{listDrivers.phone}</Typography.Text>}
+                        />
+                    </List.Item>
+                )}
+            />
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                <Button type="primary" onClick={handleDeliver} >
+                    Giao xe
+                </Button>
+            </div>
+        </div>
+      )}
+    </Card>
+        </Col>
+      </Row>
       <Modal
         title="Xác nhận xóa xe"
         visible={isDeleteModalVisible}

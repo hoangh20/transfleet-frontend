@@ -50,3 +50,16 @@ export const deleteDriver = async (driverId) => {
   const response = await axios.delete(`${process.env.REACT_APP_API_URL}/driver/delete-drivers/${driverId}`);
   return response.data;
 };
+
+export const getVehicleByDriverId = async (driverId) => {
+  try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/driver/${driverId}/vehicle`);
+      return response.data;
+  } catch (error) {
+      if (error.response) {
+          return error.response.data;
+      } else {
+          return { status: 'ERR', message: 'Network error' };
+      }
+  }
+};

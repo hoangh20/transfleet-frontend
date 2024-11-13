@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Avatar, Typography, Row, Col, Tag, Statistic, Modal } from 'antd';
-import { CarOutlined, PhoneOutlined, IdcardOutlined, ExperimentOutlined, BankOutlined, CloseCircleOutlined,EnvironmentOutlined,  } from '@ant-design/icons';
-import { deleteDriver } from '../../services/DriverService'; 
-import DriverDetail from '../popup/DriverDetail'; // Import DriverDetail
+import { CarOutlined, PhoneOutlined, IdcardOutlined, ExperimentOutlined, BankOutlined, CloseCircleOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { deleteDriver, getVehicleByDriverId } from '../../services/DriverService';
+import DriverDetail from '../popup/DriverDetail';
 import dayjs from 'dayjs';
 const { Title, Text } = Typography;
 
@@ -10,13 +10,28 @@ const DriverCard = ({ driver }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
-
+  const [vehicle, setVehicle] = useState(null);
 
   const successRate = driver.successfulTrips + driver.failedTrips === 0
     ? 'N/A'
     : ((driver.successfulTrips / (driver.successfulTrips + driver.failedTrips)) * 100).toFixed(1);
 
- 
+    useEffect(() => {
+      const fetchVehicle = async () => {
+        try {
+          const result = await getVehicleByDriverId(driver._id);
+          setVehicle(result.data);
+        } catch (error) {
+          console.error('Error fetching vehicle:', error);
+          setVehicle(null);
+        }
+      };
+  
+      if (driver._id && driver.hasVehicle === 1) {
+        fetchVehicle();
+      }
+    }, [driver._id, driver.hasVehicle]); 
+
   const showDeleteModal = () => {
     setIsModalVisible(true);
   };
@@ -24,16 +39,15 @@ const DriverCard = ({ driver }) => {
   const calculateAge = (birthDate) => {
     return dayjs().diff(dayjs(birthDate), 'year');
   };
+
   const handleDeleteDriver = async () => {
     setLoading(true);
     try {
-     
       await deleteDriver(driver._id);
       setIsModalVisible(false);
-      window.location.reload(); 
+      window.location.reload();
     } catch (error) {
       setLoading(false);
-    
       Modal.error({
         title: 'Xóa tài xế thất bại',
         content: 'Có lỗi xảy ra khi xóa tài xế. Vui lòng thử lại!',
@@ -41,14 +55,32 @@ const DriverCard = ({ driver }) => {
     }
   };
 
-
   const showDetailModal = () => {
     setIsDetailModalVisible(true);
   };
 
- 
   const handleDetailModalClose = () => {
     setIsDetailModalVisible(false);
+  };
+
+  const renderVehicleInfo = () => {
+    if (driver.hasVehicle === 1 && vehicle) {
+      return (
+        <>
+          <CarOutlined style={{ color: '#52c41a', marginRight: 8 }} />
+          <span>
+            Biển số: {vehicle.headPlate}, Mooc: {vehicle.moocType === 0 ? "20''" : "40''"}
+          </span>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <CloseCircleOutlined style={{ color: '#f5222d', marginRight: 8 }} />
+          Chưa có xe
+        </>
+      );
+    }
   };
 
   return (
@@ -86,7 +118,6 @@ const DriverCard = ({ driver }) => {
           </div>
         }
       >
-        {/* Nút xóa tài xế ở góc phải trên */}
         <CloseCircleOutlined
           style={{
             position: 'absolute',
@@ -127,17 +158,7 @@ const DriverCard = ({ driver }) => {
           </Col>
           <Col span={24}>
             <div>
-            {driver.hascar === 1 ? (
-                <>
-                  <CarOutlined style={{ color: '#52c41a', marginRight: 8 }} />
-                  Có xe
-                </>
-              ) : (
-                <>
-                  <CloseCircleOutlined style={{ color: '#f5222d', marginRight: 8 }} />
-                  Chưa có xe
-                </>
-              )}
+              {renderVehicleInfo()}
             </div>
           </Col>
           <Col span={24}>
@@ -167,7 +188,6 @@ const DriverCard = ({ driver }) => {
               valueStyle={{ color: '#1890ff' }}
             />
           </Col>
-          
 
           <Col span={24}>
             <Card
@@ -180,7 +200,6 @@ const DriverCard = ({ driver }) => {
           </Col>
         </Row>
 
-        {/* Modal xác nhận xóa */}
         <Modal
           title="Xác nhận xóa tài xế"
           visible={isModalVisible}
@@ -191,7 +210,6 @@ const DriverCard = ({ driver }) => {
           <p>Bạn có chắc chắn muốn xóa tài xế này không?</p>
         </Modal>
 
-        {/* Modal Driver Detail */}
         <Modal
           title="Chi tiết tài xế"
           visible={isDetailModalVisible}
