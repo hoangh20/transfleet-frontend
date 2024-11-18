@@ -2,12 +2,12 @@
 import React from 'react';
 import { Dropdown, Menu, Avatar, message } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  UserOutlined, 
-  SettingOutlined, 
+import {
+  UserOutlined,
+  SettingOutlined,
   LogoutOutlined,
 } from '@ant-design/icons';
-import { signoutUser } from '../../services/UserService'; 
+import { signoutUser } from '../../services/UserService';
 import { useDispatch } from 'react-redux';
 import { resetUser } from '../../redux/slice/userSlice';
 
@@ -22,7 +22,7 @@ const UserDrop = () => {
       localStorage.removeItem('access_token'); // Đảm bảo tên này chính xác với token của bạn
       localStorage.removeItem('refresh_token'); // Xóa refresh token
       localStorage.removeItem('user'); // Xóa thông tin người dùng
-      
+
       message.success('Đăng xuất thành công');
       navigate('/sign-in'); // Chuyển hướng về trang đăng nhập
     } catch (error) {
@@ -34,14 +34,14 @@ const UserDrop = () => {
 
   const menu = (
     <Menu>
-      <Menu.Item key="profile" icon={<UserOutlined />}>
-        <Link to="/profile">Tài khoản</Link>
+      <Menu.Item key='profile' icon={<UserOutlined />}>
+        <Link to='/profile'>Tài khoản</Link>
       </Menu.Item>
-      <Menu.Item key="settings" icon={<SettingOutlined />}>
-        <Link to="/settings">Cài đặt</Link>
+      <Menu.Item key='settings' icon={<SettingOutlined />}>
+        <Link to='/settings'>Cài đặt</Link>
       </Menu.Item>
       <Menu.Item
-        key="logout"
+        key='logout'
         icon={<LogoutOutlined />}
         style={{ color: '#ff4d4f' }}
         onClick={handleLogout}

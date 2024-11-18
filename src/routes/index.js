@@ -5,9 +5,9 @@ import VehicleListPage from '../pages/vehicle/index';
 import SigninPage from '../pages/sign-in/sign-in';
 import SignupPage from '../pages/sign-up/sign-up';
 import DriverListPage from '../pages/driver/index';
-import DriverWagePage from '../pages/driver/wage'
-import VehicleDetailPage from '../pages/vehicle/VehicleDetailPage'
-import CustommerPage from '../pages/customer/index'
+import DriverWagePage from '../pages/driver/wage';
+import VehicleDetailPage from '../pages/vehicle/VehicleDetailPage';
+import CustommerPage from '../pages/customer/index';
 export const routes = [
   {
     path: '/',
@@ -46,7 +46,7 @@ export const routes = [
     page: DriverWagePage,
   },
   {
-    path: '/Khách hàng',
+    path: '/customer/list',
     page: CustommerPage,
-  }
+  },
 ];

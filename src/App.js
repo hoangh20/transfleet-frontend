@@ -3,10 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { routes } from './routes';
 import AdminLayout from './components/layout/adminlayout';
 import AuthLayout from './components/layout/AuthLayout';
-import ProtectedRoute from './components/route/ProtectedRoute'; 
+import ProtectedRoute from './components/route/ProtectedRoute';
 import * as UserService from './services/UserService';
 import { updateUser } from './redux/slice/userSlice';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import { useDispatch } from 'react-redux';
 import LoadingPage from './components/loading/LoadingPage';
 
@@ -26,17 +26,19 @@ function App() {
         const res = await UserService.getDetailsUser(id, token);
         dispatch(updateUser({ ...res?.data, access_token: token }));
       } catch (error) {
-        console.error("Failed to get user details:", error);
+        console.error('Failed to get user details:', error);
         // Handle error (e.g., redirect to login or show error message)
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   useEffect(() => {
     const { storageData, decoded } = handleDecoded();
     if (decoded?.id) {
-      handleGetDetailsUser(decoded.id, storageData).then(() => setLoading(false));
+      handleGetDetailsUser(decoded.id, storageData).then(() =>
+        setLoading(false),
+      );
     } else {
       setLoading(false);
     }
@@ -53,12 +55,12 @@ function App() {
           config.headers['token'] = `Bearer ${data?.access_token}`;
         }
       } catch (error) {
-        console.error("Error refreshing token:", error);
+        console.error('Error refreshing token:', error);
         // Handle token refresh error (e.g., redirect to login)
       }
       return config;
     },
-    (err) => Promise.reject(err)
+    (err) => Promise.reject(err),
   );
 
   // Optional: Show loading spinner while verifying token
@@ -70,7 +72,8 @@ function App() {
         <Routes>
           {routes.map((route, index) => {
             const Page = route.page;
-            const isAuthRoute = route.path === '/sign-in' || route.path === '/sign-up';
+            const isAuthRoute =
+              route.path === '/sign-in' || route.path === '/sign-up';
 
             const Layout = isAuthRoute ? AuthLayout : AdminLayout;
 

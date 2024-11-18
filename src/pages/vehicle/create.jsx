@@ -33,13 +33,25 @@ const CreateCarPage = () => {
 
   const onFinish = async (values) => {
     try {
-      const { headPlate, headRegCode, headRegExpiry, moocPlate, moocRegCode, moocRegExpiry, moocType, depreciationRate, weight, hasDriver, address } = values;
-  
+      const {
+        headPlate,
+        headRegCode,
+        headRegExpiry,
+        moocPlate,
+        moocRegCode,
+        moocRegExpiry,
+        moocType,
+        depreciationRate,
+        weight,
+        hasDriver,
+        address,
+      } = values;
+
       if (!location || !location.lat || !location.lng) {
         message.error('Vui lòng chọn vị trí trên bản đồ');
         return;
       }
-  
+
       const vehicleData = {
         headPlate,
         headRegCode,
@@ -58,13 +70,15 @@ const CreateCarPage = () => {
         },
         imageUrl,
       };
-  
-      const response = await createVehicle(vehicleData); 
+
+      const response = await createVehicle(vehicleData);
       console.log('Vehicle created successfully:', response);
       form.resetFields();
       message.success('Tạo xe mới thành công!');
     } catch (error) {
-      message.error('Tạo xe thất bại: ' + (error.response?.data?.message || error.message));
+      message.error(
+        'Tạo xe thất bại: ' + (error.response?.data?.message || error.message),
+      );
     }
   };
 
@@ -80,29 +94,33 @@ const CreateCarPage = () => {
 
   const GeocodeAPI = async (lat, lng) => {
     try {
-      const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
-        params: {
-          lat,
-          lon: lng,
-          format: 'json',
+      const response = await axios.get(
+        'https://nominatim.openstreetmap.org/reverse',
+        {
+          params: {
+            lat,
+            lon: lng,
+            format: 'json',
+          },
         },
-      });
-  
+      );
+
       const address = response.data.address;
       const ward = address.suburb || address.neighbourhood || '';
       const district = address.city_district || address.district || '';
-      const city = address.city || address.town || address.village || address.state || '';
-  
-      const formattedAddress = [ward, district, city].filter(Boolean).join(', ');
-  
+      const city =
+        address.city || address.town || address.village || address.state || '';
+
+      const formattedAddress = [ward, district, city]
+        .filter(Boolean)
+        .join(', ');
+
       return formattedAddress;
     } catch (error) {
       console.error('Error fetching address:', error);
       return '';
     }
   };
-  
-  
 
   const MapClickHandler = () => {
     useMapEvents({
@@ -110,7 +128,7 @@ const CreateCarPage = () => {
         const { lat, lng } = e.latlng;
         setLocation({ lat, lng });
         form.setFieldsValue({ lat, long: lng });
-        
+
         // Gọi API Geocoding và cập nhật địa chỉ
         const fetchedAddress = await GeocodeAPI(lat, lng);
         setAddress(fetchedAddress);
@@ -151,58 +169,104 @@ const CreateCarPage = () => {
           <Row gutter={[16, 16]}>
             {/* Đầu Kéo Section */}
             <Col span={12}>
-              <Card title="Thông tin Đầu Kéo" bordered={false} style={{ marginBottom: '20px' }}>
+              <Card
+                title='Thông tin Đầu Kéo'
+                bordered={false}
+                style={{ marginBottom: '20px' }}
+              >
                 <Form.Item
-                  label="Biển số đầu kéo"
-                  name="headPlate"
-                  rules={[{ required: true, message: 'Vui lòng nhập biển số đầu kéo' }]}
+                  label='Biển số đầu kéo'
+                  name='headPlate'
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Vui lòng nhập biển số đầu kéo',
+                    },
+                  ]}
                 >
-                  <Input placeholder="Nhập biển số đầu kéo" size="large" />
+                  <Input placeholder='Nhập biển số đầu kéo' size='large' />
                 </Form.Item>
 
                 <Form.Item
-                  label="Mã đăng ký đầu kéo"
-                  name="headRegCode"
-                  rules={[{ required: true, message: 'Vui lòng nhập mã đăng ký đầu kéo' }]}
+                  label='Mã đăng ký đầu kéo'
+                  name='headRegCode'
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Vui lòng nhập mã đăng ký đầu kéo',
+                    },
+                  ]}
                 >
-                  <Input placeholder="Nhập mã đăng ký đầu kéo" size="large" />
+                  <Input placeholder='Nhập mã đăng ký đầu kéo' size='large' />
                 </Form.Item>
 
                 <Form.Item
-                  label="Ngày hết hạn đăng ký"
-                  name="headRegExpiry"
-                  rules={[{ required: true, message: 'Vui lòng chọn ngày hết hạn đăng ký' }]}
+                  label='Ngày hết hạn đăng ký'
+                  name='headRegExpiry'
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Vui lòng chọn ngày hết hạn đăng ký',
+                    },
+                  ]}
                 >
-                  <Input placeholder="Chọn ngày hết hạn" type="date" size="large" />
+                  <Input
+                    placeholder='Chọn ngày hết hạn'
+                    type='date'
+                    size='large'
+                  />
                 </Form.Item>
               </Card>
             </Col>
 
             {/* Rơ Moóc Section */}
             <Col span={12}>
-              <Card title="Thông tin Rơ Moóc" bordered={false} style={{ marginBottom: '20px' }}>
+              <Card
+                title='Thông tin Rơ Moóc'
+                bordered={false}
+                style={{ marginBottom: '20px' }}
+              >
                 <Form.Item
-                  label="Biển số rơ moóc"
-                  name="moocPlate"
-                  rules={[{ required: true, message: 'Vui lòng nhập biển số rơ moóc' }]}
+                  label='Biển số rơ moóc'
+                  name='moocPlate'
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Vui lòng nhập biển số rơ moóc',
+                    },
+                  ]}
                 >
-                  <Input placeholder="Nhập biển số rơ moóc" size="large" />
+                  <Input placeholder='Nhập biển số rơ moóc' size='large' />
                 </Form.Item>
 
                 <Form.Item
-                  label="Mã đăng ký rơ moóc"
-                  name="moocRegCode"
-                  rules={[{ required: true, message: 'Vui lòng nhập mã đăng ký rơ moóc' }]}
+                  label='Mã đăng ký rơ moóc'
+                  name='moocRegCode'
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Vui lòng nhập mã đăng ký rơ moóc',
+                    },
+                  ]}
                 >
-                  <Input placeholder="Nhập mã đăng ký rơ moóc" size="large" />
+                  <Input placeholder='Nhập mã đăng ký rơ moóc' size='large' />
                 </Form.Item>
 
                 <Form.Item
-                  label="Ngày hết hạn đăng ký"
-                  name="moocRegExpiry"
-                  rules={[{ required: true, message: 'Vui lòng chọn ngày hết hạn đăng ký' }]}
+                  label='Ngày hết hạn đăng ký'
+                  name='moocRegExpiry'
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Vui lòng chọn ngày hết hạn đăng ký',
+                    },
+                  ]}
                 >
-                  <Input placeholder="Chọn ngày hết hạn" type="date" size="large" />
+                  <Input
+                    placeholder='Chọn ngày hết hạn'
+                    type='date'
+                    size='large'
+                  />
                 </Form.Item>
               </Card>
             </Col>
@@ -220,7 +284,9 @@ const CreateCarPage = () => {
               <Form.Item
                 label='Độ mới của xe'
                 name='depreciationRate'
-                rules={[{ required: true, message: 'Vui lòng chọn độ mới của xe' }]}
+                rules={[
+                  { required: true, message: 'Vui lòng chọn độ mới của xe' },
+                ]}
               >
                 <Slider
                   min={0}
@@ -242,7 +308,9 @@ const CreateCarPage = () => {
               <Form.Item
                 label='Trọng lượng (tấn)'
                 name='weight'
-                rules={[{ required: true, message: 'Vui lòng nhập trọng lượng' }]}
+                rules={[
+                  { required: true, message: 'Vui lòng nhập trọng lượng' },
+                ]}
               >
                 <InputNumber
                   placeholder='Nhập trọng lượng'
@@ -256,7 +324,9 @@ const CreateCarPage = () => {
               <Form.Item
                 label='Loại rơ moóc'
                 name='moocType'
-                rules={[{ required: true, message: 'Vui lòng chọn loại rơ moóc' }]}
+                rules={[
+                  { required: true, message: 'Vui lòng chọn loại rơ moóc' },
+                ]}
               >
                 <Select placeholder='Chọn loại rơ moóc' size='large'>
                   <Option value={0}>20''</Option>
@@ -267,50 +337,68 @@ const CreateCarPage = () => {
           </Row>
         </Card>
 
-
         {/* Ảnh */}
-        <Card title="Ảnh" bordered={false} style={{ marginBottom: '20px' }}>
+        <Card title='Ảnh' bordered={false} style={{ marginBottom: '20px' }}>
           <Form.Item
-            label="URL Ảnh"
-            name="imageUrl"
+            label='URL Ảnh'
+            name='imageUrl'
             rules={[{ type: 'url', message: 'Vui lòng nhập URL hợp lệ' }]}
           >
             <Input
-              placeholder="Nhập URL của ảnh"
-              size="large"
+              placeholder='Nhập URL của ảnh'
+              size='large'
               onChange={(e) => setImageUrl(e.target.value)}
             />
           </Form.Item>
-          
+
           {imageUrl && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginTop: '10px',
+              }}
+            >
               <Image
                 src={imageUrl}
-                alt="Preview"
-                style={{ width: '100%', maxWidth: '300px', maxHeight: '300px', objectFit: 'cover' }}
+                alt='Preview'
+                style={{
+                  width: '100%',
+                  maxWidth: '300px',
+                  maxHeight: '300px',
+                  objectFit: 'cover',
+                }}
               />
             </div>
           )}
         </Card>
 
         {/* Vị trí */}
-        <Card title="Vị trí" bordered={false}>
+        <Card title='Vị trí' bordered={false}>
           <Form.Item
-            label="Địa chỉ"
-            name="address"
+            label='Địa chỉ'
+            name='address'
             rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
           >
-            <Input placeholder="Chọn địa chỉ từ bản đồ" size="large" value={address} readOnly />
+            <Input
+              placeholder='Chọn địa chỉ từ bản đồ'
+              size='large'
+              value={address}
+              readOnly
+            />
           </Form.Item>
           <Row gutter={[16, 16]}>
             <Col span={24}>
-              <Form.Item label="Vị trí trên bản đồ">
+              <Form.Item label='Vị trí trên bản đồ'>
                 <MapContainer
                   center={location}
                   zoom={13}
                   style={{ height: '350px', width: '100%' }}
                 >
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
+                  <TileLayer
+                    url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                    attribution='&copy; OpenStreetMap contributors'
+                  />
                   <MapClickHandler />
                   <Marker position={location} icon={markerIcon} />
                 </MapContainer>
@@ -319,43 +407,52 @@ const CreateCarPage = () => {
           </Row>
           <Row gutter={[16, 16]}>
             <Col span={12}>
-              <Form.Item label="Latitude" name="lat">
-                <Input placeholder="Latitude" value={location.lat} readOnly size="large" />
+              <Form.Item label='Latitude' name='lat'>
+                <Input
+                  placeholder='Latitude'
+                  value={location.lat}
+                  readOnly
+                  size='large'
+                />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="Longitude" name="long">
-                <Input placeholder="Longitude" value={location.lng} readOnly size="large" />
+              <Form.Item label='Longitude' name='long'>
+                <Input
+                  placeholder='Longitude'
+                  value={location.lng}
+                  readOnly
+                  size='large'
+                />
               </Form.Item>
             </Col>
           </Row>
         </Card>
 
-
         <Form.Item>
           <Row gutter={[16, 16]} style={{ marginTop: '24px' }}>
             <Col span={12}>
               <Button
-                type="primary"
-                htmlType="submit"
+                type='primary'
+                htmlType='submit'
                 style={{ width: '100%', height: '48px', fontSize: '16px' }}
               >
                 Thêm xe
               </Button>
             </Col>
             <Col span={12}>
-            <Button
-              type="default"
-              onClick={handleReset}
-              style={{
-                width: '100%',
-                height: '48px',
-                fontSize: '16px',
-                transition: 'background-color 0.3s ease',
-              }}
-            >
-              Xóa thông tin
-            </Button>
+              <Button
+                type='default'
+                onClick={handleReset}
+                style={{
+                  width: '100%',
+                  height: '48px',
+                  fontSize: '16px',
+                  transition: 'background-color 0.3s ease',
+                }}
+              >
+                Xóa thông tin
+              </Button>
             </Col>
           </Row>
         </Form.Item>

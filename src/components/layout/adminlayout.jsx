@@ -41,15 +41,16 @@ const AdminLayout = ({ children }) => {
             overflow: 'hidden',
           }}
         >
-          <div style= {{
-            marginTop: 20
-          }}>
-              <AppBreadcrumb />
+          <div
+            style={{
+              marginTop: 20,
+            }}
+          >
+            <AppBreadcrumb />
           </div>
-          
 
           <Content
-            //
+          //
           >
             {children}
           </Content>

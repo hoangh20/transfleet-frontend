@@ -9,7 +9,7 @@ const LoadingPage = () => {
     backgroundSize: '600% 600%',
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
-    animation: 'colorShift 3s ease infinite'
+    animation: 'colorShift 3s ease infinite',
   };
 
   const pageStyle = {
@@ -17,7 +17,7 @@ const LoadingPage = () => {
     justifyContent: 'center',
     alignItems: 'center',
     height: '100vh',
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
   };
 
   return (

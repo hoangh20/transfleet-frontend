@@ -18,6 +18,7 @@ const breadcrumbNameMap = {
   '/transport-trip/create': 'Thêm mới chuyến',
   '/transport-trip/list': 'Danh sách chuyến',
   '/operation': 'Quản lý hoạt động',
+  '/customer/list': 'Danh sách khách hàng',
 };
 
 const nonClickablePaths = [
@@ -32,61 +33,66 @@ const AppBreadcrumb = () => {
   const location = useLocation();
   const pathSnippets = location.pathname.split('/').filter((i) => i);
 
-  const extraBreadcrumbItems = pathSnippets.map((snippet, index) => {
-    const url = `/${pathSnippets.slice(0, index + 1).join('/')}`;
-    const isCurrentPage = index === pathSnippets.length - 1;
-    const isNonClickable = nonClickablePaths.includes(url);
+  const extraBreadcrumbItems = pathSnippets
+    .map((snippet, index) => {
+      const url = `/${pathSnippets.slice(0, index + 1).join('/')}`;
+      const isCurrentPage = index === pathSnippets.length - 1;
+      const isNonClickable = nonClickablePaths.includes(url);
 
-    // Avoid displaying the vehicle ID twice (e.g., /vehicle/123/123)
-    if (snippet === pathSnippets[pathSnippets.length - 1] && pathSnippets.length > 1) {
-      const lastSegment = pathSnippets[pathSnippets.length - 1];
-      // If the last segment is the same as the second last, skip it
-      if (lastSegment === pathSnippets[pathSnippets.length - 2]) {
-        return null;
+      // Avoid displaying the vehicle ID twice (e.g., /vehicle/123/123)
+      if (
+        snippet === pathSnippets[pathSnippets.length - 1] &&
+        pathSnippets.length > 1
+      ) {
+        const lastSegment = pathSnippets[pathSnippets.length - 1];
+        // If the last segment is the same as the second last, skip it
+        if (lastSegment === pathSnippets[pathSnippets.length - 2]) {
+          return null;
+        }
       }
-    }
 
-    return (
-      <Breadcrumb.Item key={url}>
-        {isCurrentPage ? (
-          <span
-            style={{
-              fontWeight: 'bold',
-              fontSize: '18px',
-              color: '#1677ff',
-              lineHeight: '24px',
-              display: 'inline-block',
-              verticalAlign: 'middle',
-            }}
-          >
-            {breadcrumbNameMap[url] || snippet}
-          </span>
-        ) : isNonClickable ? (
-          <span
-            style={{
-              lineHeight: '24px',
-              display: 'inline-block',
-              verticalAlign: 'middle',
-              color: '#000',
-            }}
-          >
-            {breadcrumbNameMap[url]}
-          </span>
-        ) : (
-          <Link
-            to={url}
-            style={{
-              lineHeight: '24px',
-              display: 'inline-block',
-              verticalAlign: 'middle',
-            }}
-          >
-            {breadcrumbNameMap[url] || snippet}
-          </Link>
-        )}
-      </Breadcrumb.Item>
-    );
-  }).filter(item => item !== null); // Filter out any null items
+      return (
+        <Breadcrumb.Item key={url}>
+          {isCurrentPage ? (
+            <span
+              style={{
+                fontWeight: 'bold',
+                fontSize: '18px',
+                color: '#1677ff',
+                lineHeight: '24px',
+                display: 'inline-block',
+                verticalAlign: 'middle',
+              }}
+            >
+              {breadcrumbNameMap[url] || snippet}
+            </span>
+          ) : isNonClickable ? (
+            <span
+              style={{
+                lineHeight: '24px',
+                display: 'inline-block',
+                verticalAlign: 'middle',
+                color: '#000',
+              }}
+            >
+              {breadcrumbNameMap[url]}
+            </span>
+          ) : (
+            <Link
+              to={url}
+              style={{
+                lineHeight: '24px',
+                display: 'inline-block',
+                verticalAlign: 'middle',
+              }}
+            >
+              {breadcrumbNameMap[url] || snippet}
+            </Link>
+          )}
+        </Breadcrumb.Item>
+      );
+    })
+    .filter((item) => item !== null); // Filter out any null items
 
   const breadcrumbItems =
     location.pathname !== '/'

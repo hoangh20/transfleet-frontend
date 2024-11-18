@@ -23,16 +23,16 @@ const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
 
   return (
     <Modal
-      title="Tạo khách hàng mới"
+      title='Tạo khách hàng mới'
       visible={visible}
       onCancel={onCancel}
       footer={[
-        <Button key="cancel" onClick={onCancel}>
+        <Button key='cancel' onClick={onCancel}>
           Hủy
         </Button>,
         <Button
-          key="submit"
-          type="primary"
+          key='submit'
+          type='primary'
           loading={loading}
           onClick={handleSubmit}
         >
@@ -40,27 +40,27 @@ const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
         </Button>,
       ]}
     >
-      <Form form={form} layout="vertical">
+      <Form form={form} layout='vertical'>
         <Form.Item
-          label="Tên đầy đủ"
-          name="name"
+          label='Tên đầy đủ'
+          name='name'
           rules={[{ required: true, message: 'Vui lòng nhập tên đầy đủ' }]}
         >
-          <Input placeholder="Nhập tên đầy đủ" />
+          <Input placeholder='Nhập tên đầy đủ' />
         </Form.Item>
         <Form.Item
-          label="Tên viết tắt"
-          name="shortName"
+          label='Tên viết tắt'
+          name='shortName'
           rules={[{ required: true, message: 'Vui lòng nhập tên viết tắt' }]}
         >
-          <Input placeholder="Nhập tên viết tắt" />
+          <Input placeholder='Nhập tên viết tắt' />
         </Form.Item>
         <Form.Item
-          label="Mã khách hàng"
-          name="customerCode"
+          label='Mã khách hàng'
+          name='customerCode'
           rules={[{ required: true, message: 'Vui lòng nhập mã khách hàng' }]}
         >
-          <Input placeholder="Nhập mã khách hàng" />
+          <Input placeholder='Nhập mã khách hàng' />
         </Form.Item>
       </Form>
     </Modal>

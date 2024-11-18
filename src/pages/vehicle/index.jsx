@@ -37,10 +37,10 @@ const VehicleListPage = () => {
     fetchVehicles();
   }, [currentPage, pageSize]);
 
-  const filteredVehicles = vehicles.filter(vehicle => {
+  const filteredVehicles = vehicles.filter((vehicle) => {
     return (
       (vehicle.headPlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vehicle.moocPlate.toLowerCase().includes(searchTerm.toLowerCase())) &&
+        vehicle.moocPlate.toLowerCase().includes(searchTerm.toLowerCase())) &&
       (type ? vehicle.moocType === Number(type) : true) &&
       (status ? vehicle.status === Number(status) : true) &&
       (hasDriver ? vehicle.hasDriver === Number(hasDriver) : true)
@@ -59,7 +59,7 @@ const VehicleListPage = () => {
         <Col xs={24} sm={12} md={12}>
           <Typography.Text>Tìm kiếm</Typography.Text>
           <Input
-            placeholder="Tìm kiếm biển số xe"
+            placeholder='Tìm kiếm biển số xe'
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ width: '100%' }}
@@ -68,44 +68,44 @@ const VehicleListPage = () => {
         <Col xs={24} sm={6} md={4}>
           <Typography.Text>Lái xe</Typography.Text>
           <Select
-            placeholder="Lái xe"
+            placeholder='Lái xe'
             value={hasDriver}
-            onChange={value => setHasDriver(value)}
+            onChange={(value) => setHasDriver(value)}
             style={{ width: '100%' }}
           >
-            <Option value="">Tất cả</Option>
-            <Option value="0">Chưa có</Option>
-            <Option value="1">Đã có</Option>
+            <Option value=''>Tất cả</Option>
+            <Option value='0'>Chưa có</Option>
+            <Option value='1'>Đã có</Option>
           </Select>
         </Col>
 
         <Col xs={24} sm={6} md={4}>
           <Typography.Text>Loại xe</Typography.Text>
           <Select
-            placeholder="Chọn loại xe"
+            placeholder='Chọn loại xe'
             value={type}
-            onChange={value => setVehicleType(value)}
+            onChange={(value) => setVehicleType(value)}
             style={{ width: '100%' }}
           >
-            <Option value="">Tất cả</Option>
-            <Option value="0">20''</Option>
-            <Option value="1">40''</Option>
+            <Option value=''>Tất cả</Option>
+            <Option value='0'>20''</Option>
+            <Option value='1'>40''</Option>
           </Select>
         </Col>
 
         <Col xs={24} sm={6} md={4}>
           <Typography.Text>Trạng thái</Typography.Text>
           <Select
-            placeholder="Chọn trạng thái"
+            placeholder='Chọn trạng thái'
             value={status}
-            onChange={value => setStatus(value)}
+            onChange={(value) => setStatus(value)}
             style={{ width: '100%' }}
           >
-            <Option value="">Tất cả</Option>
-            <Option value="0">Đang rảnh</Option>
-            <Option value="1">Đang thực hiện chuyến</Option>
-            <Option value="2">Bảo dưỡng</Option>
-            <Option value="3">Không còn sử dụng</Option>
+            <Option value=''>Tất cả</Option>
+            <Option value='0'>Đang rảnh</Option>
+            <Option value='1'>Đang thực hiện chuyến</Option>
+            <Option value='2'>Bảo dưỡng</Option>
+            <Option value='3'>Không còn sử dụng</Option>
           </Select>
         </Col>
       </Row>
@@ -113,7 +113,7 @@ const VehicleListPage = () => {
       {loading ? (
         <LoadingPage />
       ) : error ? (
-        <Alert message="Error" description={error} type="error" showIcon />
+        <Alert message='Error' description={error} type='error' showIcon />
       ) : (
         <>
           <Row gutter={[16, 16]}>

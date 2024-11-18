@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Spin, Row, Col, Input, Button} from 'antd';
+import { Spin, Row, Col, Input, Button } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import DriverList from '../../components/list/driverList';
 import { getAllDrivers } from '../../services/DriverService';
@@ -47,13 +47,15 @@ const DriverListPage = () => {
   };
 
   const filteredDrivers = drivers.filter((driver) =>
-    driver.name.toLowerCase().includes(searchText.toLowerCase())
+    driver.name.toLowerCase().includes(searchText.toLowerCase()),
   );
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>
-        <Spin size="large" />
+      <div
+        style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}
+      >
+        <Spin size='large' />
       </div>
     );
   }
@@ -64,30 +66,24 @@ const DriverListPage = () => {
         style={{
           marginBottom: '40px',
           display: 'flex',
-          justifyContent: 'center', 
+          justifyContent: 'center',
           alignItems: 'center',
           gap: '8px',
           width: '100%',
         }}
       >
         <Search
-          placeholder="Tìm kiếm theo tên"
+          placeholder='Tìm kiếm theo tên'
           allowClear
           onChange={(e) => handleSearch(e.target.value)}
           style={{
-            width: '600px', 
+            width: '600px',
           }}
         />
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={handleAddNew}
-        >
+        <Button type='primary' icon={<PlusOutlined />} onClick={handleAddNew}>
           Thêm mới
         </Button>
       </div>
-
-
 
       <Row gutter={[16, 16]}>
         {filteredDrivers.map((driver) => (

@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, Pagination, Space, Button, Popconfirm, message } from 'antd';
+import {
+  Table,
+  Input,
+  Pagination,
+  Space,
+  Button,
+  Popconfirm,
+  message,
+} from 'antd';
 import { getAllCustomers } from '../../services/CustomerService';
 import { PlusOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons';
-import CreateCustomer from '../../components/popup/CreateCustomer'; 
+import CreateCustomer from '../../components/popup/CreateCustomer';
 import { deleteCustomer } from '../../services/CustomerService'; // Import API xóa
 
 const { Search } = Input;
@@ -78,11 +86,11 @@ const CustomerPage = () => {
       render: (text) => (
         <Space>
           {text}
-          <Button 
-            icon={<CopyOutlined />} 
-            onClick={() => handleCopy(text)} 
-            size="small" 
-            type="link"
+          <Button
+            icon={<CopyOutlined />}
+            onClick={() => handleCopy(text)}
+            size='small'
+            type='link'
           />
         </Space>
       ),
@@ -97,17 +105,12 @@ const CustomerPage = () => {
       render: (_, record) => (
         <Space>
           <Popconfirm
-            title="Bạn có chắc chắn muốn xóa khách hàng này?"
+            title='Bạn có chắc chắn muốn xóa khách hàng này?'
             onConfirm={() => handleDelete(record._id)}
-            okText="Có"
-            cancelText="Không"
+            okText='Có'
+            cancelText='Không'
           >
-            <Button 
-              icon={<DeleteOutlined />} 
-              size="small" 
-              type="link" 
-              danger
-            />
+            <Button icon={<DeleteOutlined />} size='small' type='link' danger />
           </Popconfirm>
         </Space>
       ),
@@ -116,20 +119,20 @@ const CustomerPage = () => {
 
   return (
     <div style={{ padding: 20 }}>
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space direction='vertical' style={{ width: '100%' }}>
         {/* Thanh tìm kiếm và nút thêm mới */}
         <Space style={{ justifyContent: 'center', width: '100%' }}>
           <Search
-            placeholder="Tìm kiếm theo tên hoặc tên viết tắt"
+            placeholder='Tìm kiếm theo tên hoặc tên viết tắt'
             allowClear
-            enterButton="Tìm kiếm"
-            size="large"
+            enterButton='Tìm kiếm'
+            size='large'
             onSearch={handleSearch}
             style={{ flex: 2, marginRight: 100 }}
           />
-          <Button 
-            type="primary" 
-            size="large" 
+          <Button
+            type='primary'
+            size='large'
             icon={<PlusOutlined />}
             onClick={handleOpenModal}
           >
@@ -143,7 +146,7 @@ const CustomerPage = () => {
           dataSource={customers}
           loading={loading}
           rowKey={(record) => record._id}
-          pagination={false} 
+          pagination={false}
         />
 
         {/* Phân trang */}

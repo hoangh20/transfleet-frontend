@@ -20,7 +20,7 @@ export const userSlice = createSlice({
       state.name = '';
       state.email = '';
       state.access_token = '';
-    }
+    },
   },
 });
 

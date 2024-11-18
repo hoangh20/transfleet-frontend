@@ -1,20 +1,46 @@
-import React, { useState,useEffect } from 'react';
-import { Card, Row, Col, Typography,Tag, Space, Image, Button, Modal, notification } from 'antd';
+import React, { useState, useEffect } from 'react';
+import {
+  Card,
+  Row,
+  Col,
+  Typography,
+  Tag,
+  Space,
+  Image,
+  Button,
+  Modal,
+  notification,
+} from 'antd';
 import { Link } from 'react-router-dom';
 import { IoMdCar } from 'react-icons/io';
 import { MdEmojiTransportation } from 'react-icons/md';
 import { BsFillCalendarFill } from 'react-icons/bs';
 import { FiMapPin } from 'react-icons/fi';
 import { FaBalanceScale } from 'react-icons/fa';
-import { DeleteOutlined, UserOutlined, TruckOutlined,TagOutlined, PercentageOutlined, CloseCircleOutlined } from '@ant-design/icons';
-import { deleteVehicle,getDriverByVehicleId  } from '../../services/VehicleService';
+import {
+  DeleteOutlined,
+  UserOutlined,
+  TruckOutlined,
+  TagOutlined,
+  PercentageOutlined,
+  CloseCircleOutlined,
+} from '@ant-design/icons';
+import {
+  deleteVehicle,
+  getDriverByVehicleId,
+} from '../../services/VehicleService';
 
-const {  Text } = Typography;
+const { Text } = Typography;
 
 const ListVehicle = ({ vehicle, onDelete }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [driver, setDriver] = useState(null);
-  const statusLabels = ['Đang rảnh', 'Đang thực hiện chuyến', 'Bảo dưỡng', 'Không còn sử dụng'];
+  const statusLabels = [
+    'Đang rảnh',
+    'Đang thực hiện chuyến',
+    'Bảo dưỡng',
+    'Không còn sử dụng',
+  ];
   const {
     headPlate,
     headRegCode,
@@ -30,8 +56,8 @@ const ListVehicle = ({ vehicle, onDelete }) => {
     status,
   } = vehicle;
 
-  const moocTypeLabels = ['20\'\'', '40\'\''];  
-  
+  const moocTypeLabels = ["20''", "40''"];
+
   useEffect(() => {
     const fetchDriver = async () => {
       try {
@@ -62,7 +88,8 @@ const ListVehicle = ({ vehicle, onDelete }) => {
           <>
             <UserOutlined style={{ color: '#52c41a', marginRight: 8 }} />
             <span>
-            <Text strong>Lái xe</Text> {driver.name || 'N/A'}  <Text strong>Loại bằng:</Text> {driver.licenseType || 'N/A'}
+              <Text strong>Lái xe</Text> {driver.name || 'N/A'}{' '}
+              <Text strong>Loại bằng:</Text> {driver.licenseType || 'N/A'}
             </span>
           </>
         );
@@ -83,7 +110,7 @@ const ListVehicle = ({ vehicle, onDelete }) => {
       );
     }
   };
-  
+
   const handleDeleteClick = () => {
     setIsModalVisible(true);
   };
@@ -108,15 +135,14 @@ const ListVehicle = ({ vehicle, onDelete }) => {
           description: result.message,
         });
       }
-    } catch (error) {
-    }
+    } catch (error) {}
     setIsModalVisible(false);
   };
 
   return (
     <Card style={{ marginBottom: '20px', position: 'relative' }}>
       <Button
-        type="text"
+        type='text'
         icon={<DeleteOutlined />}
         onClick={handleDeleteClick}
         style={{
@@ -135,11 +161,24 @@ const ListVehicle = ({ vehicle, onDelete }) => {
             {imageUrl ? (
               <Image
                 src={imageUrl}
-                alt="Vehicle"
-                style={{ width: '100%', height: 'auto', maxHeight: '180px', objectFit: 'cover' }}
+                alt='Vehicle'
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  maxHeight: '180px',
+                  objectFit: 'cover',
+                }}
               />
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '180px', backgroundColor: '#f0f2f5' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '180px',
+                  backgroundColor: '#f0f2f5',
+                }}
+              >
                 <Text>No Image Available</Text>
               </div>
             )}
@@ -147,7 +186,6 @@ const ListVehicle = ({ vehicle, onDelete }) => {
 
           {/* Information Column */}
           <Col xs={24} sm={16} md={18}>
-
             <Row gutter={[8, 8]}>
               <Col xs={24} sm={12}>
                 <Space>
@@ -169,26 +207,28 @@ const ListVehicle = ({ vehicle, onDelete }) => {
                   <MdEmojiTransportation size={18} />
                   <Text strong>Mã đăng ký (Đầu kéo):</Text> {headRegCode}
                 </Space>
-              </Col>  
+              </Col>
               <Col xs={24} sm={12}>
                 <Space>
                   <MdEmojiTransportation size={18} />
                   <Text strong>Mã đăng ký (Rơ moóc):</Text> {moocRegCode}
                 </Space>
-              </Col> 
+              </Col>
             </Row>
 
             <Row gutter={[8, 8]} style={{ marginTop: '10px' }}>
               <Col xs={24} sm={12}>
                 <Space>
                   <BsFillCalendarFill size={18} />
-                  <Text strong>Ngày hết hạn (Đầu kéo):</Text> {new Date(headRegExpiry).toLocaleDateString()}
+                  <Text strong>Ngày hết hạn (Đầu kéo):</Text>{' '}
+                  {new Date(headRegExpiry).toLocaleDateString()}
                 </Space>
               </Col>
               <Col xs={24} sm={12}>
                 <Space>
                   <BsFillCalendarFill size={18} />
-                  <Text strong>Ngày hết hạn (Rơ moóc):</Text> {new Date(moocRegExpiry).toLocaleDateString()}
+                  <Text strong>Ngày hết hạn (Rơ moóc):</Text>{' '}
+                  {new Date(moocRegExpiry).toLocaleDateString()}
                 </Space>
               </Col>
             </Row>
@@ -197,7 +237,8 @@ const ListVehicle = ({ vehicle, onDelete }) => {
               <Col xs={24} sm={12}>
                 <Space>
                   <TruckOutlined size={18} />
-                  <Text strong>Loại rơ moóc:</Text> {moocTypeLabels[moocType] || 'Không xác định'}
+                  <Text strong>Loại rơ moóc:</Text>{' '}
+                  {moocTypeLabels[moocType] || 'Không xác định'}
                 </Space>
               </Col>
               <Col xs={24} sm={12}>
@@ -212,17 +253,14 @@ const ListVehicle = ({ vehicle, onDelete }) => {
               <Col xs={24} sm={12}>
                 <Space>
                   <PercentageOutlined size={18} />
-                  <Text strong>Độ mới của xe:</Text> {depreciationRate}% 
+                  <Text strong>Độ mới của xe:</Text> {depreciationRate}%
                 </Space>
               </Col>
               <Col xs={24} sm={12}>
                 <Space>
-                  <div>
-                      {renderDriverInfo()}
-                  </div>
+                  <div>{renderDriverInfo()}</div>
                 </Space>
               </Col>
-              
             </Row>
 
             <Row gutter={[8, 8]} style={{ marginTop: '10px' }}>
@@ -236,7 +274,17 @@ const ListVehicle = ({ vehicle, onDelete }) => {
                 <Space>
                   <TagOutlined size={18} />
                   <Text strong>Trạng thái:</Text>
-                  <Tag color={status === 0 ? 'green' : status === 1 ? 'blue' : status === 2 ? 'orange' : 'red'}>
+                  <Tag
+                    color={
+                      status === 0
+                        ? 'green'
+                        : status === 1
+                          ? 'blue'
+                          : status === 2
+                            ? 'orange'
+                            : 'red'
+                    }
+                  >
                     {statusLabels[status] || 'Không xác định'}
                   </Tag>
                 </Space>
@@ -248,12 +296,12 @@ const ListVehicle = ({ vehicle, onDelete }) => {
 
       {/* Confirmation Modal */}
       <Modal
-        title="Xác nhận xóa"
+        title='Xác nhận xóa'
         visible={isModalVisible}
         onOk={handleConfirmDelete}
         onCancel={handleCancel}
-        okText="Xóa"
-        cancelText="Hủy"
+        okText='Xóa'
+        cancelText='Hủy'
         centered
       >
         <p>Bạn chắc chắn muốn xóa xe này không?</p>

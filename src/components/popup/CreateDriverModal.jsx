@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { Modal, Form, Input, DatePicker, Select, InputNumber, Upload, message } from 'antd';
+import {
+  Modal,
+  Form,
+  Input,
+  DatePicker,
+  Select,
+  InputNumber,
+  Upload,
+  message,
+} from 'antd';
 import { PlusOutlined, LoadingOutlined } from '@ant-design/icons';
 import { createDriver } from '../../services/DriverService';
 
@@ -53,7 +62,7 @@ const CreateDriverModal = ({ visible, onCancel, onSuccess }) => {
       try {
         const response = await createDriver(formData);
         console.log('Server response:', response);
-        
+
         if (response && response.data) {
           message.success('Tạo mới lái xe thành công!');
           form.resetFields();
@@ -63,7 +72,8 @@ const CreateDriverModal = ({ visible, onCancel, onSuccess }) => {
         }
       } catch (apiError) {
         console.error('API Error Response:', apiError.response);
-        const errorMessage = apiError.response?.data?.error || 'Có lỗi xảy ra khi tạo mới lái xe!';
+        const errorMessage =
+          apiError.response?.data?.error || 'Có lỗi xảy ra khi tạo mới lái xe!';
         message.error(errorMessage);
       }
     } catch (error) {
@@ -98,7 +108,7 @@ const CreateDriverModal = ({ visible, onCancel, onSuccess }) => {
 
   return (
     <Modal
-      title="Thêm mới lái xe"
+      title='Thêm mới lái xe'
       open={visible}
       onCancel={onCancel}
       onOk={handleSubmit}
@@ -107,27 +117,29 @@ const CreateDriverModal = ({ visible, onCancel, onSuccess }) => {
     >
       <Form
         form={form}
-        layout="vertical"
+        layout='vertical'
         initialValues={{
           yearsOfExperience: 0,
         }}
       >
         <Form.Item
-          name="avatar"
-          label="Ảnh đại diện"
-          rules={[{ required: true, message: 'Vui lòng tải lên ảnh đại diện!' }]}
+          name='avatar'
+          label='Ảnh đại diện'
+          rules={[
+            { required: true, message: 'Vui lòng tải lên ảnh đại diện!' },
+          ]}
         >
           <Upload
-            name="avatar"
-            listType="picture-card"
-            className="avatar-uploader"
+            name='avatar'
+            listType='picture-card'
+            className='avatar-uploader'
             showUploadList={false}
             beforeUpload={beforeUpload}
             onChange={handleImageChange}
             customRequest={customRequest}
           >
             {imageUrl ? (
-              <img src={imageUrl} alt="avatar" style={{ width: '100%' }} />
+              <img src={imageUrl} alt='avatar' style={{ width: '100%' }} />
             ) : (
               <div>
                 {loading ? <LoadingOutlined /> : <PlusOutlined />}
@@ -138,84 +150,86 @@ const CreateDriverModal = ({ visible, onCancel, onSuccess }) => {
         </Form.Item>
 
         <Form.Item
-          name="name"
-          label="Họ và tên"
+          name='name'
+          label='Họ và tên'
           rules={[
             { required: true, message: 'Vui lòng nhập họ tên!' },
-            { whitespace: true, message: 'Không được chỉ nhập khoảng trắng!' }
+            { whitespace: true, message: 'Không được chỉ nhập khoảng trắng!' },
           ]}
         >
-          <Input placeholder="Nhập họ và tên" />
+          <Input placeholder='Nhập họ và tên' />
         </Form.Item>
 
         <Form.Item
-          name="phone"
-          label="Số điện thoại"
+          name='phone'
+          label='Số điện thoại'
           rules={[
             { required: true, message: 'Vui lòng nhập số điện thoại!' },
-            { pattern: /^[0-9]{10}$/, message: 'Số điện thoại không hợp lệ!' }
+            { pattern: /^[0-9]{10}$/, message: 'Số điện thoại không hợp lệ!' },
           ]}
         >
-          <Input placeholder="Nhập số điện thoại" maxLength={10} />
+          <Input placeholder='Nhập số điện thoại' maxLength={10} />
         </Form.Item>
         <Form.Item
-          name="hometown"
-          label="Quê quán"
+          name='hometown'
+          label='Quê quán'
           rules={[
             { required: true, message: 'Vui lòng nhập quê quán lái xe' },
-            { whitespace: true, message: 'Không được chỉ nhập khoảng trắng!' }
+            { whitespace: true, message: 'Không được chỉ nhập khoảng trắng!' },
           ]}
         >
-          <Input placeholder="Nhập quê quán lái xe" />
+          <Input placeholder='Nhập quê quán lái xe' />
         </Form.Item>
 
         <Form.Item
-          name="birthDate"
-          label="Ngày sinh"
+          name='birthDate'
+          label='Ngày sinh'
           rules={[{ required: true, message: 'Vui lòng chọn ngày sinh!' }]}
         >
           <DatePicker
             style={{ width: '100%' }}
-            format="DD/MM/YYYY"
-            placeholder="Chọn ngày sinh"
+            format='DD/MM/YYYY'
+            placeholder='Chọn ngày sinh'
           />
         </Form.Item>
 
         <Form.Item
-          name="licenseType"
-          label="Loại bằng lái"
+          name='licenseType'
+          label='Loại bằng lái'
           rules={[{ required: true, message: 'Vui lòng chọn loại bằng lái!' }]}
         >
-          <Select placeholder="Chọn loại bằng lái">
-            <Select.Option value="FB2">FB2</Select.Option>
-            <Select.Option value="FC">FC</Select.Option>
-            <Select.Option value="FD">FD</Select.Option>
-            <Select.Option value="FE">FE</Select.Option>
+          <Select placeholder='Chọn loại bằng lái'>
+            <Select.Option value='FB2'>FB2</Select.Option>
+            <Select.Option value='FC'>FC</Select.Option>
+            <Select.Option value='FD'>FD</Select.Option>
+            <Select.Option value='FE'>FE</Select.Option>
           </Select>
         </Form.Item>
 
         <Form.Item
-          name="yearsOfExperience"
-          label="Số năm kinh nghiệm"
-          rules={[{ required: true, message: 'Vui lòng nhập số năm kinh nghiệm!' }]}
+          name='yearsOfExperience'
+          label='Số năm kinh nghiệm'
+          rules={[
+            { required: true, message: 'Vui lòng nhập số năm kinh nghiệm!' },
+          ]}
         >
           <InputNumber
             min={0}
             max={50}
             style={{ width: '100%' }}
-            placeholder="Nhập số năm kinh nghiệm"
+            placeholder='Nhập số năm kinh nghiệm'
           />
         </Form.Item>
 
         <Form.Item
-          name="bankAccount"
-          label="Tài khoản ngân hàng"
+          name='bankAccount'
+          label='Tài khoản ngân hàng'
           rules={[
             { required: true, message: 'Vui lòng nhập tài khoản ngân hàng!' },
-            { whitespace: true, message: 'Không được chỉ nhập khoảng trắng!' }
+            { whitespace: true, message: 'Không được chỉ nhập khoảng trắng!' },
           ]}
         >
-          <Input placeholder="Nhập tài khoản ngân hàng (VD: MB - 20092222)" />
+          <Input placeholder='Nhập tài khoản ngân hàng (VD: MB - 20092222)' />
         </Form.Item>
       </Form>
     </Modal>

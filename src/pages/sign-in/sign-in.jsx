@@ -6,7 +6,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import * as UserService from '../../services/UserService';
 import { jwtDecode } from 'jwt-decode';
-import {updateUser} from '../../redux/slice/userSlice'
+import { updateUser } from '../../redux/slice/userSlice';
 import { useDispatch } from 'react-redux';
 
 const { Title } = Typography;
@@ -18,32 +18,31 @@ const SigninPage = () => {
   const navigate = useNavigate();
 
   const mutation = useMutation({
-    mutationFn: data => UserService.SigninUser(data),
+    mutationFn: (data) => UserService.SigninUser(data),
     onSuccess: (data) => {
       // Kiểm tra nếu có access_token trong response
       const accessToken = data?.access_token;
-      
+
       if (accessToken) {
         localStorage.setItem('access_token', JSON.stringify(accessToken));
-        
 
         const decoded = jwtDecode(accessToken);
         localStorage.setItem('user', JSON.stringify(decoded));
         if (decoded?.id) {
-          handleGetDetailsUser(decoded?.id, data?.access_token )
+          handleGetDetailsUser(decoded?.id, data?.access_token);
         }
       }
 
       navigate('/');
     },
     onError: (error) => {
-      console.error("Đăng nhập thất bại:", error);
+      console.error('Đăng nhập thất bại:', error);
     },
   });
   const handleGetDetailsUser = async (id, token) => {
-    const res = await UserService.getDetailsUser(id, token)
-    dispatch(updateUser({...res?.data, access_token: token}))
-  }
+    const res = await UserService.getDetailsUser(id, token);
+    dispatch(updateUser({ ...res?.data, access_token: token }));
+  };
   const onFinish = (values) => {
     const { email, password } = values;
     mutation.mutate({ email, password });
@@ -139,7 +138,9 @@ const SigninPage = () => {
                   showPassword ? (
                     <EyeTwoTone onClick={() => setShowPassword(false)} />
                   ) : (
-                    <EyeInvisibleOutlined onClick={() => setShowPassword(true)} />
+                    <EyeInvisibleOutlined
+                      onClick={() => setShowPassword(true)}
+                    />
                   )
                 }
               />

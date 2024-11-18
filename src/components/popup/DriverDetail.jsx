@@ -1,7 +1,34 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Avatar, Typography, Row, Col, Tag, Statistic,Select, Modal, Button, Form, Input, Spin, message } from 'antd';
-import { PhoneOutlined, IdcardOutlined, ExperimentOutlined, BankOutlined, CarOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { getDriverDetails, updateDriver, deleteDriver } from '../../services/DriverService';
+import {
+  Card,
+  Avatar,
+  Typography,
+  Row,
+  Col,
+  Tag,
+  Statistic,
+  Select,
+  Modal,
+  Button,
+  Form,
+  Input,
+  Spin,
+  message,
+} from 'antd';
+import {
+  PhoneOutlined,
+  IdcardOutlined,
+  ExperimentOutlined,
+  BankOutlined,
+  CarOutlined,
+  EditOutlined,
+  DeleteOutlined,
+} from '@ant-design/icons';
+import {
+  getDriverDetails,
+  updateDriver,
+  deleteDriver,
+} from '../../services/DriverService';
 import dayjs from 'dayjs';
 const { Title, Text } = Typography;
 
@@ -23,7 +50,7 @@ const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
         licenseType: driverData.licenseType,
         birthDate: driverData.birthDate,
         bankAccount: driverData.bankAccount,
-        yearsOfExperience: driverData.yearsOfExperience
+        yearsOfExperience: driverData.yearsOfExperience,
       });
     } catch (error) {
       message.error('Không thể tải thông tin tài xế');
@@ -35,9 +62,16 @@ const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
   }, [fetchDriverDetails]);
 
   // Calculate success rate
-  const successRate = driver && (driver.successfulTrips + driver.failedTrips) === 0
-    ? 'N/A'
-    : driver ? ((driver.successfulTrips / (driver.successfulTrips + driver.failedTrips)) * 100).toFixed(1) : 'N/A';
+  const successRate =
+    driver && driver.successfulTrips + driver.failedTrips === 0
+      ? 'N/A'
+      : driver
+        ? (
+            (driver.successfulTrips /
+              (driver.successfulTrips + driver.failedTrips)) *
+            100
+          ).toFixed(1)
+        : 'N/A';
 
   const handleDeleteDriver = async () => {
     setLoading(true);
@@ -95,7 +129,7 @@ const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
         <Col span={12}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <IdcardOutlined style={{ color: '#1890ff' }} />
-            <Tag color="blue">{driver.licenseType}</Tag>
+            <Tag color='blue'>{driver.licenseType}</Tag>
           </div>
         </Col>
         <Col span={12}>
@@ -106,38 +140,44 @@ const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
         </Col>
 
         <Col span={8}>
-          <Statistic 
-            title="Thành công" 
-            value={driver.successfulTrips} 
+          <Statistic
+            title='Thành công'
+            value={driver.successfulTrips}
             valueStyle={{ color: '#3f8600' }}
-            prefix="✓"
-          />
-        </Col>
-        <Col span={8}>
-          <Statistic 
-            title="Thất bại" 
-            value={driver.failedTrips} 
-            valueStyle={{ color: '#cf1322' }}
-            prefix="✗"
+            prefix='✓'
           />
         </Col>
         <Col span={8}>
           <Statistic
-            title="Tỷ lệ thành công"
+            title='Thất bại'
+            value={driver.failedTrips}
+            valueStyle={{ color: '#cf1322' }}
+            prefix='✗'
+          />
+        </Col>
+        <Col span={8}>
+          <Statistic
+            title='Tỷ lệ thành công'
             value={successRate}
             suffix={successRate === 'N/A' ? '' : '%'}
             valueStyle={{ color: '#1890ff' }}
-            prefix="★"
+            prefix='★'
           />
         </Col>
 
         <Col span={24}>
-          <Card 
-            size="small" 
-            title={<><CarOutlined /> Thống kê chuyến đi</>} 
+          <Card
+            size='small'
+            title={
+              <>
+                <CarOutlined /> Thống kê chuyến đi
+              </>
+            }
             style={{ background: '#f5f5f5', borderRadius: '8px' }}
           >
-            <Text>Tổng số chuyến: {driver.successfulTrips + driver.failedTrips}</Text>
+            <Text>
+              Tổng số chuyến: {driver.successfulTrips + driver.failedTrips}
+            </Text>
           </Card>
         </Col>
       </Row>
@@ -149,63 +189,85 @@ const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
     <Form
       form={form}
       onFinish={handleUpdateDriver}
-      layout="vertical"
+      layout='vertical'
       initialValues={{
         name: driver.name,
         phone: driver.phone,
         licenseType: driver.licenseType,
         bankAccount: driver.bankAccount,
-        yearsOfExperience: driver.yearsOfExperience
+        yearsOfExperience: driver.yearsOfExperience,
       }}
     >
       <Form.Item
-        label="Họ tên"
-        name="name"
-        rules={[{ required: true, message: 'Vui lòng nhập họ tên!' }]} >
-        <Input prefix={<IdcardOutlined />} placeholder="Nhập họ tên" />
+        label='Họ tên'
+        name='name'
+        rules={[{ required: true, message: 'Vui lòng nhập họ tên!' }]}
+      >
+        <Input prefix={<IdcardOutlined />} placeholder='Nhập họ tên' />
       </Form.Item>
 
       <Form.Item
-        label="Số điện thoại"
-        name="phone"
-        rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }, { pattern: /^[0-9]{10}$/, message: 'Số điện thoại không hợp lệ!' }]} >
-        <Input prefix={<PhoneOutlined />} placeholder="Nhập số điện thoại" />
+        label='Số điện thoại'
+        name='phone'
+        rules={[
+          { required: true, message: 'Vui lòng nhập số điện thoại!' },
+          { pattern: /^[0-9]{10}$/, message: 'Số điện thoại không hợp lệ!' },
+        ]}
+      >
+        <Input prefix={<PhoneOutlined />} placeholder='Nhập số điện thoại' />
       </Form.Item>
 
       <Form.Item
-          name="licenseType"
-          label="Loại bằng lái"
-          rules={[{ required: true, message: 'Vui lòng chọn loại bằng lái!' }]}
-        >
-          <Select placeholder="Chọn loại bằng lái">
-            <Select.Option value="FB2">FB2</Select.Option>
-            <Select.Option value="FC">FC</Select.Option>
-            <Select.Option value="FD">FD</Select.Option>
-            <Select.Option value="FE">FE</Select.Option>
-          </Select>
-        </Form.Item>
-
-      <Form.Item
-        label="Tài khoản ngân hàng"
-        name="bankAccount"
-        rules={[{ required: true, message: 'Vui lòng nhập tài khoản ngân hàng!' }]} >
-        <Input prefix={<BankOutlined />} placeholder="Nhập tài khoản ngân hàng" />
+        name='licenseType'
+        label='Loại bằng lái'
+        rules={[{ required: true, message: 'Vui lòng chọn loại bằng lái!' }]}
+      >
+        <Select placeholder='Chọn loại bằng lái'>
+          <Select.Option value='FB2'>FB2</Select.Option>
+          <Select.Option value='FC'>FC</Select.Option>
+          <Select.Option value='FD'>FD</Select.Option>
+          <Select.Option value='FE'>FE</Select.Option>
+        </Select>
       </Form.Item>
 
       <Form.Item
-        label="Số năm kinh nghiệm"
-        name="yearsOfExperience"
-        rules={[{ required: true, message: 'Vui lòng nhập số năm kinh nghiệm!' }, { type: 'number', min: 0, transform: value => Number(value) }]} >
-        <Input prefix={<ExperimentOutlined />} placeholder="Nhập số năm kinh nghiệm" type="number" />
+        label='Tài khoản ngân hàng'
+        name='bankAccount'
+        rules={[
+          { required: true, message: 'Vui lòng nhập tài khoản ngân hàng!' },
+        ]}
+      >
+        <Input
+          prefix={<BankOutlined />}
+          placeholder='Nhập tài khoản ngân hàng'
+        />
+      </Form.Item>
+
+      <Form.Item
+        label='Số năm kinh nghiệm'
+        name='yearsOfExperience'
+        rules={[
+          { required: true, message: 'Vui lòng nhập số năm kinh nghiệm!' },
+          { type: 'number', min: 0, transform: (value) => Number(value) },
+        ]}
+      >
+        <Input
+          prefix={<ExperimentOutlined />}
+          placeholder='Nhập số năm kinh nghiệm'
+          type='number'
+        />
       </Form.Item>
 
       <Form.Item>
-        <Button type="primary" htmlType="submit" loading={loading} style={{ marginRight: 8 }}>
+        <Button
+          type='primary'
+          htmlType='submit'
+          loading={loading}
+          style={{ marginRight: 8 }}
+        >
           Lưu thay đổi
         </Button>
-        <Button onClick={() => setIsEditing(false)}>
-          Hủy
-        </Button>
+        <Button onClick={() => setIsEditing(false)}>Hủy</Button>
       </Form.Item>
     </Form>
   );
@@ -214,7 +276,7 @@ const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
   if (!driver) {
     return (
       <div style={{ textAlign: 'center', padding: '50px' }}>
-        <Spin size="large" />
+        <Spin size='large' />
       </div>
     );
   }
@@ -224,22 +286,22 @@ const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
       style={{ maxWidth: 800, margin: '0 auto', borderRadius: '12px' }}
       actions={[
         <Button
-          key="edit"
-          type="link"
+          key='edit'
+          type='link'
           icon={<EditOutlined />}
           onClick={() => setIsEditing(!isEditing)}
         >
           {isEditing ? 'Hủy' : 'Chỉnh sửa'}
         </Button>,
         <Button
-          key="delete"
-          type="link"
+          key='delete'
+          type='link'
           danger
           icon={<DeleteOutlined />}
           onClick={() => setIsDeleteModalVisible(true)}
         >
           Xóa tài xế
-        </Button>
+        </Button>,
       ]}
     >
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
@@ -250,7 +312,7 @@ const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
           style={{
             border: '4px solid #1890ff',
             marginBottom: 16,
-            boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+            boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
           }}
         />
         <Title level={3} style={{ marginBottom: 8 }}>
@@ -262,13 +324,13 @@ const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
 
       {/* Delete Confirmation Modal */}
       <Modal
-        title="Xóa tài xế"
+        title='Xóa tài xế'
         visible={isDeleteModalVisible}
         onOk={handleDeleteDriver}
         onCancel={() => setIsDeleteModalVisible(false)}
         confirmLoading={loading}
-        okText="Xóa"
-        cancelText="Hủy"
+        okText='Xóa'
+        cancelText='Hủy'
       >
         <Text>Chắc chắn muốn xóa tài xế này không?</Text>
       </Modal>

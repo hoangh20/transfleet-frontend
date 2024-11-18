@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { LockOutlined, UserOutlined, PhoneOutlined, MailOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import {
+  LockOutlined,
+  UserOutlined,
+  PhoneOutlined,
+  MailOutlined,
+  EyeOutlined,
+  EyeInvisibleOutlined,
+} from '@ant-design/icons';
 import { Button, Form, Input, Flex, Image, Typography, message } from 'antd';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { SignupUser } from '../../services/UserService'; // Import hàm SignupUser
@@ -64,7 +71,14 @@ const SignupPage = () => {
             width: '400px',
           }}
         >
-          <Flex justify='center' style={{ marginBottom: '24px', flexDirection: 'column', alignItems: 'center' }}>
+          <Flex
+            justify='center'
+            style={{
+              marginBottom: '24px',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
             <Image
               src='/logo.png'
               alt='TransFleet Logo'
@@ -79,7 +93,7 @@ const SignupPage = () => {
                 background: 'linear-gradient(90deg, #003082, #38b6ff)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                marginBottom: '80px', 
+                marginBottom: '80px',
               }}
             >
               TransFleet
@@ -87,7 +101,7 @@ const SignupPage = () => {
             <Title
               level={2}
               style={{
-                margin: '24px 0 0 0', 
+                margin: '24px 0 0 0',
                 color: '#003082',
                 textAlign: 'center',
               }}
@@ -127,7 +141,9 @@ const SignupPage = () => {
 
             <Form.Item
               name='password'
-              rules={[{ required: true, message: 'Please input your Password!' }]}
+              rules={[
+                { required: true, message: 'Please input your Password!' },
+              ]}
             >
               <Input
                 prefix={<LockOutlined />}
@@ -137,7 +153,9 @@ const SignupPage = () => {
                   passwordVisible ? (
                     <EyeOutlined onClick={() => setPasswordVisible(false)} />
                   ) : (
-                    <EyeInvisibleOutlined onClick={() => setPasswordVisible(true)} />
+                    <EyeInvisibleOutlined
+                      onClick={() => setPasswordVisible(true)}
+                    />
                   )
                 }
               />
@@ -154,7 +172,11 @@ const SignupPage = () => {
                     if (!value || getFieldValue('password') === value) {
                       return Promise.resolve();
                     }
-                    return Promise.reject(new Error('The two passwords that you entered do not match!'));
+                    return Promise.reject(
+                      new Error(
+                        'The two passwords that you entered do not match!',
+                      ),
+                    );
                   },
                 }),
               ]}
@@ -165,9 +187,13 @@ const SignupPage = () => {
                 placeholder='Confirm Password'
                 suffix={
                   confirmPasswordVisible ? (
-                    <EyeOutlined onClick={() => setConfirmPasswordVisible(false)} />
+                    <EyeOutlined
+                      onClick={() => setConfirmPasswordVisible(false)}
+                    />
                   ) : (
-                    <EyeInvisibleOutlined onClick={() => setConfirmPasswordVisible(true)} />
+                    <EyeInvisibleOutlined
+                      onClick={() => setConfirmPasswordVisible(true)}
+                    />
                   )
                 }
               />
