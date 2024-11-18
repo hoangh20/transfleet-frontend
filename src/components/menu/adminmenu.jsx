@@ -61,7 +61,7 @@ const AdminMenu = () => {
         icon={<TeamOutlined />}
         style={{ fontSize: '18px' }}
       >
-        <Link to='/customer/list'>Khách hàng</Link>
+        <Link to='/Khách hàng'>Khách hàng</Link>
       </Menu.Item>
 
       <SubMenu

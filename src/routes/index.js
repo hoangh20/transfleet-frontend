@@ -46,7 +46,7 @@ export const routes = [
     page: DriverWagePage,
   },
   {
-    path: '/customer/list',
+    path: '/Khách hàng',
     page: CustommerPage,
   }
 ];
