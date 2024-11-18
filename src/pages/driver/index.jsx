@@ -64,7 +64,7 @@ const DriverListPage = () => {
         style={{
           marginBottom: '40px',
           display: 'flex',
-          justifyContent: 'center', // Center-aligns the elements
+          justifyContent: 'center', 
           alignItems: 'center',
           gap: '8px',
           width: '100%',
@@ -75,7 +75,7 @@ const DriverListPage = () => {
           allowClear
           onChange={(e) => handleSearch(e.target.value)}
           style={{
-            width: '600px', // Smaller width for the search bar
+            width: '600px', 
           }}
         />
         <Button

@@ -8,6 +8,7 @@ import {
   CarryOutOutlined,
   SettingOutlined,
   DashboardOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 
 const { SubMenu } = Menu;
@@ -55,6 +56,13 @@ const AdminMenu = () => {
           <Link to='/driver/wage'>Lương thưởng</Link>
         </Menu.Item>
       </SubMenu>
+      <Menu.Item
+        key='customer'
+        icon={<TeamOutlined />}
+        style={{ fontSize: '18px' }}
+      >
+        <Link to='/customer/list'>Khách hàng</Link>
+      </Menu.Item>
 
       <SubMenu
         key='fixed-transport'

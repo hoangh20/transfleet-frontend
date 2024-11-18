@@ -7,6 +7,7 @@ import SignupPage from '../pages/sign-up/sign-up';
 import DriverListPage from '../pages/driver/index';
 import DriverWagePage from '../pages/driver/wage'
 import VehicleDetailPage from '../pages/vehicle/VehicleDetailPage'
+import CustommerPage from '../pages/customer/index'
 export const routes = [
   {
     path: '/',
@@ -44,4 +45,8 @@ export const routes = [
     path: '/driver/wage',
     page: DriverWagePage,
   },
+  {
+    path: '/customer/list',
+    page: CustommerPage,
+  }
 ];
