@@ -11,14 +11,13 @@ const breadcrumbNameMap = {
   '/driver': 'Quản lý lái xe',
   '/driver/create': 'Thêm mới lái xe',
   '/driver/list': 'Danh sách lái xe',
-  '/fixed-transport': 'Tuyến vận tải cố định',
-  '/fixed-transport/create': 'Thêm mới tuyến',
-  '/fixed-transport/list': 'Danh sách tuyến',
-  '/transport-trip': 'Quản lý chuyến vận tải',
-  '/transport-trip/create': 'Thêm mới chuyến',
-  '/transport-trip/list': 'Danh sách chuyến',
+  '/driver/wage': 'Lương thưởng',
   '/operation': 'Quản lý hoạt động',
-  '/customer/list': 'Danh sách khách hàng',
+  '/customer': 'Khách hàng',
+  '/customer/list': 'Danh sách ',
+  '/ticket/create': 'Thêm chuyến mới',
+  '/ticket': 'Chuyến vận chuyển',
+  '/ticket/list': 'Danh sách chuyến',
 };
 
 const nonClickablePaths = [
@@ -27,6 +26,8 @@ const nonClickablePaths = [
   '/fixed-transport',
   '/transport-trip',
   '/operation',
+  '/customer',
+  '/ticket',
 ];
 
 const AppBreadcrumb = () => {

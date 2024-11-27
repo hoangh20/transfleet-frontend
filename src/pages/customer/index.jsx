@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect , useCallback} from 'react';
 import {
   Table,
   Input,
@@ -24,11 +24,9 @@ const CustomerPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    fetchCustomers();
-  }, [currentPage, pageSize, searchTerm]);
+  
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getAllCustomers(currentPage, pageSize, searchTerm);
@@ -39,7 +37,12 @@ const CustomerPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, pageSize, searchTerm]);
+
+
+  useEffect(() => {
+    fetchCustomers();
+  }, [currentPage, fetchCustomers, pageSize, searchTerm]);
 
   const handleSearch = (value) => {
     setSearchTerm(value);

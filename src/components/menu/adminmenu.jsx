@@ -4,11 +4,11 @@ import { Link } from 'react-router-dom'; // Import Link từ react-router-dom
 import {
   CarOutlined,
   UserOutlined,
-  GlobalOutlined,
-  CarryOutOutlined,
   SettingOutlined,
   DashboardOutlined,
   TeamOutlined,
+  AppstoreAddOutlined,
+  ProfileOutlined,
 } from '@ant-design/icons';
 
 const { SubMenu } = Menu;
@@ -27,6 +27,22 @@ const AdminMenu = () => {
         style={{ fontSize: '18px' }}
       >
         <Link to='/'>Tổng quan</Link>
+      </Menu.Item>
+      
+      <Menu.Item
+        key='ticket'
+        icon={<AppstoreAddOutlined />}
+        style={{ fontSize: '18px' }}
+      >
+        <Link to='/ticket/create'>Tạo chuyến vận chuyển</Link>
+      </Menu.Item>
+
+      <Menu.Item
+        key='ticket/list'
+        icon={<ProfileOutlined />}
+        style={{ fontSize: '18px' }}
+      >
+        <Link to='/ticket/list'>Danh sách chuyến</Link>
       </Menu.Item>
 
       <SubMenu
@@ -62,35 +78,7 @@ const AdminMenu = () => {
         style={{ fontSize: '18px' }}
       >
         <Link to='/customer/list'>Khách hàng</Link>
-      </Menu.Item>
-
-      <SubMenu
-        key='fixed-transport'
-        title='Tuyến vận tải cố định'
-        icon={<GlobalOutlined />}
-        style={{ fontSize: '18px' }}
-      >
-        <Menu.Item key='fixed-transport-create' style={{ fontSize: '18px' }}>
-          <Link to='/fixed-transport'>Thêm mới</Link>
-        </Menu.Item>
-        <Menu.Item key='fixed-transport-list' style={{ fontSize: '18px' }}>
-          <Link to='/fixed-transport'>Danh sách</Link>
-        </Menu.Item>
-      </SubMenu>
-
-      <SubMenu
-        key='transport-trip'
-        title='Chuyến vận tải'
-        icon={<CarryOutOutlined />}
-        style={{ fontSize: '18px' }}
-      >
-        <Menu.Item key='transport-trip-create' style={{ fontSize: '18px' }}>
-          <Link to='/transport-trips'>Thêm mới</Link>
-        </Menu.Item>
-        <Menu.Item key='transport-trip-list' style={{ fontSize: '18px' }}>
-          <Link to='/transport-trips'>Danh sách</Link>
-        </Menu.Item>
-      </SubMenu>
+      </Menu.Item> 
       <Menu.Item
         key='report'
         icon={<SettingOutlined />}

@@ -8,6 +8,9 @@ import DriverListPage from '../pages/driver/index';
 import DriverWagePage from '../pages/driver/wage';
 import VehicleDetailPage from '../pages/vehicle/VehicleDetailPage';
 import CustommerPage from '../pages/customer/index';
+import TicketCreatePage from '../pages/ticket/create';
+import TicketListPage from '../pages/ticket/index';
+import TicketDetailPage from '../pages/ticket/ticketDetailPage';
 export const routes = [
   {
     path: '/',
@@ -48,5 +51,17 @@ export const routes = [
   {
     path: '/customer/list',
     page: CustommerPage,
+  },
+  {
+    path: '/ticket/create',
+    page: TicketCreatePage,
+  },
+  {
+    path: '/ticket/list',
+    page: TicketListPage,
+  },
+  {
+    path: '/ticket/detail/:id',
+    page: TicketDetailPage,
   },
 ];
