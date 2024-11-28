@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, Spin, notification, Typography, Space, Tag, Row, Col, Badge, Divider } from 'antd';
+import { Card, Spin, notification, Typography, Space, Tag, Row, Col, Badge, Button, Divider } from 'antd';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import {
   CalendarOutlined,
@@ -10,7 +10,7 @@ import {
   InfoCircleOutlined,
   EnvironmentOutlined
 } from '@ant-design/icons';
-import { getTicketDetails, getAvailableVehicles, addCompanyVehicleToTicket } from '../../services/TicketService';
+import { getTicketDetails, getAvailableVehicles, addCompanyVehicleToTicket, updateTicketStatus } from '../../services/TicketService';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -31,15 +31,17 @@ L.Marker.prototype.options.icon = DefaultIcon;
 const getStatusColor = (status) => ({
   0: '#1890ff',
   1: '#faad14',
-  2: '#52c41a',
-  3: '#ff4d4f'
+  2: '#faad14',
+  3: '#52c41a',
+  4: '#ff4d4f'
 }[status] || '#d9d9d9');
 
 const getStatusText = (status) => ({
   0: 'Mới',
-  1: 'Đang xử lý',
-  2: 'Hoàn thành',
-  3: 'Hủy'
+  1: 'Đã giao',
+  2: 'Đang xử lý',
+  3: 'Hoàn thành',
+  4: 'Hủy'
 }[status] || 'Unknown');
 
 const cardStyle = {
@@ -127,6 +129,23 @@ const TicketDetailPage = () => {
     // Handle partner vehicle submission
   };
 
+  const handleUpdateStatus = async () => {
+    try {
+      await updateTicketStatus(id);
+      notification.success({
+        message: 'Success',
+        description: 'Ticket status updated successfully'
+      });
+      const updatedTicket = await getTicketDetails(id);
+      setTicket(updatedTicket);
+    } catch (error) {
+      notification.error({
+        message: 'Error',
+        description: error.message || 'Failed to update ticket status'
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -150,6 +169,16 @@ const TicketDetailPage = () => {
               color={getStatusColor(ticket.status)}
               text={<Text strong style={{ fontSize: '16px' }}>{getStatusText(ticket.status)}</Text>}
             />
+            {ticket.status === 1 && (
+              <Button type="primary" onClick={handleUpdateStatus} style={{ marginLeft: '16px' }}>
+                Bắt đầu chuyến
+              </Button>
+            )}
+            {ticket.status === 2 && (
+              <Button type="primary" onClick={handleUpdateStatus} style={{ marginLeft: '16px' }}>
+                Hoàn thành chuyến
+              </Button>
+            )}
           </Col>
         </Row>
       </Card>
@@ -192,7 +221,7 @@ const TicketDetailPage = () => {
                     <Space direction="vertical" size="small">
                       <Space>
                         <CalendarOutlined />
-                        <Text strong>Ngày giao hàng:</Text>
+                        <Text strong>Ngày tạo đơn:</Text>
                       </Space>
                       <Text>{new Date(ticket.deliveryDate).toLocaleString()}</Text>
                     </Space>

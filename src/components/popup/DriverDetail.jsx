@@ -313,6 +313,22 @@ const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
             border: '4px solid #1890ff',
             marginBottom: 16,
             boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+            cursor: 'pointer',
+          }}
+          onClick={() => {
+            Modal.info({
+              title: 'Xem ảnh tài xế',
+              content: (
+                <div style={{ textAlign: 'center' }}>
+                  <img
+                    src={driver.avatar}
+                    alt={driver.name}
+                    style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' }}
+                  />
+                </div>
+              ),
+              onOk() {},
+            });
           }}
         />
         <Title level={3} style={{ marginBottom: 8 }}>

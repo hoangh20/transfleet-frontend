@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { Card, Typography, Space, Row, Col, List, Button, Popconfirm, Radio, Form, Input } from 'antd';
+import { Card, Typography, Space, List, Button, Popconfirm, Radio, Form, Input, AutoComplete, message, Row, Col } from 'antd';
 import { CarOutlined, UserOutlined, PhoneOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { getAllCustomers } from '../../services/CustomerService';
+import { addPartnerVehicleToTicket } from '../../services/TicketService';
 
 const { Title, Text } = Typography;
 
-const VehicleAssignment = ({ ticket, vehicles, handleAddCompanyVehicle, handlePartnerSubmit }) => {
+const VehicleAssignment = ({ ticket, vehicles, handleAddCompanyVehicle }) => {
   const [vehicleSource, setVehicleSource] = useState(null); // null, 'company', 'partner'
   const [partnerForm] = Form.useForm();
+  const [customerOptions, setCustomerOptions] = useState([]);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   const handleVehicleSourceChange = (e) => {
     setVehicleSource(e.target.value);
@@ -14,6 +18,41 @@ const VehicleAssignment = ({ ticket, vehicles, handleAddCompanyVehicle, handlePa
 
   const handleBack = () => {
     setVehicleSource(null);
+  };
+
+  const handleSearchCustomer = async (value) => {
+    if (value.length > 2) {
+      try {
+        const data = await getAllCustomers(1, 10, value);
+        setCustomerOptions(data.customers.map(customer => ({
+          value: customer.shortName,
+          label: customer.shortName,
+          customerId: customer._id
+        })));
+      } catch (error) {
+        console.error('Error fetching customers:', error);
+      }
+    } else {
+      setCustomerOptions([]);
+    }
+  };
+
+  const handleCustomerSelect = (value, option) => {
+    setSelectedCustomer(option.customerId);
+  };
+
+  const handlePartnerSubmit = async (values) => {
+    try {
+      if (!selectedCustomer) {
+        message.error('Vui lòng chọn tên đội xe hợp lệ');
+        return;
+      }
+      await addPartnerVehicleToTicket(ticket._id, selectedCustomer, values.licensePlate, values.driverName, values.driverPhone);
+      message.success('Thêm xe đối tác thành công');
+      partnerForm.resetFields();
+    } catch (error) {
+      message.error('Thêm xe đối tác thất bại');
+    }
   };
 
   const renderVehicleSelection = () => {
@@ -57,7 +96,13 @@ const VehicleAssignment = ({ ticket, vehicles, handleAddCompanyVehicle, handlePa
               >
                 <List.Item.Meta
                   avatar={<CarOutlined style={{ fontSize: '24px', color: '#1890ff' }} />}
-                  title={<Text strong>{vehicle.licensePlate}</Text>}
+                  title={
+                    <Space>
+                      <Text strong>{vehicle.headPlate}</Text>
+                      <Text>({vehicle.moocType === 0 ? '20ft' : '40ft'})</Text>
+                    </Space>
+                  }
+
                   description={
                     <Space size="large">
                       <Space>
@@ -85,7 +130,12 @@ const VehicleAssignment = ({ ticket, vehicles, handleAddCompanyVehicle, handlePa
               label="Tên đội xe"
               rules={[{ required: true, message: 'Vui lòng nhập tên đội xe' }]}
             >
-              <Input placeholder="Nhập tên đội xe" />
+              <AutoComplete
+                options={customerOptions}
+                onSearch={handleSearchCustomer}
+                onSelect={handleCustomerSelect}
+                placeholder="Nhập tên đội xe"
+              />
             </Form.Item>
             
             <Form.Item
@@ -130,7 +180,7 @@ const VehicleAssignment = ({ ticket, vehicles, handleAddCompanyVehicle, handlePa
           <CarOutlined />
           {vehicleSource === 'company' ? 'Xe khả dụng' : 
            vehicleSource === 'partner' ? 'Đội xe đối tác' : 
-           'Chọn xe'}
+          ""}
         </Space>
       </Title>
       {ticket.hasVehicle ? (

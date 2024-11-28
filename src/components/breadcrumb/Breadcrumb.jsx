@@ -18,6 +18,7 @@ const breadcrumbNameMap = {
   '/ticket/create': 'Thêm chuyến mới',
   '/ticket': 'Chuyến vận chuyển',
   '/ticket/list': 'Danh sách chuyến',
+  '/ticket/detail/:id': 'Chi tiết chuyến',
 };
 
 const nonClickablePaths = [

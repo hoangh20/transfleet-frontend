@@ -135,7 +135,12 @@ const ListVehicle = ({ vehicle, onDelete }) => {
           description: result.message,
         });
       }
-    } catch (error) {}
+    } catch (error) {
+      notification.error({
+        message: 'Lỗi khi xóa xe',
+        description: 'Đã xảy ra lỗi khi xóa xe.',
+      });
+    }
     setIsModalVisible(false);
   };
 

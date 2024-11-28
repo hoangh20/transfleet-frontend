@@ -241,7 +241,7 @@ const TicketCreatePage = () => {
               <Form.Item
                 label="Loại vỏ"
                 name="shellType"
-                rules={[{ required: true, message: 'Hãy nhập loại vỏ' }]}
+                rules={[{ required: false, message: 'Hãy nhập loại vỏ' }]}
               >
                 <Input />
               </Form.Item>
@@ -286,7 +286,7 @@ const TicketCreatePage = () => {
               <Form.Item
                 label="Tên tàu/chuyến"
                 name="ship"
-                rules={[{ required: true, message: 'Hãy nhập tên tàu/chuyến' }]}
+                rules={[{ required: false, message: 'Hãy nhập tên tàu/chuyến' }]}
               >
                 <Input />
               </Form.Item>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, List, Badge, Space, Typography, Tag, Divider, notification, Button, Popconfirm } from 'antd';
+import { Card, List, Badge, Space, Typography, Tag, Divider } from 'antd';
 import { 
   CalendarOutlined,
   UserOutlined,
@@ -8,9 +8,9 @@ import {
   ShoppingOutlined,
   EnvironmentOutlined,
   InfoCircleOutlined,
-  DeleteOutlined
+  CarOutlined,
+  PhoneOutlined
 } from '@ant-design/icons';
-import { deleteTicket } from '../../services/TicketService';
 
 const { Text, Title } = Typography;
 
@@ -25,20 +25,7 @@ const getStatusBadge = (status) => {
   return statusMap[status] || { text: 'Unknown', color: 'default' };
 };
 
-const TicketList = ({ tickets , onTicketClick, onDelete }) => {
-  const handleDelete = async (ticketId, e) => {
-    e.stopPropagation();
-    try {
-      await deleteTicket(ticketId);
-      onDelete(ticketId);
-    } catch (error) {
-      notification.error({
-        message: 'Error',
-        description: error.message || 'Failed to delete ticket'
-      });
-    }
-  };
-
+const TicketList = ({ tickets, onTicketClick, onDelete }) => {
 return (
     <List
         grid={{
@@ -65,20 +52,10 @@ return (
                                 <NumberOutlined />
                                 <Text strong style={{ fontSize: '14px' }}>Mã vé: {ticket._id}</Text>
                             </Space>
-                            <Space size="large">
-                                <Badge 
-                                    status={getStatusBadge(ticket.status).color}
-                                    text={getStatusBadge(ticket.status).text}
-                                />
-                                <Popconfirm
-                                    title="Bạn có chắc chắn muốn xóa vé này?"
-                                    onConfirm={(e) => handleDelete(ticket._id, e)}
-                                    okText="Yes"
-                                    cancelText="No"
-                                >
-                                    <Button type="primary" danger icon={<DeleteOutlined />} onClick={(e) => e.stopPropagation()} />
-                                </Popconfirm>
-                            </Space>
+                            <Badge 
+                                status={getStatusBadge(ticket.status).color}
+                                text={getStatusBadge(ticket.status).text}
+                            />
                         </Space>
                     }
                 >
@@ -89,7 +66,7 @@ return (
                             <Space direction="vertical" size="small" style={{ width: '100%' }}>
                                 <Space>
                                     <CalendarOutlined />
-                                    <Text strong>Ngày giao hàng:</Text>
+                                    <Text strong>Ngày tạo đơn:</Text>
                                     <Text>{new Date(ticket.deliveryDate).toLocaleString()}</Text>
                                 </Space>
                                 <Space>
@@ -174,6 +151,36 @@ return (
                                     <Text strong>Ghi chú:</Text>
                                     <Text>{ticket.note}</Text>
                                 </Space>
+                            </>
+                        )}
+
+                        {ticket.hasVehicle && ticket.vehicles.length > 0 && (
+                            <>
+                                <Divider style={{ margin: '0px 0' }} />
+                                <div>
+                                    <Title level={5}>Thông tin xe</Title>
+                                    <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                                        <Space>
+                                            <CarOutlined />
+                                            <Text strong>Biển số xe:</Text>
+                                            <Text>{ticket.vehicles[0].licensePlate}</Text>
+                                        </Space>
+                                        <Space>
+                                            <Text strong>Đội xe:</Text>
+                                            <Text>{ticket.fleet}</Text>
+                                        </Space>
+                                        <Space>
+                                            <UserOutlined />
+                                            <Text strong>Tên lái xe:</Text>
+                                            <Text>{ticket.vehicles[0].driverName}</Text>
+                                        </Space>
+                                        <Space>
+                                            <PhoneOutlined />
+                                            <Text strong>Số điện thoại:</Text>
+                                            <Text>{ticket.vehicles[0].driverPhone}</Text>
+                                        </Space>
+                                    </Space>
+                                </div>
                             </>
                         )}
                     </Space>

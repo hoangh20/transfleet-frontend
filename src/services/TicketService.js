@@ -80,3 +80,27 @@ export const addCompanyVehicleToTicket = async (ticketId, vehicleId) => {
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+export const addPartnerVehicleToTicket = async (ticketId, customerId, licensePlate, driverName, driverPhone) => {
+  try {
+    const response = await axios.post(`${process.env.REACT_APP_API_URL}/tickets/add-partner-vehicle`, {
+      ticketId,
+      customerId,
+      licensePlate,
+      driverName,
+      driverPhone
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const updateTicketStatus = async (ticketId) => {
+  try {
+    const response = await axios.put(`${process.env.REACT_APP_API_URL}/tickets/update-status/${ticketId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
