@@ -73,6 +73,13 @@ const AdminMenu = () => {
         </Menu.Item>
       </SubMenu>
       <Menu.Item
+        key='partner'
+        icon={<TeamOutlined />}
+        style={{ fontSize: '18px' }}
+      >
+        <Link to='/partner/list'>Đội xe đối tác</Link>
+      </Menu.Item>
+      <Menu.Item
         key='customer'
         icon={<TeamOutlined />}
         style={{ fontSize: '18px' }}

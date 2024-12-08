@@ -9,7 +9,6 @@ import {
   Image,
   Alert,
   Input,
-  Slider,
   Button,
   Select,
   InputNumber,
@@ -434,32 +433,26 @@ const VehicleDetailPage = () => {
               style={{ marginBottom: '20px' }}
             >
               <Row gutter={[16, 16]}>
-                <Col span={12}>
+              <Col span={8}>
                   <Form.Item
-                    label='Độ mới của xe'
-                    name='depreciationRate'
+                    label='Năm mua xe'
+                    name='purchase_year'
                     rules={[
-                      {
-                        required: true,
-                        message: 'Vui lòng chọn độ mới của xe',
-                      },
+                      { required: true, message: 'Vui lòng nhập năm mua xe' },
                     ]}
                   >
-                    <Slider
+                    <InputNumber
+                      readOnly={!isEditing}
+                      placeholder='Nhập năm mua xe'
                       min={0}
-                      max={100}
-                      disabled={!isEditing}
-                      marks={{
-                        0: 'Cũ',
-                        100: 'Mới',
-                      }}
+                      style={{ width: '100%' }}
+                      size='large'
                     />
                   </Form.Item>
                 </Col>
-              </Row>
-              <Row gutter={[16, 16]}>
-                <Col span={12}>
+                <Col span={8}>
                   <Form.Item
+                    readOnly={!isEditing}
                     label='Trọng lượng (tấn)'
                     name='weight'
                     rules={[
@@ -467,6 +460,7 @@ const VehicleDetailPage = () => {
                     ]}
                   >
                     <InputNumber
+                      readOnly={!isEditing}
                       placeholder='Nhập trọng lượng'
                       min={0}
                       style={{ width: '100%' }}
@@ -474,7 +468,7 @@ const VehicleDetailPage = () => {
                     />
                   </Form.Item>
                 </Col>
-                <Col span={12}>
+                <Col span={8}>
                   <Form.Item
                     label='Loại rơ moóc'
                     name='moocType'
@@ -555,6 +549,7 @@ const VehicleDetailPage = () => {
                     )}
                   </div>
                   <MapContainer
+                    readOnly={!isEditing}
                     center={location}
                     zoom={13}
                     style={{ height: '350px', width: '100%' }}

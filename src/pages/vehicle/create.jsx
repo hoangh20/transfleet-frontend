@@ -9,7 +9,6 @@ import {
   Col,
   Card,
   Typography,
-  Slider,
   Image,
   message,
 } from 'antd';
@@ -27,7 +26,6 @@ const { Option } = Select;
 const CreateCarPage = () => {
   const [form] = Form.useForm();
   const [location, setLocation] = useState({ lat: 21.0067, lng: 105.8455 });
-  const [cardepreciationRate, setCardepreciationRate] = useState(50);
   const [imageUrl, setImageUrl] = useState('');
   const [address, setAddress] = useState('');
 
@@ -140,7 +138,6 @@ const CreateCarPage = () => {
   const handleReset = () => {
     form.resetFields();
     setLocation({ lat: 21.0067, lng: 105.8455 });
-    setCardepreciationRate(0);
     setImageUrl('');
     setAddress('');
     message.info('Đã xóa tất cả thông tin');
@@ -280,31 +277,23 @@ const CreateCarPage = () => {
           style={{ marginBottom: '20px' }}
         >
           <Row gutter={[16, 16]}>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
-                label='Độ mới của xe'
-                name='depreciationRate'
+                label='Năm mua xe'
+                name='purchase_year'
                 rules={[
-                  { required: true, message: 'Vui lòng chọn độ mới của xe' },
+                  { required: true, message: 'Vui lòng nhập năm mua' },
                 ]}
               >
-                <Slider
+                <InputNumber
+                  placeholder='Nhập năm mua'
                   min={0}
-                  max={100}
-                  tooltipVisible
-                  value={cardepreciationRate}
-                  onChange={(value) => setCardepreciationRate(value)}
-                  marks={{
-                    0: 'Cũ',
-                    100: 'Mới',
-                  }}
+                  style={{ width: '100%' }}
+                  size='large'
                 />
               </Form.Item>
             </Col>
-          </Row>
-
-          <Row gutter={[16, 16]}>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label='Trọng lượng (tấn)'
                 name='weight'
@@ -320,7 +309,7 @@ const CreateCarPage = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label='Loại rơ moóc'
                 name='moocType'

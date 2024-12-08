@@ -15,6 +15,8 @@ const breadcrumbNameMap = {
   '/operation': 'Quản lý hoạt động',
   '/customer': 'Khách hàng',
   '/customer/list': 'Danh sách ',
+  '/partner': 'Đội xe đối tác',
+  '/partner/list': 'Danh sách',
   '/ticket/create': 'Thêm chuyến mới',
   '/ticket': 'Chuyến vận chuyển',
   '/ticket/list': 'Danh sách chuyến',

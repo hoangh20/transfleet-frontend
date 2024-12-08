@@ -49,7 +49,7 @@ const ListVehicle = ({ vehicle, onDelete }) => {
     moocRegCode,
     moocRegExpiry,
     moocType,
-    depreciationRate,
+    purchase_year,
     weight,
     imageUrl,
     address,
@@ -89,7 +89,7 @@ const ListVehicle = ({ vehicle, onDelete }) => {
             <UserOutlined style={{ color: '#52c41a', marginRight: 8 }} />
             <span>
               <Text strong>Lái xe</Text> {driver.name || 'N/A'}{' '}
-              <Text strong>Loại bằng:</Text> {driver.licenseType || 'N/A'}
+              <Text strong>Bằng:</Text> {driver.licenseType || 'N/A'}
             </span>
           </>
         );
@@ -136,10 +136,6 @@ const ListVehicle = ({ vehicle, onDelete }) => {
         });
       }
     } catch (error) {
-      notification.error({
-        message: 'Lỗi khi xóa xe',
-        description: 'Đã xảy ra lỗi khi xóa xe.',
-      });
     }
     setIsModalVisible(false);
   };
@@ -195,13 +191,13 @@ const ListVehicle = ({ vehicle, onDelete }) => {
               <Col xs={24} sm={12}>
                 <Space>
                   <IoMdCar size={18} />
-                  <Text strong>Biển số xe (Đầu kéo):</Text> {headPlate}
+                  <Text strong>Biển số xe(Đầu):</Text> {headPlate}
                 </Space>
               </Col>
               <Col xs={24} sm={12}>
                 <Space>
                   <IoMdCar size={18} />
-                  <Text strong>Biển số xe (Rơ moóc):</Text> {moocPlate}
+                  <Text strong>Biển số xe(moóc):</Text> {moocPlate}
                 </Space>
               </Col>
             </Row>
@@ -210,13 +206,13 @@ const ListVehicle = ({ vehicle, onDelete }) => {
               <Col xs={24} sm={12}>
                 <Space>
                   <MdEmojiTransportation size={18} />
-                  <Text strong>Mã đăng ký (Đầu kéo):</Text> {headRegCode}
+                  <Text strong>Mã đăng ký(Đầu):</Text> {headRegCode}
                 </Space>
               </Col>
               <Col xs={24} sm={12}>
                 <Space>
                   <MdEmojiTransportation size={18} />
-                  <Text strong>Mã đăng ký (Rơ moóc):</Text> {moocRegCode}
+                  <Text strong>Mã đăng ký(moóc):</Text> {moocRegCode}
                 </Space>
               </Col>
             </Row>
@@ -225,14 +221,14 @@ const ListVehicle = ({ vehicle, onDelete }) => {
               <Col xs={24} sm={12}>
                 <Space>
                   <BsFillCalendarFill size={18} />
-                  <Text strong>Ngày hết hạn (Đầu kéo):</Text>{' '}
+                  <Text strong>Ngày hết hạn(Đầu):</Text>{' '}
                   {new Date(headRegExpiry).toLocaleDateString()}
                 </Space>
               </Col>
               <Col xs={24} sm={12}>
                 <Space>
                   <BsFillCalendarFill size={18} />
-                  <Text strong>Ngày hết hạn (Rơ moóc):</Text>{' '}
+                  <Text strong>Ngày hết hạn(moóc):</Text>{' '}
                   {new Date(moocRegExpiry).toLocaleDateString()}
                 </Space>
               </Col>
@@ -258,7 +254,7 @@ const ListVehicle = ({ vehicle, onDelete }) => {
               <Col xs={24} sm={12}>
                 <Space>
                   <PercentageOutlined size={18} />
-                  <Text strong>Độ mới của xe:</Text> {depreciationRate}%
+                  <Text strong>Năm mua xe:</Text> {purchase_year}
                 </Space>
               </Col>
               <Col xs={24} sm={12}>

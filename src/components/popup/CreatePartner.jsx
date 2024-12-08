@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, message, Button } from 'antd';
-import { createCustomer } from '../../services/CustomerService';
+import { createPartner } from '../../services/PartnerService';
 
-const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
+const CreatePartnerModal = ({ visible, onCancel, onSuccess }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
@@ -10,12 +10,11 @@ const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
     try {
       setLoading(true);
       const values = await form.validateFields();
-      await createCustomer(values);
-      message.success('Tạo khách hàng mới thành công!');
+      await createPartner(values);
       form.resetFields();
       onSuccess();
     } catch (error) {
-      message.error('Lỗi khi tạo khách hàng mới.');
+      message.error('Lỗi khi tạo đối tác mới.');
     } finally {
       setLoading(false);
     }
@@ -23,7 +22,7 @@ const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
 
   return (
     <Modal
-      title='Tạo khách hàng mới'
+      title='Tạo đối tác mới'
       visible={visible}
       onCancel={onCancel}
       footer={[
@@ -42,11 +41,11 @@ const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
     >
       <Form form={form} layout='vertical'>
         <Form.Item
-          label='Tên đầy đủ'
+          label='Tên đối tác'
           name='name'
-          rules={[{ required: true, message: 'Vui lòng nhập tên đầy đủ' }]}
+          rules={[{ required: true, message: 'Vui lòng nhập tên đối tác' }]}
         >
-          <Input placeholder='Nhập tên đầy đủ' />
+          <Input placeholder='Nhập tên đối tác' />
         </Form.Item>
         <Form.Item
           label='Tên viết tắt'
@@ -56,23 +55,23 @@ const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
           <Input placeholder='Nhập tên viết tắt' />
         </Form.Item>
         <Form.Item
-          label='Mã khách hàng'
-          name='customerCode'
-          rules={[{ required: true, message: 'Vui lòng nhập mã khách hàng' }]}
+          label='Mã đối tác'
+          name='partnerCode'
+          rules={[{ required: true, message: 'Vui lòng nhập mã đối tác' }]}
         >
-          <Input placeholder='Nhập mã khách hàng' />
+          <Input placeholder='Nhập mã đối tác' />
         </Form.Item>
         <Form.Item
           label='Email'
           name='email'
-          rules={[{ required: false, message: 'Vui lòng nhập email' }]}
+          rules={[{ type: 'email', message: 'Email không hợp lệ' }]}
         >
           <Input placeholder='Nhập email' />
         </Form.Item>
         <Form.Item
           label='Số điện thoại'
           name='phone'
-          rules={[{ required: false, message: 'Vui lòng nhập số điện thoại' }]}
+          rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}
         >
           <Input placeholder='Nhập số điện thoại' />
         </Form.Item>
@@ -81,4 +80,4 @@ const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
   );
 };
 
-export default CreateCustomerModal;
+export default CreatePartnerModal;

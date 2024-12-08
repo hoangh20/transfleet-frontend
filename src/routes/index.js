@@ -11,6 +11,7 @@ import CustommerPage from '../pages/customer/index';
 import TicketCreatePage from '../pages/ticket/create';
 import TicketListPage from '../pages/ticket/index';
 import TicketDetailPage from '../pages/ticket/ticketDetailPage';
+import PartnerPage from '../pages/Partner/index';
 export const routes = [
   {
     path: '/',
@@ -63,5 +64,9 @@ export const routes = [
   {
     path: '/ticket/detail/:id',
     page: TicketDetailPage,
+  },
+  {
+    path: '/partner/list',
+    page: PartnerPage,
   },
 ];

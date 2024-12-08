@@ -1,21 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, message, Button } from 'antd';
-import { createCustomer } from '../../services/CustomerService';
+import { updateCustomer, getCustomerById } from '../../services/CustomerService';
 
-const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
+const UpdateCustomerModal = ({ visible, onCancel, onSuccess, customerId }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [initialData, setInitialData] = useState(null);
+
+  useEffect(() => {
+    const fetchCustomerData = async () => {
+      try {
+        if (customerId && visible) {
+          setLoading(true);
+          const response = await getCustomerById(customerId);      
+          setInitialData(response);
+          form.setFieldsValue(response);
+        }
+      } catch (error) {
+        message.error('Lỗi khi tải thông tin khách hàng');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (visible && customerId) {
+      fetchCustomerData();
+    }
+  }, [customerId, visible, form]);
 
   const handleSubmit = async () => {
     try {
       setLoading(true);
       const values = await form.validateFields();
-      await createCustomer(values);
-      message.success('Tạo khách hàng mới thành công!');
-      form.resetFields();
+      await updateCustomer(customerId, values);
       onSuccess();
     } catch (error) {
-      message.error('Lỗi khi tạo khách hàng mới.');
+      message.error('Lỗi khi cập nhật khách hàng');
     } finally {
       setLoading(false);
     }
@@ -23,9 +43,10 @@ const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
 
   return (
     <Modal
-      title='Tạo khách hàng mới'
-      visible={visible}
+      title='Cập nhật khách hàng'
+      open={visible}
       onCancel={onCancel}
+      confirmLoading={loading}
       footer={[
         <Button key='cancel' onClick={onCancel}>
           Hủy
@@ -40,7 +61,11 @@ const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
         </Button>,
       ]}
     >
-      <Form form={form} layout='vertical'>
+      <Form 
+        form={form} 
+        layout='vertical'
+        initialValues={initialData}
+      >
         <Form.Item
           label='Tên đầy đủ'
           name='name'
@@ -65,7 +90,7 @@ const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
         <Form.Item
           label='Email'
           name='email'
-          rules={[{ required: false, message: 'Vui lòng nhập email' }]}
+          rules={[{ required: false, type: 'email', message: 'Email không hợp lệ' }]}
         >
           <Input placeholder='Nhập email' />
         </Form.Item>
@@ -81,4 +106,4 @@ const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
   );
 };
 
-export default CreateCustomerModal;
+export default UpdateCustomerModal;

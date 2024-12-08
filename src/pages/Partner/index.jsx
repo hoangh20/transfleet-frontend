@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Table, Button, Input, Space, Popconfirm, message } from 'antd';
 import { SearchOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { getAllCustomers, deleteCustomer } from '../../services/CustomerService';
-import CreateCustomerModal from '../../components/popup/CreateCustomer';
-import UpdateCustomerModal from '../../components/popup/UpdateCustomer';
+import { getAllPartners, deletePartner } from '../../services/PartnerService';
+import CreatePartnerModal from '../../components/popup/CreatePartner';
+import UpdatePartnerModal from '../../components/popup/UpdatePartner';
 
-const CustommerPage = () => {
-  const [customers, setCustomers] = useState([]);
+const PartnerPage = () => {
+  const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -14,27 +14,28 @@ const CustommerPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
-  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [selectedPartnerId, setSelectedPartnerId] = useState(null);
 
-  const fetchCustomers = async () => {
+  const fetchPartners = async () => {
     try {
       setLoading(true);
-      const response = await getAllCustomers(currentPage, pageSize, searchTerm);
-      const transformedData = response.customers.map(customer => ({
-        ...customer,
-        id: customer._id 
+      const response = await getAllPartners(currentPage, pageSize, searchTerm);
+      const transformedData = response.partners.map(partner => ({
+        ...partner,
+        id: partner._id
       }));
-      setCustomers(transformedData);
+      setPartners(transformedData);
       setTotalItems(response.total);
     } catch (error) {
-      message.error('Không thể tải danh sách khách hàng');
+      console.log(error);
+      message.error('Không thể tải danh sách đối tác');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCustomers();
+    fetchPartners();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize, searchTerm]);
 
@@ -44,35 +45,35 @@ const CustommerPage = () => {
   };
 
   const handleEdit = (record) => {
-    setSelectedCustomerId(record.id);
+    setSelectedPartnerId(record.id);
     setIsUpdateModalVisible(true);
   };
 
   const handleDelete = async (id) => {
     try {
-      await deleteCustomer(id);
-      message.success('Xóa khách hàng thành công');
-      fetchCustomers();
+      await deletePartner(id);
+      message.success('Xóa đối tác thành công');
+      fetchPartners();
     } catch (error) {
-      message.error('Lỗi khi xóa khách hàng');
+      message.error('Lỗi khi xóa đối tác');
     }
   };
 
   const columns = [
     {
-      title: 'Tên đầy đủ',
+      title: 'Tên đối tác',
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: 'Tên viết tắt',
-      dataIndex: 'shortName',
-      key: 'shortName',
+        title: 'Tên viết tắt',
+        dataIndex: 'shortName',
+        key: 'shortName',
     },
     {
-      title: 'Mã khách hàng',
-      dataIndex: 'customerCode',
-      key: 'customerCode',
+      title: 'Mã đối tác',
+      dataIndex: 'partnerCode', 
+      key: 'partnerCode',
     },
     {
       title: 'Email',
@@ -110,7 +111,7 @@ const CustommerPage = () => {
     <div style={{ padding: '24px' }}>
       <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}>
         <Input
-          placeholder="Tìm kiếm khách hàng"
+          placeholder="Tìm kiếm đối tác"
           prefix={<SearchOutlined />}
           style={{ width: 400, marginRight: 16 }}
           onChange={(e) => handleSearch(e.target.value)}
@@ -126,7 +127,7 @@ const CustommerPage = () => {
 
       <Table
         columns={columns}
-        dataSource={customers}
+        dataSource={partners}
         rowKey={(record) => record._id}
         loading={loading}
         pagination={{
@@ -137,32 +138,32 @@ const CustommerPage = () => {
             setCurrentPage(page);
             setPageSize(pageSize);
           },
-          showTotal: (total) => `Tổng ${total} khách hàng`
+          showTotal: (total) => `Tổng ${total} đối tác`
         }}
       />
 
-      <CreateCustomerModal
+      <CreatePartnerModal
         visible={isCreateModalVisible}
         onCancel={() => setIsCreateModalVisible(false)}
         onSuccess={() => {
           setIsCreateModalVisible(false);
-          message.success('Tạo khách hàng mới thành công');
-          fetchCustomers();
+          message.success('Tạo đối tác mới thành công');
+          fetchPartners();
         }}
       />
 
-      <UpdateCustomerModal
+      <UpdatePartnerModal
         visible={isUpdateModalVisible}
         onCancel={() => setIsUpdateModalVisible(false)}
         onSuccess={() => {
           setIsUpdateModalVisible(false);
-          message.success('Cập nhật khách hàng thành công');
-          fetchCustomers();
+          message.success('Cập nhật đối tác thành công');
+          fetchPartners();
         }}
-        customerId={selectedCustomerId}
+        partnerId={selectedPartnerId}
       />
     </div>
   );
 };
 
-export default CustommerPage;
+export default PartnerPage;

@@ -50,6 +50,7 @@ const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
         licenseType: driverData.licenseType,
         birthDate: driverData.birthDate,
         bankAccount: driverData.bankAccount,
+        citizenID: driverData.citizenID,
         yearsOfExperience: driverData.yearsOfExperience,
       });
     } catch (error) {
@@ -256,6 +257,13 @@ const DriverDetail = ({ driverId, onDeleteSuccess, onUpdateSuccess }) => {
           placeholder='Nhập số năm kinh nghiệm'
           type='number'
         />
+      </Form.Item>
+      <Form.Item
+        label='CMND/CCCD'
+        name='citizenID'
+        rules={[{ required: true, message: 'Vui lòng nhập CMND/CCCD!' }]}
+      >
+        <Input prefix={<IdcardOutlined />} placeholder='Nhập CMND/CCCD' />
       </Form.Item>
 
       <Form.Item>

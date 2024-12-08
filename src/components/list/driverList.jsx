@@ -177,6 +177,7 @@ const DriverCard = ({ driver }) => {
           <Col span={12}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <IdcardOutlined style={{ color: '#1890ff' }} />
+              <Text>Bằng lái: </Text>
               <Tag color='blue'>{driver.licenseType}</Tag>
             </div>
           </Col>
@@ -187,11 +188,16 @@ const DriverCard = ({ driver }) => {
             </div>
           </Col>
           <Col span={24}>
+            <IdcardOutlined style={{ color: '#1890ff' }} />
+            <Text>  Căn cước: {driver.citizenID}</Text>
+          </Col>
+        
+          <Col span={24}>
             <div>{renderVehicleInfo()}</div>
           </Col>
           <Col span={24}>
             <EnvironmentOutlined style={{ color: '#1890ff' }} />
-            <Text>Quê quán: {driver.hometown}</Text>
+            <Text>  Quê quán: {driver.hometown}</Text>
           </Col>
 
           <Col span={8}>
