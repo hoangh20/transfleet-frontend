@@ -31,6 +31,7 @@ import {
   updateVehicle,
   deleteVehicle,
   getDriverByVehicleId,
+  unlinkDriverFromVehicle,
 } from '../../services/VehicleService';
 import { getAllDrivers } from '../../services/DriverService';
 import LoadingPage from '../../components/loading/LoadingPage';
@@ -259,6 +260,24 @@ const VehicleDetailPage = () => {
       );
     }
   };
+  const handleUnlink = async () => {
+    try {
+      const vehicleId = vehicle._id;
+      const driverId = driver._id;
+
+      const result = await unlinkDriverFromVehicle(driverId, vehicleId);
+
+      if (result.status !== 'ERR') {
+        message.success('Hủy giao xe thành công!');
+        window.location.reload();
+      } else {
+        message.error(`Hủy giao xe thất bại: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error unlinking:', error);
+      message.error('Đã xảy ra lỗi khi hủy giao xe');
+    }
+  };
 
   if (errorDriver) {
     return (
@@ -433,7 +452,7 @@ const VehicleDetailPage = () => {
               style={{ marginBottom: '20px' }}
             >
               <Row gutter={[16, 16]}>
-              <Col span={8}>
+                <Col span={8}>
                   <Form.Item
                     label='Năm mua xe'
                     name='purchase_year'
@@ -613,6 +632,16 @@ const VehicleDetailPage = () => {
                       <br />
                     </div>
                   </Space>
+                  <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                    <Button
+                      type='primary'
+                      danger
+                      onClick={handleUnlink}
+                      disabled={!vehicle || vehicle.hasDriver === 0}
+                    >
+                      Hủy giao xe
+                    </Button>
+                  </div>
                 </Card>
               )
             ) : (

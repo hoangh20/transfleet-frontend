@@ -71,7 +71,7 @@ const CreatePartnerModal = ({ visible, onCancel, onSuccess }) => {
         <Form.Item
           label='Số điện thoại'
           name='phone'
-          rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}
+          rules={[{ required: false, message: 'Vui lòng nhập số điện thoại' }]}
         >
           <Input placeholder='Nhập số điện thoại' />
         </Form.Item>

@@ -75,3 +75,12 @@ export const linkDriverToVehicle = async (driverId, vehicleId) => {
     }
   }
 };
+export const unlinkDriverFromVehicle = async (driverId, vehicleId) => {
+  try {
+    const response = await axios.post(`${process.env.REACT_APP_API_URL}/vehicle/unlink`, { driverId, vehicleId });
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
