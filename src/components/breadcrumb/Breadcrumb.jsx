@@ -17,6 +17,7 @@ const breadcrumbNameMap = {
   '/customer/list': 'Danh sách ',
   '/partner': 'Đội xe đối tác',
   '/partner/list': 'Danh sách',
+  '/partner/cost': 'Chi phí vận tải',
   '/ticket/create': 'Thêm chuyến mới',
   '/ticket': 'Chuyến vận chuyển',
   '/ticket/list': 'Danh sách chuyến',

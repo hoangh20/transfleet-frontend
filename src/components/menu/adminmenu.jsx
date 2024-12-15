@@ -72,13 +72,19 @@ const AdminMenu = () => {
           <Link to='/driver/wage'>Lương thưởng</Link>
         </Menu.Item>
       </SubMenu>
-      <Menu.Item
-        key='partner'
+      <SubMenu
+        key='partber'
+        title='Đội xe đối tác'
         icon={<TeamOutlined />}
         style={{ fontSize: '18px' }}
       >
-        <Link to='/partner/list'>Đội xe đối tác</Link>
-      </Menu.Item>
+        <Menu.Item key='partner-list' style={{ fontSize: '18px' }}>
+          <Link to='/partner/list'>Danh sách</Link>
+        </Menu.Item>
+        <Menu.Item key='partner-cost' style={{ fontSize: '18px' }}>
+          <Link to='/partner/cost'>Chi phí vận tải</Link>
+        </Menu.Item>
+      </SubMenu>
       <Menu.Item
         key='customer'
         icon={<TeamOutlined />}

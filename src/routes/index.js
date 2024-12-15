@@ -12,6 +12,9 @@ import TicketCreatePage from '../pages/ticket/create';
 import TicketListPage from '../pages/ticket/index';
 import TicketDetailPage from '../pages/ticket/ticketDetailPage';
 import PartnerPage from '../pages/Partner/index';
+import PartnerCostPage from '../pages/Partner/cost';
+
+
 export const routes = [
   {
     path: '/',
@@ -68,5 +71,9 @@ export const routes = [
   {
     path: '/partner/list',
     page: PartnerPage,
+  },
+  {
+    path: '/partner/cost',
+    page: PartnerCostPage,
   },
 ];

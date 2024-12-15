@@ -24,6 +24,14 @@ export const getAllPartners = async (page = 1, limit = 10, search = '') => {
   );
   return response.data;
 };
+export const getAllPartnersforcost = async () => {
+  try {
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/partners/get-all`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
 
 export const getPartnerById = async (partnerId) => {
   try {
