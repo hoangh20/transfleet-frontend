@@ -225,7 +225,6 @@ const DetailCostPage = () => {
           <Descriptions.Item label="Điểm đi">{costDetails.startPoint.fullName}</Descriptions.Item>
           <Descriptions.Item label="Điểm đến">{costDetails.endPoint.fullName}</Descriptions.Item>
           <Descriptions.Item label="Loại vận chuyển">{costDetails.type === 0 ? 'Đóng hàng' : 'Giao hàng nhập'}</Descriptions.Item>
-          <Descriptions.Item label="Chi phí">{costDetails.cost}</Descriptions.Item>
           <Descriptions.Item label="Ngày tạo">{new Date(costDetails.createdAt).toLocaleString()}</Descriptions.Item>
           <Descriptions.Item label="Số đối tác hoạt động">{partnerTransportCosts.length}</Descriptions.Item>
         </Descriptions>
