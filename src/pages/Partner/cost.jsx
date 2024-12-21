@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Row, Col, Button, Table, message, Popconfirm, Modal, Input, Select } from 'antd';
+import { Form, Row, Col, Button, Table, message, Popconfirm, Space } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import CreateExternalFleetCost from '../../components/location/CreateExternalFleetCost';
-import { getAllExternalFleetCosts, deleteExternalFleetCost, updateExternalFleetCost } from '../../services/ExternalFleetCostService';
-import { getAllPartnersforcost } from '../../services/PartnerService';
-
-const { Option } = Select;
+import LocationFilter from '../../components/location/LocationFilter';
+import { getAllExternalFleetCosts, deleteExternalFleetCost } from '../../services/ExternalFleetCostService';
 
 const fetchProvinceName = async (provinceCode) => {
   try {
@@ -37,31 +36,35 @@ const fetchWardName = async (wardCode) => {
 };
 
 const PartnerCostPage = () => {
+  const navigate = useNavigate();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
   const [externalFleetCosts, setExternalFleetCosts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [partners, setPartners] = useState([]);
-  const [selectedPartner, setSelectedPartner] = useState(null);
-  const [currentCost, setCurrentCost] = useState(null);
-  const [updatedCost, setUpdatedCost] = useState('');
+  const [filters, setFilters] = useState({
+    startProvinceCode: '',
+    startDistrictCode: '',
+    startWardCode: '',
+    endProvinceCode: '',
+    endDistrictCode: '',
+    endWardCode: ''
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  // eslint-disable-next-line no-unused-vars
+  const [totalItems, setTotalItems] = useState(0);
 
   useEffect(() => {
     fetchExternalFleetCosts();
-    fetchPartners();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
 
-  const fetchExternalFleetCosts = async (partnerId = null) => {
+  const fetchExternalFleetCosts = async () => {
     setLoading(true);
     try {
-      const response = await getAllExternalFleetCosts();
+      const response = await getAllExternalFleetCosts(filters);
       if (response && response.externalFleetCosts) {
-        const filteredCosts = partnerId
-          ? response.externalFleetCosts.filter(cost => cost.partnerId === partnerId)
-          : response.externalFleetCosts;
-
         const updatedCosts = await Promise.all(
-          filteredCosts.map(async (cost) => {
+          response.externalFleetCosts.map(async (cost) => {
             const startProvince = await fetchProvinceName(cost.startPoint.provinceCode);
             const startDistrict = await fetchDistrictName(cost.startPoint.districtCode);
             const startWard = cost.startPoint.wardCode
@@ -93,64 +96,37 @@ const PartnerCostPage = () => {
         message.error('Dữ liệu không hợp lệ');
       }
     } catch (error) {
-      message.error('Không thể tải danh sách chi phí vận chuyển');
+      message.error('Không thể tải danh sách tuyến vận chuyển');
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchPartners = async () => {
-    try {
-      const response = await getAllPartnersforcost();
-      setPartners(response.partners);
-    } catch (error) {
-      message.error('Không thể tải danh sách đối tác');
-    }
+  const handleFilterChange = (newFilters) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      ...newFilters
+    }));
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, e) => {
+    e.stopPropagation(); // Stop event propagation to prevent row click
     try {
       await deleteExternalFleetCost(id);
-      message.success('Xóa chi phí vận chuyển thành công');
-      fetchExternalFleetCosts(selectedPartner); // Refresh the table data after deletion
+      message.success('Xóa tuyến vận chuyển thành công');
+      fetchExternalFleetCosts(); // Reload the list after deletion
     } catch (error) {
-      message.error('Không thể xóa chi phí vận chuyển');
-    }
-  };
-
-  const handleUpdate = async () => {
-    try {
-      await updateExternalFleetCost(currentCost._id, { cost: updatedCost });
-      message.success('Cập nhật chi phí vận chuyển thành công');
-      setIsUpdateModalVisible(false);
-      fetchExternalFleetCosts(selectedPartner); // Refresh the table data after update
-    } catch (error) {
-      message.error('Không thể cập nhật chi phí vận chuyển');
+      message.error('Không thể xóa tuyến vận chuyển');
     }
   };
 
   const handleSubmit = (data) => {
     console.log('Submitted data:', data);
     setIsModalVisible(false);
-    fetchExternalFleetCosts(selectedPartner); // Refresh the table data after submission
-  };
-
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-    return new Date(dateString).toLocaleDateString('vi-VN', options);
-  };
-
-  const handlePartnerChange = (value) => {
-    setSelectedPartner(value);
-    fetchExternalFleetCosts(value === 'all' ? null : value);
+    fetchExternalFleetCosts(); // Reload the list after creation
   };
 
   const columns = [
-    {
-      title: 'Đối tác',
-      dataIndex: 'partner_shortName',
-      key: 'partner_shortName',
-    },
     {
       title: 'Điểm đi',
       dataIndex: 'startPoint',
@@ -164,106 +140,77 @@ const PartnerCostPage = () => {
       render: (endPoint) => endPoint.fullName || 'N/A',
     },
     {
-      title: 'Giá vận chuyển',
-      dataIndex: 'cost',
-      key: 'cost',
-      render: (cost) => `${cost.toLocaleString()} VNĐ`,
-    },
-    {
       title: 'Loại vận chuyển',
       dataIndex: 'type',
       key: 'type',
       render: (type) => (type === 0 ? 'Đóng hàng' : 'Giao hàng nhập'),
     },
     {
-      title: 'Ngày cập nhật',
-      dataIndex: 'updatedAt',
-      key: 'updatedAt',
-      render: (updatedAt) => formatDate(updatedAt),
+      title: 'Số lượng đối tác ',
+      dataIndex: 'partnerTransportCostCount',
+      key: 'partnerTransportCostCount',
+      render: (count) => count || '0',
     },
     {
       title: 'Hành động',
       key: 'action',
       render: (text, record) => (
-        <>
-          <Button type="link" onClick={() => {
-            setCurrentCost(record);
-            setUpdatedCost(record.cost);
-            setIsUpdateModalVisible(true);
-          }}>
-            Cập nhật
-          </Button>
+        <Space size="middle">
           <Popconfirm
-            title="Bạn có chắc chắn muốn xóa chi phí vận chuyển này không?"
-            onConfirm={() => handleDelete(record._id)}
+            title="Bạn có chắc chắn muốn xóa tuyến vận chuyển này?"
+            onConfirm={(e) => handleDelete(record._id, e)}
             okText="Có"
             cancelText="Không"
           >
-            <Button type="link" danger>
+            <Button type="link" danger onClick={(e) => e.stopPropagation()}>
               Xóa
             </Button>
           </Popconfirm>
-        </>
+        </Space>
       ),
     },
   ];
 
   return (
     <Form layout="vertical">
-      <Row gutter={16}>
+      <LocationFilter onFilterChange={handleFilterChange} />
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col span={24}>
           <Button type="primary" onClick={() => setIsModalVisible(true)}>
-            Tạo mới chi phí vận chuyển
+            Tạo mới tuyến vận tải 
           </Button>
         </Col>
       </Row>
-      <Row gutter={16} style={{ marginTop: 16 }}>
-        <Col span={8}>
-          <Select
-            showSearch
-            placeholder="Chọn đối tác"
-            style={{ width: '100%' }}
-            onChange={handlePartnerChange}
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-          >
-            <Option value="all">Tất cả</Option>
-            {partners.map((partner) => (
-              <Option key={partner._id} value={partner._id}>
-                {partner.shortName}
-              </Option>
-            ))}
-          </Select>
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        <Col span={24}>
+          <Table
+            columns={columns}
+            dataSource={externalFleetCosts}
+            loading={loading}
+            rowKey="_id"
+            onRow={(record) => ({
+              onClick: () => {
+                navigate(`/partner/detail-cost/${record._id}`);
+              },
+            })}
+            pagination={{
+              current: currentPage,
+              pageSize: pageSize,
+              total: totalItems,
+              onChange: (page, pageSize) => {
+                setCurrentPage(page);
+                setPageSize(pageSize);
+              },
+              showTotal: (total) => `Tổng ${total} tuyến vận tải`,
+            }}
+          />
         </Col>
       </Row>
-      <Table
-        columns={columns}
-        dataSource={externalFleetCosts}
-        loading={loading}
-        rowKey="_id"
-        style={{ marginTop: 16 }}
-      />
       <CreateExternalFleetCost
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onSubmit={handleSubmit}
       />
-      <Modal
-        title="Cập nhật chi phí vận chuyển"
-        visible={isUpdateModalVisible}
-        onOk={handleUpdate}
-        onCancel={() => setIsUpdateModalVisible(false)}
-      >
-        <Form layout="vertical">
-          <Form.Item label="Giá vận chuyển">
-            <Input
-              value={updatedCost}
-              onChange={(e) => setUpdatedCost(e.target.value)}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
     </Form>
   );
 };

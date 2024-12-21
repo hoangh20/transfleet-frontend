@@ -17,11 +17,12 @@ const breadcrumbNameMap = {
   '/customer/list': 'Danh sách ',
   '/partner': 'Đội xe đối tác',
   '/partner/list': 'Danh sách',
-  '/partner/cost': 'Chi phí vận tải',
+  '/partner/detail-cost': 'Chi tiết tuyến vận tải',
+  '/partner/cost': 'Tuyến vận tải',
   '/ticket/create': 'Thêm chuyến mới',
   '/ticket': 'Chuyến vận chuyển',
   '/ticket/list': 'Danh sách chuyến',
-  '/ticket/detail/:id': 'Chi tiết chuyến',
+  '/ticket/detail': 'Chi tiết chuyến',
 };
 
 const nonClickablePaths = [
@@ -32,6 +33,9 @@ const nonClickablePaths = [
   '/operation',
   '/customer',
   '/ticket',
+  '/partner',
+  '/partner/detail-cost',
+  '/ticket/detail',
 ];
 
 const AppBreadcrumb = () => {

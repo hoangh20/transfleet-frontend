@@ -82,7 +82,7 @@ const AdminMenu = () => {
           <Link to='/partner/list'>Danh sách</Link>
         </Menu.Item>
         <Menu.Item key='partner-cost' style={{ fontSize: '18px' }}>
-          <Link to='/partner/cost'>Chi phí vận tải</Link>
+          <Link to='/partner/cost'>Tuyến vận tải</Link>
         </Menu.Item>
       </SubMenu>
       <Menu.Item

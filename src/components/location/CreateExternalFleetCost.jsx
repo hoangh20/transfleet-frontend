@@ -1,36 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, Button, message } from 'antd';
+import React, { useState,} from 'react';
+import { Modal, Form, Select, Button, message } from 'antd';
 import LocationSelector from './LocationSelector';
-import { getAllPartnersforcost } from '../../services/PartnerService';
 import { createExternalFleetCost } from '../../services/ExternalFleetCostService';
 
 const { Option } = Select;
 
 const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
   const [form] = Form.useForm();
-  const [partners, setPartners] = useState([]);
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [departure, setDeparture] = useState({});
   const [destination, setDestination] = useState({});
   const [cost, setCost] = useState('');
   const [transportType, setTransportType] = useState(null);
 
-  useEffect(() => {
-    const fetchPartners = async () => {
-      try {
-        const response = await getAllPartnersforcost();
-        setPartners(response.partners);
-      } catch (error) {
-        message.error('Không thể tải danh sách đối tác');
-      }
-    };
-
-    fetchPartners();
-  }, []);
-
-  const handlePartnerChange = (value) => {
-    setSelectedPartner(value);
-  };
 
   const handleDepartureChange = (location) => {
     setDeparture(location);
@@ -38,10 +20,6 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
 
   const handleDestinationChange = (location) => {
     setDestination(location);
-  };
-
-  const handleCostChange = (e) => {
-    setCost(e.target.value);
   };
 
   const handleTransportTypeChange = (value) => {
@@ -53,7 +31,7 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
       // eslint-disable-next-line no-unused-vars
       const values = await form.validateFields();
       
-      if (!departure.provinceCode || !departure.districtCode || !destination.provinceCode || !destination.districtCode || !cost || transportType === null) {
+      if (!departure.provinceCode || !departure.districtCode || !destination.provinceCode || !destination.districtCode || transportType === null) {
         message.error('Vui lòng điền đầy đủ thông tin');
         return;
       }
@@ -67,7 +45,7 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
       };
 
       await createExternalFleetCost(data);
-      message.success('Tạo mới chi phí vận chuyển thành công');
+      message.success('Tạo mới tuyến vận tải thành công');
       onSubmit(data);
       form.resetFields();
       setDeparture({});
@@ -78,13 +56,13 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
       
     } catch (error) {
       console.error('Validation failed:', error);
-      message.error('Lỗi khi tạo chi phí vận chuyển');
+      message.error('Lỗi khi tạo tuyến vận tải');
     }
   };
 
   return (
     <Modal
-      title="Tạo mới chi phí vận chuyển"
+      title="Tạo tuyến vận tải mới"
       visible={visible}
       onCancel={onCancel}
       footer={[
@@ -97,33 +75,8 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
       ]}
     >
       <Form form={form} layout="vertical">
-        <Form.Item label="Chọn đối tác">
-          <Select
-            showSearch
-            placeholder="Chọn đối tác"
-            onChange={handlePartnerChange}
-            value={selectedPartner}
-            filterOption={(input, option) =>
-              option.children.toString().toLowerCase().includes(input.toLowerCase())
-            }
-          >
-            {partners.map((partner) => (
-              <Option key={partner._id} value={partner._id}>
-                {partner.name} - ({partner.shortName})
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
         <LocationSelector label="Điểm đi" onChange={handleDepartureChange} />
         <LocationSelector label="Điểm đến" onChange={handleDestinationChange} />
-        <Form.Item label="Giá vận chuyển">
-          <Input
-            type="number"
-            value={cost}
-            onChange={handleCostChange}
-            placeholder="Nhập giá vận chuyển"
-          />
-        </Form.Item>
         <Form.Item label="Loại vận chuyển">
           <Select
             placeholder="Chọn loại vận chuyển"

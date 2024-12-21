@@ -46,3 +46,33 @@ export const deleteExternalFleetCost = async (id) => {
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+export const createPartnerTransportCost = async (data) => {
+  try {
+    const response = await axios.post(`${API_URL}/external-fleet-cost/create-partner-transport-cost`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating partner transport cost:', error);
+    throw error;
+  }
+};
+
+export const updatePartnerTransportCost = async (id, data) => {
+  try {
+    const response = await axios.put(`${API_URL}/external-fleet-cost/update-partner-transport-cost/${id}`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating partner transport cost:', error);
+    throw error;
+  }
+};
+
+export const deletePartnerTransportCost = async (id) => {
+  try {
+    const response = await axios.delete(`${API_URL}/external-fleet-cost/delete-partner-transport-cost/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting partner transport cost:', error);
+    throw error;
+  }
+};
