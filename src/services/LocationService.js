@@ -28,3 +28,32 @@ export const fetchProvinces = async () => {
       throw new Error(`Lỗi khi lấy danh sách xã của huyện ${districtCode}`);
     }
   };
+  export const fetchProvinceName = async (provinceCode) => {
+    try {
+      const response = await fetch(`https://provinces.open-api.vn/api/p/${provinceCode}`);
+      const data = await response.json();
+      return data.name || 'N/A';
+    } catch {
+      return 'N/A';
+    }
+  };
+  
+  export const fetchDistrictName = async (districtCode) => {
+    try {
+      const response = await fetch(`https://provinces.open-api.vn/api/d/${districtCode}`);
+      const data = await response.json();
+      return data.name || 'N/A';
+    } catch {
+      return 'N/A';
+    }
+  };
+  
+  export const fetchWardName = async (wardCode) => {
+    try {
+      const response = await fetch(`https://provinces.open-api.vn/api/w/${wardCode}`);
+      const data = await response.json();
+      return data.name || 'N/A';
+    } catch {
+      return 'N/A';
+    }
+  };

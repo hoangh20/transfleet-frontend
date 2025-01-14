@@ -9,6 +9,8 @@ import {
   TeamOutlined,
   AppstoreAddOutlined,
   ProfileOutlined,
+  ContainerOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 
 const { SubMenu } = Menu;
@@ -34,7 +36,7 @@ const AdminMenu = () => {
         icon={<AppstoreAddOutlined />}
         style={{ fontSize: '18px' }}
       >
-        <Link to='/ticket/create'>Tạo chuyến vận chuyển</Link>
+        <Link to='/order/create'>Tạo chuyến vận chuyển</Link>
       </Menu.Item>
 
       <Menu.Item
@@ -42,7 +44,14 @@ const AdminMenu = () => {
         icon={<ProfileOutlined />}
         style={{ fontSize: '18px' }}
       >
-        <Link to='/ticket/list'>Danh sách chuyến</Link>
+        <Link to='/order/list'>Danh sách chuyến</Link>
+      </Menu.Item>
+      <Menu.Item
+        key='partner-cost'
+        icon={<ContainerOutlined />}
+        style={{ fontSize: '18px' }}
+      >
+        <Link to='/transport-route'>Tuyến vận tải</Link>
       </Menu.Item>
 
       <SubMenu
@@ -72,19 +81,13 @@ const AdminMenu = () => {
           <Link to='/driver/wage'>Lương thưởng</Link>
         </Menu.Item>
       </SubMenu>
-      <SubMenu
-        key='partber'
-        title='Đội xe đối tác'
+      <Menu.Item
+        key='partner'
         icon={<TeamOutlined />}
         style={{ fontSize: '18px' }}
       >
-        <Menu.Item key='partner-list' style={{ fontSize: '18px' }}>
-          <Link to='/partner/list'>Danh sách</Link>
-        </Menu.Item>
-        <Menu.Item key='partner-cost' style={{ fontSize: '18px' }}>
-          <Link to='/partner/cost'>Tuyến vận tải</Link>
-        </Menu.Item>
-      </SubMenu>
+        <Link to='/partner/list'>Đội xe đối tác</Link>
+      </Menu.Item> 
       <Menu.Item
         key='customer'
         icon={<TeamOutlined />}
@@ -94,10 +97,10 @@ const AdminMenu = () => {
       </Menu.Item> 
       <Menu.Item
         key='report'
-        icon={<SettingOutlined />}
+        icon={<AppstoreOutlined />}
         style={{ fontSize: '18px' }}
       >
-        <Link to='/report'>Báo cáo</Link>
+        <Link to='/system'>Tài nguyên hệ thống</Link>
       </Menu.Item>
       <Menu.Item
         key='operation'

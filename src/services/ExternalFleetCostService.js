@@ -76,3 +76,12 @@ export const deletePartnerTransportCost = async (id) => {
     throw error;
   }
 };
+export const getInternalCostsByExternalFleetCostId = async (externalFleetCostId) => {
+  try {
+    const response = await axios.get(`${API_URL}/external-fleet-cost/internal-costs/${externalFleetCostId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching internal costs:', error);
+    throw error;
+  }
+};

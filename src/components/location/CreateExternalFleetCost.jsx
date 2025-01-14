@@ -12,7 +12,7 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
   const [destination, setDestination] = useState({});
   const [cost, setCost] = useState('');
   const [transportType, setTransportType] = useState(null);
-
+  const [moocType, setMoocType] = useState(null);
 
   const handleDepartureChange = (location) => {
     setDeparture(location);
@@ -26,12 +26,16 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
     setTransportType(value);
   };
 
+  const handleMoocTypeChange = (value) => {
+    setMoocType(value);
+  };
+
   const handleSubmit = async () => {
     try {
       // eslint-disable-next-line no-unused-vars
       const values = await form.validateFields();
       
-      if (!departure.provinceCode || !departure.districtCode || !destination.provinceCode || !destination.districtCode || transportType === null) {
+      if (!departure.provinceCode || !departure.districtCode || !destination.provinceCode || !destination.districtCode || transportType === null || moocType === null) {
         message.error('Vui lòng điền đầy đủ thông tin');
         return;
       }
@@ -41,6 +45,7 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
         startPoint: departure,
         endPoint: destination,
         type: transportType,
+        moocType: moocType,
         cost: parseFloat(cost),
       };
 
@@ -52,6 +57,7 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
       setDestination({});
       setCost('');
       setTransportType(null);
+      setMoocType(null);
       setSelectedPartner(null);
       
     } catch (error) {
@@ -85,6 +91,16 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
           >
             <Option value={0}>Đóng hàng</Option>
             <Option value={1}>Giao hàng nhập</Option>
+          </Select>
+        </Form.Item>
+        <Form.Item label="Loại mooc">
+          <Select
+            placeholder="Chọn loại mooc"
+            onChange={handleMoocTypeChange}
+            value={moocType}
+          >
+            <Option value={0}>20''</Option>
+            <Option value={1}>40''</Option>
           </Select>
         </Form.Item>
       </Form>

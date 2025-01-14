@@ -8,13 +8,12 @@ import DriverListPage from '../pages/driver/index';
 import DriverWagePage from '../pages/driver/wage';
 import VehicleDetailPage from '../pages/vehicle/VehicleDetailPage';
 import CustommerPage from '../pages/customer/index';
-import TicketCreatePage from '../pages/ticket/create';
-import TicketListPage from '../pages/ticket/index';
-import TicketDetailPage from '../pages/ticket/ticketDetailPage';
 import PartnerPage from '../pages/Partner/index';
-import PartnerCostPage from '../pages/Partner/cost';
-import DetailCostPage from '../pages/Partner/detailCost';
-
+import PartnerCostPage from '../pages/TransportRoute/cost';
+import DetailCostPage from '../pages/TransportRoute/detailCost';
+import CreateOrderPage from '../pages/Order/create';
+import OrderPage from '../pages/Order/index';
+import SystemDefaultsPage from '../pages/System/SystemDefaultsPage';
 export const routes = [
   {
     path: '/',
@@ -57,27 +56,27 @@ export const routes = [
     page: CustommerPage,
   },
   {
-    path: '/ticket/create',
-    page: TicketCreatePage,
-  },
-  {
-    path: '/ticket/list',
-    page: TicketListPage,
-  },
-  {
-    path: '/ticket/detail/:id',
-    page: TicketDetailPage,
-  },
-  {
     path: '/partner/list',
     page: PartnerPage,
   },
   {
-    path: '/partner/cost',
+    path: '/transport-route',
     page: PartnerCostPage,
   },
   {
-    path: '/partner/detail-cost/:id',
+    path: '/transport-route/detail/:id',
     page: DetailCostPage,
+  },
+  {
+    path: '/order/create',
+    page: CreateOrderPage,
+  },
+  {
+    path : '/order/list',
+    page : OrderPage,
+  },
+  {
+    path : '/system',
+    page : SystemDefaultsPage
   }
 ];

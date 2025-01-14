@@ -21,6 +21,12 @@ export const getAllCustomers = async (page = 1, limit = 10, search = '') => {
   );
   return response.data;
 };
+export const getAllCustomersWithoutPagination = async () => {
+  const response = await axios.get(
+    `${process.env.REACT_APP_API_URL}/customers/get-all`,
+  );
+  return response.data;
+};
 
 export const deleteCustomer = async (id) => {
   const response = await axios.delete(

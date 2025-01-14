@@ -4,36 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import CreateExternalFleetCost from '../../components/location/CreateExternalFleetCost';
 import LocationFilter from '../../components/location/LocationFilter';
 import { getAllExternalFleetCosts, deleteExternalFleetCost } from '../../services/ExternalFleetCostService';
+import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 
-const fetchProvinceName = async (provinceCode) => {
-  try {
-    const response = await fetch(`https://provinces.open-api.vn/api/p/${provinceCode}`);
-    const data = await response.json();
-    return data.name || 'N/A';
-  } catch {
-    return 'N/A';
-  }
-};
-
-const fetchDistrictName = async (districtCode) => {
-  try {
-    const response = await fetch(`https://provinces.open-api.vn/api/d/${districtCode}`);
-    const data = await response.json();
-    return data.name || 'N/A';
-  } catch {
-    return 'N/A';
-  }
-};
-
-const fetchWardName = async (wardCode) => {
-  try {
-    const response = await fetch(`https://provinces.open-api.vn/api/w/${wardCode}`);
-    const data = await response.json();
-    return data.name || 'N/A';
-  } catch {
-    return 'N/A';
-  }
-};
 
 const PartnerCostPage = () => {
   const navigate = useNavigate();
@@ -146,6 +118,12 @@ const PartnerCostPage = () => {
       render: (type) => (type === 0 ? 'Đóng hàng' : 'Giao hàng nhập'),
     },
     {
+      title: 'Loại mooc',
+      dataIndex: 'moocType',
+      key: 'moocType',
+      render: (moocType) => (moocType === 0 ? '20\'\'' : '40\'\''),
+    },
+    {
       title: 'Số lượng đối tác ',
       dataIndex: 'partnerTransportCostCount',
       key: 'partnerTransportCostCount',
@@ -190,7 +168,7 @@ const PartnerCostPage = () => {
             rowKey="_id"
             onRow={(record) => ({
               onClick: () => {
-                navigate(`/partner/detail-cost/${record._id}`);
+                navigate(`/transport-route/detail/${record._id}`);
               },
             })}
             pagination={{
