@@ -85,3 +85,26 @@ export const getInternalCostsByExternalFleetCostId = async (externalFleetCostId)
     throw error;
   }
 };
+export const updateInternalCosts = async (id, updates, userId) => {
+  try {
+    const response = await axios.put(`${API_URL}/external-fleet-cost/internal-costs/${id}`, {
+      updates,
+      userId
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating internal costs:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+export const getHistoryByTypeAndExternalFleetCostId = async (type, externalFleetCostId) => {
+  try {
+    const response = await axios.get(`${API_URL}/external-fleet-cost/internal-costs-history`, {
+      params: { type, externalFleetCostId }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching internal costs history:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};

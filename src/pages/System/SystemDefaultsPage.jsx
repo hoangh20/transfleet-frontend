@@ -22,6 +22,7 @@ const NumberInput = (props) => {
 const SystemDefaultsPage = () => {
   const [form] = Form.useForm();
   const [fixedCosts, setFixedCosts] = useState({});
+  const [initialValues, setInitialValues] = useState({});
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [historyData, setHistoryData] = useState([]);
@@ -37,6 +38,7 @@ const SystemDefaultsPage = () => {
     try {
       const response = await SystemService.getFixedCost();
       setFixedCosts(response);
+      setInitialValues(response);
       form.setFieldsValue(response);
     } catch (error) {
       message.error('Lỗi khi tải chi phí cố định');
@@ -50,9 +52,21 @@ const SystemDefaultsPage = () => {
     try {
       const user = JSON.parse(localStorage.getItem('user')); 
       const userId = user?.id;
-      await SystemService.updateFixedCost(fixedCosts._id, values, userId);
-      message.success('Cập nhật chi phí cố định thành công');
-      setIsEditing(false);
+      const updatedFields = Object.keys(values).reduce((acc, key) => {
+        if (values[key] !== initialValues[key]) {
+          acc[key] = values[key];
+        }
+        return acc;
+      }, {});
+      if (Object.keys(updatedFields).length > 0) {
+        await SystemService.updateFixedCost(fixedCosts._id, updatedFields, userId);
+        message.success('Cập nhật chi phí cố định thành công');
+        setIsEditing(false);
+        fetchFixedCosts();
+      } else {
+        message.info('Không có thay đổi nào để cập nhật');
+        setIsEditing(false);
+      }
     } catch (error) {
       message.error('Lỗi khi cập nhật chi phí cố định');
     } finally {
