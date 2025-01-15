@@ -22,10 +22,10 @@ export const createDeliveryOrder = async (data) => {
   }
 };
 
-export const getPackingOrdersByDate = async (filterDate) => {
+export const getPackingOrdersByDate = async (date) => {
   try {
     const response = await axios.get(`${API_URL}/orders/packing-orders`, {
-      params: { filterDate }
+      params: { date }
     });
     return response.data;
   } catch (error) {
@@ -34,14 +34,26 @@ export const getPackingOrdersByDate = async (filterDate) => {
   }
 };
 
-export const getDeliveryOrdersByDate = async (filterDate) => {
+export const getDeliveryOrdersByDate = async (date) => {
   try {
     const response = await axios.get(`${API_URL}/orders/delivery-orders`, {
-      params: { filterDate }
+      params: { date },
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
     return response.data;
   } catch (error) {
     console.error('Error fetching delivery orders:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+export const getCostByOrderId = async (orderId) => {
+  try {
+    const response = await axios.get(`${API_URL}/orders/costs/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching cost by order ID:', error);
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };

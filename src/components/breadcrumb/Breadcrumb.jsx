@@ -22,6 +22,7 @@ const breadcrumbNameMap = {
   '/order': 'Chuyến vận chuyển',
   '/order/create': 'Tạo chuyến vận chuyển',
   '/order/list': 'Danh sách chuyến',
+  '/system': 'Hệ thống',
 };
 
 const nonClickablePaths = [

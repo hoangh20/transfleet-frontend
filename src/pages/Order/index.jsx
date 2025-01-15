@@ -42,21 +42,25 @@ const OrderPage = () => {
         Ghép Đơn Hàng Đã Chọn
       </Button>
       <Row gutter={16}>
-      <Col span={12}>
-          <DeliveryOrderList
-            startDate={selectedDate.format('YYYY-MM-DD')}
-            onSelectChange={handleDeliveryOrderSelectChange}
-          />
-        </Col>
-        <Col span={12}>
-          <PackingOrderList
-            startDate={selectedDate.format('YYYY-MM-DD')}
-            onSelectChange={handlePackingOrderSelectChange}
-          />
-        </Col>
-        
-      </Row>
-      
+  <Col span={11}>
+    <DeliveryOrderList
+      startDate={selectedDate.format('YYYY-MM-DD')} 
+      onSelectChange={handleDeliveryOrderSelectChange}
+    />
+  </Col>
+  
+  <Col span={1} style={{ 
+    borderRight: '1px solid #e8e8e8',
+    marginTop: 16,
+  }} />
+
+  <Col span={11}>
+    <PackingOrderList
+      startDate={selectedDate.format('YYYY-MM-DD')}
+      onSelectChange={handlePackingOrderSelectChange} 
+    />
+  </Col>
+</Row>
     </div>
   );
 };

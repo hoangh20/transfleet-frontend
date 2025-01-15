@@ -108,3 +108,13 @@ export const getHistoryByTypeAndExternalFleetCostId = async (type, externalFleet
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+export const checkIfRecordExists = async (startPoint, endPoint) => {
+  try {
+    const response = await axios.post(`${API_URL}/external-fleet-cost/check`, { startPoint, endPoint });
+    return response.data;
+  } catch (error) {
+    console.error('Error checking if record exists:', error);
+    throw error;
+  }
+};

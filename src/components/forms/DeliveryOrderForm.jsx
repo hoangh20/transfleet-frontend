@@ -9,16 +9,24 @@ import {
   Col,
   Card,
   Select,
+  Table,
 } from 'antd';
+import moment from 'moment';
 import { createDeliveryOrder } from '../../services/OrderService';
 import { getAllCustomersWithoutPagination } from '../../services/CustomerService';
 import LocationSelector from '../location/LocationSelector';
+import { checkIfRecordExists } from '../../services/ExternalFleetCostService'; 
+import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService'; 
+import { Link } from 'react-router-dom'; 
 
 const { Option } = Select;
 
 const DeliveryOrderForm = () => {
   const [form] = Form.useForm();
   const [customers, setCustomers] = useState([]);
+  const [routes, setRoutes] = useState([]); 
+  const [loading, setLoading] = useState(false);
+  const [selectedRouteId, setSelectedRouteId] = useState(null);
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -36,26 +44,176 @@ const DeliveryOrderForm = () => {
   }, []);
 
   const handleSubmit = async (values) => {
+    const orderData = {
+      ...values,
+      deliveryDate: values.deliveryDate.format('YYYY-MM-DD') ? moment(values.deliveryDate).format('YYYY-MM-DD') : null,
+      externalFleetCostId: selectedRouteId,
+    };
+
     try {
-      await createDeliveryOrder(values);
+      await createDeliveryOrder(orderData);
       form.resetFields();
+      setSelectedRouteId(null); 
       message.success('Tạo đơn giao hàng thành công');
     } catch (error) {
       message.error('Lỗi khi tạo đơn giao hàng');
     }
   };
 
-  const handleLocationChange = (field, location) => {
+  const handleLocationChange = async (field, location) => {
     form.setFieldsValue({
       location: {
         ...form.getFieldValue('location'),
         [field]: location,
       },
     });
+
+    const { startPoint, endPoint } = form.getFieldValue('location');
+    if (startPoint && endPoint) {
+      setLoading(true);
+      try {
+        const response = await checkIfRecordExists(startPoint, endPoint);
+        if (response && response.length > 0) {
+          const updatedRoutes = await Promise.all(
+            response.map(async (route) => {
+              const startProvince = await fetchProvinceName(route.startPoint.provinceCode);
+              const startDistrict = await fetchDistrictName(route.startPoint.districtCode);
+              const startWard = route.startPoint.wardCode
+                ? await fetchWardName(route.startPoint.wardCode)
+                : null;
+
+              const endProvince = await fetchProvinceName(route.endPoint.provinceCode);
+              const endDistrict = await fetchDistrictName(route.endPoint.districtCode);
+              const endWard = route.endPoint.wardCode
+                ? await fetchWardName(route.endPoint.wardCode)
+                : null;
+
+              return {
+                ...route,
+                startPoint: {
+                  ...route.startPoint,
+                  fullName: `${startWard ? startWard + ', ' : ''}${startDistrict}, ${startProvince}`,
+                },
+                endPoint: {
+                  ...route.endPoint,
+                  fullName: `${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`,
+                },
+              };
+            })
+          );
+          setRoutes(updatedRoutes);
+        } else {
+          setRoutes([]);
+        }
+      } catch (error) {
+        message.error('Lỗi khi kiểm tra tuyến vận tải');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const columns = [
+    {
+      title: 'Điểm đi',
+      dataIndex: 'startPoint',
+      key: 'startPoint',
+      render: (startPoint) => startPoint.fullName || 'N/A',
+    },
+    {
+      title: 'Điểm đến',
+      dataIndex: 'endPoint',
+      key: 'endPoint',
+      render: (endPoint) => endPoint.fullName || 'N/A',
+    },
+    {
+      title: 'Loại vận chuyển',
+      dataIndex: 'type',
+      key: 'type',
+      render: (type) => (type === 0 ? 'Đóng hàng' : 'Giao hàng nhập'),
+    },
+    {
+      title: 'Loại mooc',
+      dataIndex: 'moocType',
+      key: 'moocType',
+      render: (moocType) => (moocType === 0 ? '20\'\'' : '40\'\''),
+    },
+  ];
+
+  const rowSelection = {
+    type: 'radio',
+    onChange: (selectedRowKeys, selectedRows) => {
+      setSelectedRouteId(selectedRowKeys[0]);
+      if (selectedRows.length > 0) {
+        form.setFieldsValue({
+          moocType: selectedRows[0].moocType,
+        });
+      }
+    },
   };
 
   return (
     <>
+      <Card title='Thông Tin Địa Điểm' bordered={false} style={{ marginBottom: 16 }}>
+        <Form form={form} layout='vertical' onFinish={handleSubmit}>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label='Điểm Đi'
+                name={['location', 'startPoint']}
+                rules={[{ required: true, message: 'Vui lòng chọn điểm bắt đầu' }]}
+              >
+                <LocationSelector
+                  onChange={(location) =>
+                    handleLocationChange('startPoint', location)
+                  }
+                />
+              </Form.Item>
+              <Form.Item
+                label='Địa Chỉ Điểm Đi'
+                name={['location', 'startPoint', 'locationText']}
+              >
+                <Input placeholder='Nhập địa chỉ điểm bắt đầu' />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label='Điểm Đến'
+                name={['location', 'endPoint']}
+                rules={[{ required: true, message: 'Vui lòng chọn điểm kết thúc' }]}
+              >
+                <LocationSelector
+                  onChange={(location) =>
+                    handleLocationChange('endPoint', location)
+                  }
+                />
+              </Form.Item>
+              <Form.Item
+                label='Địa Chỉ Điểm Đến'
+                name={['location', 'endPoint', 'locationText']}
+              >
+                <Input placeholder='Nhập địa chỉ điểm kết thúc' />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Card>
+      {routes.length > 0 ? (
+        <Card title='Chọn Tuyến Vận Tải Tương Ứng' bordered={false} style={{ marginBottom: 16 }}>
+          <Table
+            columns={columns}
+            dataSource={routes}
+            loading={loading}
+            rowKey="_id"
+            rowSelection={rowSelection}
+            pagination={false}
+          />
+        </Card>
+      ) : (
+        <Card title='Chọn Tuyến Vận Tải Tương Ứng' bordered={false} style={{ marginBottom: 16 }}>
+          <p>Không tìm được tuyến vận tải nào. <Link to="/transport-route">Bạn có muốn tạo tuyến vận tải mới?</Link></p>
+        </Card>
+      )}
       <Card title='Thông Tin Đơn Giao Hàng Nhập' bordered={false} style={{ marginBottom: 16 }}>
         <Form form={form} layout='vertical' onFinish={handleSubmit}>
           <Row gutter={16}>
@@ -129,57 +287,13 @@ const DeliveryOrderForm = () => {
             </Col>
           </Row>
           <Row gutter={16}>
-             <Col span={6}>
+            <Col span={6}>
               <Form.Item
                 label="Thời Gian Giao Hàng Dự Kiến"
                 name="estimatedTime"
                 rules={[{ required: false, message: 'Vui lòng nhập thời gian dự kiến' }]}
               >
                 <DatePicker showTime placeholder="Chọn thời gian dự kiến" />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Card>
-      <Card title='Thông Tin Địa Điểm' bordered={false}>
-        <Form form={form} layout='vertical' onFinish={handleSubmit}>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label='Điểm Đi'
-                name={['location', 'startPoint']}
-                rules={[{ required: true, message: 'Vui lòng chọn điểm bắt đầu' }]}
-              >
-                <LocationSelector
-                  onChange={(location) =>
-                    handleLocationChange('startPoint', location)
-                  }
-                />
-              </Form.Item>
-              <Form.Item
-                label='Địa Chỉ Điểm Đi'
-                name={['location', 'startPoint', 'locationText']}
-              >
-                <Input placeholder='Nhập địa chỉ điểm bắt đầu' />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label='Điểm Đến'
-                name={['location', 'endPoint']}
-                rules={[{ required: true, message: 'Vui lòng chọn điểm kết thúc' }]}
-              >
-                <LocationSelector
-                  onChange={(location) =>
-                    handleLocationChange('endPoint', location)
-                  }
-                />
-              </Form.Item>
-              <Form.Item
-                label='Địa Chỉ Điểm Đến'
-                name={['location', 'endPoint', 'locationText']}
-              >
-                <Input placeholder='Nhập địa chỉ điểm kết thúc' />
               </Form.Item>
             </Col>
           </Row>

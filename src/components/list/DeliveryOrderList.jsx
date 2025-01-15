@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Table, message } from 'antd';
-import { getDeliveryOrdersByDate } from '../../services/OrderService';
+import { Card, Col, Row, message, Typography } from 'antd';
+import { getDeliveryOrdersByDate, getCostByOrderId } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
 import { getCustomerById } from '../../services/CustomerService';
 
+const { Title } = Typography;
+
 const DeliveryOrderList = ({ startDate, onSelectChange }) => {
+  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -20,8 +23,26 @@ const DeliveryOrderList = ({ startDate, onSelectChange }) => {
           const endProvince = await fetchProvinceName(order.location.endPoint.provinceCode);
           const endDistrict = await fetchDistrictName(order.location.endPoint.districtCode);
           const customer = await getCustomerById(order.customer);
+          const cost = await getCostByOrderId(order._id);
+          const tripFare = cost.tripFare;
+          const estimatedProfit = cost.tripFare - (
+            cost.driverAllowance +
+            cost.driverSalary +
+            cost.fuelCost +
+            cost.singleTicket +
+            cost.monthlyTicket +
+            cost.otherCosts +
+            cost.registrationFee +
+            cost.insurance +
+            cost.technicalTeamSalary +
+            cost.bankLoanInterest +
+            cost.repairCost
+          );
+
           return {
             ...order,
+            tripFare,
+            estimatedProfit, // Use calculated estimatedProfit
             startLocation: `${startProvince}, ${startDistrict}`,
             endLocation: `${endProvince}, ${endDistrict}`,
             shortName: customer.shortName,
@@ -40,53 +61,52 @@ const DeliveryOrderList = ({ startDate, onSelectChange }) => {
     fetchOrders();
   }, [startDate]);
 
-  const onSelectChangeHandler = (selectedRowKeys) => {
-    setSelectedRowKeys(selectedRowKeys);
-    onSelectChange(selectedRowKeys);
+  const onSelectChangeHandler = (orderId) => {
+    let newSelectedRowKeys;
+    if (selectedRowKeys.includes(orderId)) {
+      newSelectedRowKeys = [];
+    } else {
+      newSelectedRowKeys = [orderId];
+    }
+    setSelectedRowKeys(newSelectedRowKeys);
+    onSelectChange(newSelectedRowKeys);
   };
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChangeHandler,
-  };
-
-  const columns = [
-    {
-      title: 'Khách Hàng',
-      dataIndex: 'shortName',
-      key: 'shortName',
-    },
-    {
-      title: 'Điểm Đi',
-      dataIndex: 'startLocation',
-      key: 'startLocation',
-    },
-    {
-      title: 'Điểm Đến',
-      dataIndex: 'endLocation',
-      key: 'endLocation',
-    },
-    {
-      title: 'Mooc',
-      dataIndex: 'moocType',
-      key: 'moocType',
-    },
-    {
-      title: 'Số Cont',
-      dataIndex: 'containerNumber',
-      key: 'containerNumber',
-    },
-  ];
 
   return (
-    <Table
-      rowSelection={rowSelection}
-      columns={columns}
-      dataSource={orders}
-      rowKey="_id"
-      loading={loading}
-      title={() => 'Danh Sách Đơn Giao Hàng'}
-    />
+    <>
+      <Title level={3}>Danh Sách Đơn Giao Hàng</Title>
+      <Row gutter={[16, 16]}>
+        {orders.map((order) => (
+          <Col span={8} key={order._id}>
+            <Card
+              title={
+                <>
+                  <div>{`Khách Hàng: ${order.shortName}`}</div>
+                </>
+              }
+              bordered={false}
+              onClick={() => onSelectChangeHandler(order._id)}
+              style={{
+                cursor: 'pointer',
+                border: selectedRowKeys.includes(order._id) ? '2px solid #1890ff' : '1px solid #f0f0f0',
+              }}
+            >
+              {order.tripFare === 0 ? (
+                <div style={{ color: 'red', fontWeight: 'bold', textAlign: 'right' }}>Không có tuyến</div>
+              ) : (
+                <div style={{ fontWeight: 'bold', fontSize: '16px', textAlign: 'right', margin: 0, color: 'green' }}>
+                  { order.estimatedProfit.toFixed(2)}
+                </div>
+              )}
+              <p style={{ margin: 0 }}><strong>Điểm Đi:</strong> {order.startLocation}</p>
+              <p style={{ margin: 0 }}><strong>Điểm Đến:</strong> {order.endLocation}</p>
+              <p style={{ margin: 0 }}><strong>Mooc:</strong> {order.moocType}</p>
+              <p style={{ margin: 0 }}><strong>Số Cont:</strong> {order.containerNumber}</p>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    </>
   );
 };
 

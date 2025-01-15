@@ -4,16 +4,13 @@ import { Form, Input, Button, Card, Row, Col, Table, message, Modal } from 'antd
 import { HistoryOutlined } from '@ant-design/icons';
 import SystemService from '../../services/SystemService';
 
-const formatNumber = (value) => {
-  return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-};
+
 
 const NumberInput = (props) => {
   const { value, onChange, ...rest } = props;
 
   const handleChange = (e) => {
-    const formattedValue = formatNumber(e.target.value.replace(/\./g, ''));
-    onChange(formattedValue);
+
   };
 
   return <Input {...rest} value={value} onChange={handleChange} />;
@@ -210,6 +207,24 @@ const SystemDefaultsPage = () => {
                   suffix={
                     <HistoryOutlined
                       onClick={() => showHistoryModal('Lịch sử thay đổi chi phí sửa chữa', 'repairCost')}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  }
+                  disabled={!isEditing}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Chi phí vé tháng"
+                name="monthlyTicket"
+                rules={[{ required: true, message: 'Vui lòng nhập chi phí vé tháng' }]}
+              >
+                <NumberInput
+                  placeholder="Nhập chi phí vé tháng"
+                  suffix={
+                    <HistoryOutlined
+                      onClick={() => showHistoryModal('Lịch sử thay đổi chi phí vé tháng', 'monthlyTicket')}
                       style={{ cursor: 'pointer' }}
                     />
                   }

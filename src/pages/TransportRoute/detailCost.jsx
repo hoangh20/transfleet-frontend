@@ -242,18 +242,6 @@ const DetailCostPage = () => {
               )}
               <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('singleTicket')} style={{ float: 'right' }} />
             </Descriptions.Item>
-            <Descriptions.Item label="Vé tháng">
-              {isEditing ? (
-                <Input.Group compact>
-                  <Form.Item name="monthlyTicket" noStyle>
-                    <Input style={{ width: 'calc(100% - 32px)' }} />
-                  </Form.Item>
-                </Input.Group>
-              ) : (
-                internalCosts.monthlyTicket
-              )}
-              <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('monthlyTicket')} style={{ float: 'right' }} />
-            </Descriptions.Item>
             <Descriptions.Item label="Chi phí khác">
               {isEditing ? (
                 <Input.Group compact>
