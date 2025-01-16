@@ -20,8 +20,9 @@ const breadcrumbNameMap = {
   '/transport-route': 'Tuyến vận tải',
   '/transport-route/detail': 'Chi tiết tuyến vận tải',
   '/order': 'Chuyến vận chuyển',
-  '/order/create': 'Tạo chuyến vận chuyển',
-  '/order/list': 'Danh sách chuyến',
+  '/order/create': 'Tạo đơn vận chuyển',
+  '/order/list': 'Danh sách đơn hàng',
+  '/order/list-trip': 'Danh sách các chuyến',
   '/system': 'Hệ thống',
 };
 

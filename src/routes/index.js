@@ -14,6 +14,9 @@ import DetailCostPage from '../pages/TransportRoute/detailCost';
 import CreateOrderPage from '../pages/Order/create';
 import OrderPage from '../pages/Order/index';
 import SystemDefaultsPage from '../pages/System/SystemDefaultsPage';
+import DeliveryOrderDetailPage from '../pages/Order/DeliveryOrderDetailPage';
+import PackingOrderDetailPage from '../pages/Order/PackingOrderDetailPage';
+import OrderTripListPage from '../pages/Order/OrderTripListPage';
 export const routes = [
   {
     path: '/',
@@ -74,6 +77,18 @@ export const routes = [
   {
     path : '/order/list',
     page : OrderPage,
+  },
+  {
+    path : '/order/delivery-orders/:orderId',
+    page : DeliveryOrderDetailPage
+  },
+  {
+    path : '/order/packing-orders/:orderId',
+    page : PackingOrderDetailPage
+  },
+  {
+    path : '/order/list-trip',
+    page : OrderTripListPage
   },
   {
     path : '/system',

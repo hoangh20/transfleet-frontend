@@ -57,3 +57,37 @@ export const getCostByOrderId = async (orderId) => {
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+export const createOrderConnection = async (deliveryOrderId, packingOrderId, type) => {
+  try {
+    const response = await axios.post(`${API_URL}/orders/order-connections`, {
+      deliveryOrderId,
+      packingOrderId,
+      type
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating order connection:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const getDeliveryOrderDetails = async (orderId) => {
+  try {
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/orders/delivery-orders/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching delivery order details:', error);
+    throw error;
+  }
+};
+
+export const getPackingOrderDetails = async (orderId) => {
+  try {
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/orders/packing-orders/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching packing order details:', error);
+    throw error;
+  }
+};

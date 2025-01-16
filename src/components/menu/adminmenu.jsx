@@ -32,19 +32,26 @@ const AdminMenu = () => {
       </Menu.Item>
       
       <Menu.Item
-        key='ticket'
+        key='order'
         icon={<AppstoreAddOutlined />}
         style={{ fontSize: '18px' }}
       >
-        <Link to='/order/create'>Tạo chuyến vận chuyển</Link>
+        <Link to='/order/create'>Tạo đơn vận chuyển</Link>
       </Menu.Item>
 
       <Menu.Item
-        key='ticket/list'
+        key='order/list'
         icon={<ProfileOutlined />}
         style={{ fontSize: '18px' }}
       >
-        <Link to='/order/list'>Danh sách chuyến</Link>
+        <Link to='/order/list'>Danh sách đơn hàng</Link>
+      </Menu.Item>
+      <Menu.Item
+        key='order/list-trip'
+        icon={<ProfileOutlined />}
+        style={{ fontSize: '18px' }}
+      >
+        <Link to='/order/list-trip'>Danh sách các chuyến </Link>
       </Menu.Item>
       <Menu.Item
         key='partner-cost'

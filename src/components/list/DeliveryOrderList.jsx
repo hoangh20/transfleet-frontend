@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Col, Row, message, Typography } from 'antd';
+import { Link } from 'react-router-dom';
 import { getDeliveryOrdersByDate, getCostByOrderId } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
 import { getCustomerById } from '../../services/CustomerService';
@@ -42,7 +43,7 @@ const DeliveryOrderList = ({ startDate, onSelectChange }) => {
           return {
             ...order,
             tripFare,
-            estimatedProfit, // Use calculated estimatedProfit
+            estimatedProfit, 
             startLocation: `${startProvince}, ${startDistrict}`,
             endLocation: `${endProvince}, ${endDistrict}`,
             shortName: customer.shortName,
@@ -79,10 +80,11 @@ const DeliveryOrderList = ({ startDate, onSelectChange }) => {
         {orders.map((order) => (
           <Col span={8} key={order._id}>
             <Card
-              title={
+              title={<Link to={`/order/delivery-orders/${order._id}`}>
                 <>
                   <div>{`Khách Hàng: ${order.shortName}`}</div>
                 </>
+                </Link>
               }
               bordered={false}
               onClick={() => onSelectChangeHandler(order._id)}

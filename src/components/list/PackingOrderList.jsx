@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Col, Row, message, Typography } from 'antd';
+import  {Link} from 'react-router-dom';
 import { getPackingOrdersByDate, getCostByOrderId } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
 import { getCustomerById } from '../../services/CustomerService';
@@ -80,9 +81,11 @@ const PackingOrderList = ({ startDate, onSelectChange }) => {
           <Col span={8} key={order._id}>
             <Card
               title={
+                <Link to={`/order/packing-orders/${order._id}`}>
                 <>
                   <div>{`Khách Hàng: ${order.shortName}`}</div>
                 </>
+                </Link>
               }
               bordered={false}
               onClick={() => onSelectChangeHandler(order._id)}
@@ -95,7 +98,7 @@ const PackingOrderList = ({ startDate, onSelectChange }) => {
                 <div style={{ color: 'red', fontWeight: 'bold' }}>Không có tuyến</div>
               ) : (
                 <div style={{ fontWeight: 'bold', fontSize: '16px', textAlign: 'right', margin: 0, color: 'green' }}>
-                  {order.tripFare ? order.tripFare.toFixed(2) : 'N/A'}
+                  { order.estimatedProfit.toFixed(2)}
                 </div>
               )}
               <p style={{ margin: 0 }}><strong>Điểm Đi:</strong> {order.startLocation}</p>

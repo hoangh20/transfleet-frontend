@@ -107,7 +107,6 @@ const PackingOrderForm = () => {
         } else {
           console.error('Invalid data structure:', response); // Log invalid data structure
           setRoutes([]);
-          message.error('Dữ liệu không hợp lệ');
         }
       } catch (error) {
         console.error('Error checking routes:', error); // Log error
