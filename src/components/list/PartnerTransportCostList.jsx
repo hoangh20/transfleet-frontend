@@ -1,55 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Row, Col, Button, AutoComplete, Popconfirm, Space, Modal, Form, Input, message } from 'antd';
-import { getPartnerById, getAllPartnersforcost } from '../../services/PartnerService';
+import { Card, Table, Row, Col, Button, AutoComplete, Popconfirm, Space, Modal, Form, Input, message, Spin } from 'antd';
+import { getPartnerById } from '../../services/PartnerService';
 import { updatePartnerTransportCost, deletePartnerTransportCost } from '../../services/ExternalFleetCostService';
 import CreatePartnerTransportCost from '../popup/CreatePartnerTransportCost';
 
 const PartnerTransportCostList = ({ transportTripId, partnerTransportCosts, fetchCostDetails }) => {
+  const [partnerCostsWithNames, setPartnerCostsWithNames] = useState([]);
   const [filteredPartnerTransportCosts, setFilteredPartnerTransportCosts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editingCost, setEditingCost] = useState(null);
   const [form] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState('');
-  const [partners, setPartners] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchPartners();
     fetchPartnerTransportCostsWithNames();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partnerTransportCosts]);
 
   useEffect(() => {
     if (searchTerm) {
-      const filteredCosts = partnerTransportCosts.filter((cost) =>
-        cost.partnerName.toLowerCase().includes(searchTerm.toLowerCase())
+      const filteredCosts = partnerCostsWithNames.filter((cost) =>
+        cost.partnerName?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredPartnerTransportCosts(filteredCosts);
     } else {
-      setFilteredPartnerTransportCosts(partnerTransportCosts);
+      setFilteredPartnerTransportCosts(partnerCostsWithNames);
     }
-  }, [searchTerm, partnerTransportCosts]);
-
-  const fetchPartners = async () => {
-    try {
-      const response = await getAllPartnersforcost();
-      setPartners(response.partners);
-    } catch (error) {
-      message.error('Lỗi khi tải danh sách đối tác');
-    }
-  };
+  }, [searchTerm, partnerCostsWithNames]);
 
   const fetchPartnerTransportCostsWithNames = async () => {
-    const updatedCosts = await Promise.all(
-      partnerTransportCosts.map(async (cost) => {
-        const partner = await getPartnerById(cost.partner);
-        return {
-          ...cost,
-          partnerName: partner.name,
-        };
-      })
-    );
-    setFilteredPartnerTransportCosts(updatedCosts);
+    setLoading(true);
+    try {
+      const updatedCosts = await Promise.all(
+        partnerTransportCosts.map(async (cost) => {
+          const partner = await getPartnerById(cost.partner);
+          return {
+            ...cost,
+            partnerName: partner.name,
+          };
+        })
+      );
+      setPartnerCostsWithNames(updatedCosts);
+      setFilteredPartnerTransportCosts(updatedCosts);
+    } catch (error) {
+      message.error('Lỗi khi tải thông tin đối tác');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleModalSuccess = () => {
@@ -127,18 +126,12 @@ const PartnerTransportCostList = ({ transportTripId, partnerTransportCosts, fetc
     },
   ];
 
-  const partnerOptions = partners.map((partner) => ({
-    value: partner.name,
-  }));
-
   return (
-    <Card title="Danh sách tuyến vận tải đối tác" bordered={false} style={{ marginTop: 24 }}>
+    <Card title="Danh sách đối tác chạy tuyến vận tải" bordered={false} style={{ marginTop: 24 }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col span={16}>
           <AutoComplete
-            options={partnerOptions}
             style={{ width: '100%' }}
-            onSelect={(value) => setSearchTerm(value)}
             onSearch={(value) => setSearchTerm(value)}
             placeholder="Tìm kiếm đối tác"
           />
@@ -149,12 +142,16 @@ const PartnerTransportCostList = ({ transportTripId, partnerTransportCosts, fetc
           </Button>
         </Col>
       </Row>
-      <Table
-        columns={columns}
-        dataSource={filteredPartnerTransportCosts}
-        rowKey="_id"
-        pagination={false}
-      />
+      {loading ? (
+        <Spin size="large" />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={filteredPartnerTransportCosts}
+          rowKey="_id"
+          pagination={false}
+        />
+      )}
       <CreatePartnerTransportCost
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}

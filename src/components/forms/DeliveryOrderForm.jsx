@@ -132,23 +132,12 @@ const DeliveryOrderForm = () => {
       key: 'type',
       render: (type) => (type === 0 ? 'Đóng hàng' : 'Giao hàng nhập'),
     },
-    {
-      title: 'Loại mooc',
-      dataIndex: 'moocType',
-      key: 'moocType',
-      render: (moocType) => (moocType === 0 ? '20\'\'' : '40\'\''),
-    },
   ];
 
   const rowSelection = {
     type: 'radio',
     onChange: (selectedRowKeys, selectedRows) => {
       setSelectedRouteId(selectedRowKeys[0]);
-      if (selectedRows.length > 0) {
-        form.setFieldsValue({
-          moocType: selectedRows[0].moocType,
-        });
-      }
     },
   };
 
@@ -236,9 +225,16 @@ const DeliveryOrderForm = () => {
                   showSearch
                   placeholder='Chọn khách hàng'
                   optionFilterProp='children'
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().includes(input.toLowerCase())
-                  }
+                  filterOption={(input, option) => {
+                    const children = option.children;
+                    if (Array.isArray(children)) {
+                      return children.join('').toLowerCase().includes(input.toLowerCase());
+                    }
+                    if (typeof children === 'string') {
+                      return children.toLowerCase().includes(input.toLowerCase());
+                    }
+                    return false;
+                  }}
                 >
                   {customers.map((customer) => (
                     <Option key={customer._id} value={customer._id}>

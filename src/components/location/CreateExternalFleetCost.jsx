@@ -26,16 +26,12 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
     setTransportType(value);
   };
 
-  const handleMoocTypeChange = (value) => {
-    setMoocType(value);
-  };
-
   const handleSubmit = async () => {
     try {
       // eslint-disable-next-line no-unused-vars
       const values = await form.validateFields();
       
-      if (!departure.provinceCode || !departure.districtCode || !destination.provinceCode || !destination.districtCode || transportType === null || moocType === null) {
+      if (!departure.provinceCode || !departure.districtCode || !destination.provinceCode || !destination.districtCode || transportType === null) {
         message.error('Vui lòng điền đầy đủ thông tin');
         return;
       }
@@ -91,16 +87,6 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
           >
             <Option value={0}>Đóng hàng</Option>
             <Option value={1}>Giao hàng nhập</Option>
-          </Select>
-        </Form.Item>
-        <Form.Item label="Loại mooc">
-          <Select
-            placeholder="Chọn loại mooc"
-            onChange={handleMoocTypeChange}
-            value={moocType}
-          >
-            <Option value={0}>20''</Option>
-            <Option value={1}>40''</Option>
           </Select>
         </Form.Item>
       </Form>

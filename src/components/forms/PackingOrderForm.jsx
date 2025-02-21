@@ -16,7 +16,11 @@ import { createPackingOrder } from '../../services/OrderService';
 import { getAllCustomersWithoutPagination } from '../../services/CustomerService';
 import LocationSelector from '../location/LocationSelector';
 import { checkIfRecordExists } from '../../services/ExternalFleetCostService'; // Import the new API function
-import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService'; // Import location services
+import {
+  fetchProvinceName,
+  fetchDistrictName,
+  fetchWardName,
+} from '../../services/LocationService'; // Import location services
 import { Link } from 'react-router-dom'; // Import Link from react-router-dom
 
 const { Option } = Select;
@@ -47,7 +51,6 @@ const PackingOrderForm = () => {
     const orderData = {
       ...values,
       date: values.date ? moment(values.date).format('YYYY-MM-DD') : null,
-
       externalFleetCostId: selectedRouteId,
     };
 
@@ -77,14 +80,22 @@ const PackingOrderForm = () => {
         if (response && response.length > 0) {
           const updatedRoutes = await Promise.all(
             response.map(async (route) => {
-              const startProvince = await fetchProvinceName(route.startPoint.provinceCode);
-              const startDistrict = await fetchDistrictName(route.startPoint.districtCode);
+              const startProvince = await fetchProvinceName(
+                route.startPoint.provinceCode,
+              );
+              const startDistrict = await fetchDistrictName(
+                route.startPoint.districtCode,
+              );
               const startWard = route.startPoint.wardCode
                 ? await fetchWardName(route.startPoint.wardCode)
                 : null;
 
-              const endProvince = await fetchProvinceName(route.endPoint.provinceCode);
-              const endDistrict = await fetchDistrictName(route.endPoint.districtCode);
+              const endProvince = await fetchProvinceName(
+                route.endPoint.provinceCode,
+              );
+              const endDistrict = await fetchDistrictName(
+                route.endPoint.districtCode,
+              );
               const endWard = route.endPoint.wardCode
                 ? await fetchWardName(route.endPoint.wardCode)
                 : null;
@@ -100,7 +111,7 @@ const PackingOrderForm = () => {
                   fullName: `${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`,
                 },
               };
-            })
+            }),
           );
           console.log('Updated Routes:', updatedRoutes); // Log updated routes
           setRoutes(updatedRoutes);
@@ -136,23 +147,12 @@ const PackingOrderForm = () => {
       key: 'type',
       render: (type) => (type === 0 ? 'Đóng hàng' : 'Giao hàng nhập'),
     },
-    {
-      title: 'Loại mooc',
-      dataIndex: 'moocType',
-      key: 'moocType',
-      render: (moocType) => (moocType === 0 ? '20\'\'' : '40\'\''),
-    },
   ];
 
   const rowSelection = {
     type: 'radio',
     onChange: (selectedRowKeys, selectedRows) => {
       setSelectedRouteId(selectedRowKeys[0]);
-      if (selectedRows.length > 0) {
-        form.setFieldsValue({
-          moocType: selectedRows[0].moocType,
-        });
-      }
     },
   };
 
@@ -203,22 +203,39 @@ const PackingOrderForm = () => {
         </Form>
       </Card>
       {routes.length > 0 ? (
-        <Card title='Chọn Tuyến Vận Tải Tương Ứng' bordered={false} style={{ marginBottom: 16 }}>
+        <Card
+          title='Chọn Tuyến Vận Tải Tương Ứng'
+          bordered={false}
+          style={{ marginBottom: 16 }}
+        >
           <Table
             columns={columns}
             dataSource={routes}
             loading={loading}
-            rowKey="_id"
+            rowKey='_id'
             rowSelection={rowSelection}
             pagination={false}
           />
         </Card>
       ) : (
-        <Card title='Chọn Tuyến Vận Tải Tương Ứng' bordered={false} style={{ marginBottom: 16 }}>
-          <p>Không tìm được tuyến vận tải nào. <Link to="/transport-route">Bạn có muốn tạo tuyến vận tải mới?</Link></p>
+        <Card
+          title='Chọn Tuyến Vận Tải Tương Ứng'
+          bordered={false}
+          style={{ marginBottom: 16 }}
+        >
+          <p>
+            Không tìm được tuyến vận tải nào.{' '}
+            <Link to='/transport-route'>
+              Bạn có muốn tạo tuyến vận tải mới?
+            </Link>
+          </p>
         </Card>
       )}
-      <Card title='Thông Tin Đơn Đóng Hàng' bordered={false} style={{ marginBottom: 16 }}>
+      <Card
+        title='Thông Tin Đơn Đóng Hàng'
+        bordered={false}
+        style={{ marginBottom: 16 }}
+      >
         <Form form={form} layout='vertical' onFinish={handleSubmit}>
           <Row gutter={16}>
             <Col span={6}>
@@ -239,7 +256,9 @@ const PackingOrderForm = () => {
               <Form.Item
                 label='Số container'
                 name='containerNumber'
-                rules={[{ required: false, message: 'Vui lòng nhập số container' }]}
+                rules={[
+                  { required: false, message: 'Vui lòng nhập số container' },
+                ]}
               >
                 <Input placeholder='Nhập số container' />
               </Form.Item>
@@ -250,7 +269,20 @@ const PackingOrderForm = () => {
                 name='moocType'
                 rules={[{ required: true, message: 'Vui lòng chọn loại mooc' }]}
               >
-                <Select placeholder='Chọn loại mooc'>
+                <Select
+                  placeholder='Chọn loại mooc'
+                  showSearch
+                  optionFilterProp='children'
+                  filterOption={(input, option) => {
+                    const children = option.children;
+                    if (typeof children === 'string') {
+                      return children
+                        .toLowerCase()
+                        .includes(input.toLowerCase());
+                    }
+                    return false;
+                  }}
+                >
                   <Option value={0}>20''</Option>
                   <Option value={1}>40''</Option>
                 </Select>
@@ -283,16 +315,29 @@ const PackingOrderForm = () => {
               <Form.Item
                 label='Khách Hàng'
                 name='customer'
-                rules={[{ required: true, message: 'Vui lòng chọn khách hàng' }]}
+                rules={[
+                  { required: true, message: 'Vui lòng chọn khách hàng' },
+                ]}
               >
                 <Select
                   showSearch
                   placeholder='Chọn khách hàng'
                   optionFilterProp='children'
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().includes(input.toLowerCase())
-                  }
-                  onChange={(value) => form.setFieldsValue({ customer: value })}
+                  filterOption={(input, option) => {
+                    const children = option.children;
+                    if (Array.isArray(children)) {
+                      return children
+                        .join('')
+                        .toLowerCase()
+                        .includes(input.toLowerCase());
+                    }
+                    if (typeof children === 'string') {
+                      return children
+                        .toLowerCase()
+                        .includes(input.toLowerCase());
+                    }
+                    return false;
+                  }}
                 >
                   {customers.map((customer) => (
                     <Option key={customer._id} value={customer._id}>

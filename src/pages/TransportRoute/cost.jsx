@@ -118,12 +118,6 @@ const PartnerCostPage = () => {
       render: (type) => (type === 0 ? 'Đóng hàng' : 'Giao hàng nhập'),
     },
     {
-      title: 'Loại mooc',
-      dataIndex: 'moocType',
-      key: 'moocType',
-      render: (moocType) => (moocType === 0 ? '20\'\'' : '40\'\''),
-    },
-    {
       title: 'Số lượng đối tác ',
       dataIndex: 'partnerTransportCostCount',
       key: 'partnerTransportCostCount',

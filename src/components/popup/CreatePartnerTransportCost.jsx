@@ -45,51 +45,55 @@ const CreatePartnerTransportCost = ({ visible, onCancel, onSuccess, transportTri
     }
   };
 
-return (
+  return (
     <Modal
-        title="Tạo mới chi phí vận chuyển đối tác"
-        visible={visible}
-        onCancel={onCancel}
-        footer={[
-            <Button key="cancel" onClick={onCancel}>
-                Hủy
-            </Button>,
-            <Button key="submit" type="primary" loading={loading} onClick={handleSubmit}>
-                Lưu
-            </Button>,
-        ]}
+      title="Tạo mới chi phí vận chuyển đối tác"
+      visible={visible}
+      onCancel={onCancel}
+      footer={[
+        <Button key="cancel" onClick={onCancel}>
+          Hủy
+        </Button>,
+        <Button key="submit" type="primary" loading={loading} onClick={handleSubmit}>
+          Lưu
+        </Button>,
+      ]}
     >
-        <Form form={form} layout="vertical">
-            <Form.Item
-                label="Đối tác"
-                name="partner"
-                rules={[{ required: true, message: 'Vui lòng chọn đối tác' }]}
-            >
-                <Select
-                    showSearch
-                    placeholder="Chọn đối tác"
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                >
-                    {partners.map((partner) => (
-                        <Option key={partner._id} value={partner._id}>
-                            {partner.name} ({partner.shortName})
-                        </Option>
-                    ))}
-                </Select>
-            </Form.Item>
-            <Form.Item
-                label="Giá"
-                name="cost"
-                rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
-            >
-                <Input type="number" placeholder="Nhập giá" />
-            </Form.Item>
-        </Form>
+      <Form form={form} layout="vertical">
+        <Form.Item
+          label="Đối tác"
+          name="partner"
+          rules={[{ required: true, message: 'Vui lòng chọn đối tác' }]}
+        >
+          <Select
+            showSearch
+            placeholder="Chọn đối tác"
+            optionFilterProp="children"
+            filterOption={(input, option) => {
+              const children = option.children;
+              if (Array.isArray(children)) {
+                return children.join('').toLowerCase().includes(input.toLowerCase());
+              }
+              return false;
+            }}
+          >
+            {partners.map((partner) => (
+              <Option key={partner._id} value={partner._id}>
+                {partner.name} ({partner.shortName})
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+        <Form.Item
+          label="Giá"
+          name="cost"
+          rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
+        >
+          <Input type="number" placeholder="Nhập giá" />
+        </Form.Item>
+      </Form>
     </Modal>
-);
+  );
 };
 
 export default CreatePartnerTransportCost;
