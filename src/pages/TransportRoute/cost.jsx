@@ -115,7 +115,7 @@ const PartnerCostPage = () => {
       title: 'Loại vận chuyển',
       dataIndex: 'type',
       key: 'type',
-      render: (type) => (type === 0 ? 'Đóng hàng' : 'Giao hàng nhập'),
+      render: (type) => (type === 0 ? 'Giao hàng nhập' : 'Đóng hàng'),
     },
     {
       title: 'Số lượng đối tác ',

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Col, Row, message, Typography } from 'antd';
-import  {Link} from 'react-router-dom';
+import { Card, Col, Row, message, Typography, Tooltip } from 'antd';
+import { Link } from 'react-router-dom';
 import { getPackingOrdersByDate, getCostByOrderId } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
 import { getCustomerById } from '../../services/CustomerService';
 
 const { Title } = Typography;
 
-const PackingOrderList = ({ startDate, onSelectChange }) => {
+const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
   // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState([]);
@@ -17,7 +17,7 @@ const PackingOrderList = ({ startDate, onSelectChange }) => {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const packingOrders = await getPackingOrdersByDate(startDate);
+        const packingOrders = await getPackingOrdersByDate(startDate, endDate);
         const ordersWithDetails = await Promise.all(packingOrders.map(async (order) => {
           const startProvince = await fetchProvinceName(order.location.startPoint.provinceCode);
           const startDistrict = await fetchDistrictName(order.location.startPoint.districtCode);
@@ -25,8 +25,8 @@ const PackingOrderList = ({ startDate, onSelectChange }) => {
           const endDistrict = await fetchDistrictName(order.location.endPoint.districtCode);
           const customer = await getCustomerById(order.customer);
           const cost = await getCostByOrderId(order._id);
-          const tripFare = cost.tripFare;
-          const estimatedProfit = cost.tripFare - (
+          const tripFare = cost ? cost.tripFare : 0;
+          const estimatedProfit = cost ? cost.tripFare - (
             cost.driverAllowance +
             cost.driverSalary +
             cost.fuelCost +
@@ -38,12 +38,13 @@ const PackingOrderList = ({ startDate, onSelectChange }) => {
             cost.technicalTeamSalary +
             cost.bankLoanInterest +
             cost.repairCost
-          );
+          ) : 0;
 
           return {
             ...order,
+            cost,
             tripFare,
-            estimatedProfit, // Use calculated estimatedProfit
+            estimatedProfit,
             startLocation: `${startProvince}, ${startDistrict}`,
             endLocation: `${endProvince}, ${endDistrict}`,
             shortName: customer.shortName,
@@ -60,7 +61,7 @@ const PackingOrderList = ({ startDate, onSelectChange }) => {
     };
 
     fetchOrders();
-  }, [startDate]);
+  }, [startDate, endDate]);
 
   const onSelectChangeHandler = (orderId) => {
     let newSelectedRowKeys;
@@ -82,9 +83,7 @@ const PackingOrderList = ({ startDate, onSelectChange }) => {
             <Card
               title={
                 <Link to={`/order/packing-orders/${order._id}`}>
-                <>
                   <div>{`Khách Hàng: ${order.shortName}`}</div>
-                </>
                 </Link>
               }
               bordered={false}
@@ -97,9 +96,29 @@ const PackingOrderList = ({ startDate, onSelectChange }) => {
               {order.tripFare === 0 ? (
                 <div style={{ color: 'red', fontWeight: 'bold' }}>Không có tuyến</div>
               ) : (
-                <div style={{ fontWeight: 'bold', fontSize: '16px', textAlign: 'right', margin: 0, color: 'green' }}>
-                  { order.estimatedProfit.toFixed(2)}
-                </div>
+                <Tooltip
+                  title={
+                    order.cost ? (
+                      <div>
+                        <p>Chi phí tài xế: {order.cost.driverAllowance}</p>
+                        <p>Lương tài xế: {order.cost.driverSalary}</p>
+                        <p>Chi phí nhiên liệu: {order.cost.fuelCost}</p>
+                        <p>Vé đơn: {order.cost.singleTicket}</p>
+                        <p>Vé tháng: {order.cost.monthlyTicket}</p>
+                        <p>Chi phí khác: {order.cost.otherCosts}</p>
+                        <p>Phí đăng ký: {order.cost.registrationFee}</p>
+                        <p>Bảo hiểm: {order.cost.insurance}</p>
+                        <p>Lương đội kỹ thuật: {order.cost.technicalTeamSalary}</p>
+                        <p>Lãi vay ngân hàng: {order.cost.bankLoanInterest}</p>
+                        <p>Chi phí sửa chữa: {order.cost.repairCost}</p>
+                      </div>
+                    ) : 'Không có thông tin chi phí'
+                  }
+                >
+                  <div style={{ fontWeight: 'bold', fontSize: '16px', textAlign: 'right', margin: 0, color: 'green' }}>
+                    {order.estimatedProfit.toFixed(2)}
+                  </div>
+                </Tooltip>
               )}
               <p style={{ margin: 0 }}><strong>Điểm Đi:</strong> {order.startLocation}</p>
               <p style={{ margin: 0 }}><strong>Điểm Đến:</strong> {order.endLocation}</p>

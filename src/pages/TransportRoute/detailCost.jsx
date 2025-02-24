@@ -118,7 +118,8 @@ const DetailCostPage = () => {
     setHistoryModalVisible(true);
     setLoading(true);
     try {
-      const response = await getHistoryByTypeAndExternalFleetCostId(type, id);
+      const internalCostsId = type === 0 ? internalCosts20._id : internalCosts40._id;
+      const response = await getHistoryByTypeAndExternalFleetCostId(type, internalCostsId);
       setHistoryData(response);
     } catch (error) {
       message.error('Lỗi khi tải lịch sử chi phí nội bộ');
@@ -170,7 +171,7 @@ const DetailCostPage = () => {
         <Descriptions bordered column={1}>
           <Descriptions.Item label="Điểm đi">{costDetails.startPoint.fullName}</Descriptions.Item>
           <Descriptions.Item label="Điểm đến">{costDetails.endPoint.fullName}</Descriptions.Item>
-          <Descriptions.Item label="Loại vận chuyển">{costDetails.type === 0 ? 'Đóng hàng' : 'Giao hàng nhập'}</Descriptions.Item>
+          <Descriptions.Item label="Loại vận chuyển">{costDetails.type === 0 ? 'Giao hàng nhập' : 'Đóng hàng'}</Descriptions.Item>
           <Descriptions.Item label="Số đối tác hoạt động">{partnerTransportCosts.length}</Descriptions.Item>
         </Descriptions>
       </Card>

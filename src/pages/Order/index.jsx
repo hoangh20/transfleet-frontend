@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
 import { Row, Col, DatePicker, Button, Modal, Radio, message } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import PackingOrderList from '../../components/list/PackingOrderList';
 import DeliveryOrderList from '../../components/list/DeliveryOrderList';
 import { createOrderConnection } from '../../services/OrderService';
 
+const { RangePicker } = DatePicker;
+
 const OrderPage = () => {
-  const [selectedDate, setSelectedDate] = useState(moment());
+  const [selectedDates, setSelectedDates] = useState([dayjs(), dayjs()]);
   const [selectedPackingOrders, setSelectedPackingOrders] = useState([]);
   const [selectedDeliveryOrders, setSelectedDeliveryOrders] = useState([]);
   const [connectionType, setConnectionType] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const handleDateChange = (date) => {
-    if (date) {
-      setSelectedDate(date);
+  const handleDateChange = (dates) => {
+    if (dates && dates.length === 2) {
+      setSelectedDates(dates);
     } else {
-      setSelectedDate(moment());
+      setSelectedDates([dayjs(), dayjs()]);
     }
   };
 
@@ -54,8 +56,8 @@ const OrderPage = () => {
   return (
     <div>
       <h1>Danh Sách Đơn Hàng</h1>
-      <DatePicker
-        value={selectedDate}
+      <RangePicker
+        value={selectedDates}
         onChange={handleDateChange}
         style={{ marginBottom: 16 }}
       />
@@ -69,7 +71,8 @@ const OrderPage = () => {
       <Row gutter={16}>
         <Col span={11}>
           <DeliveryOrderList
-            startDate={selectedDate.format('YYYY-MM-DD')}
+            startDate={selectedDates[0].format('YYYY-MM-DD')}
+            endDate={selectedDates[1].format('YYYY-MM-DD')}
             onSelectChange={handleDeliveryOrderSelectChange}
           />
         </Col>
@@ -84,7 +87,8 @@ const OrderPage = () => {
 
         <Col span={11}>
           <PackingOrderList
-            startDate={selectedDate.format('YYYY-MM-DD')}
+            startDate={selectedDates[0].format('YYYY-MM-DD')}
+            endDate={selectedDates[1].format('YYYY-MM-DD')}
             onSelectChange={handlePackingOrderSelectChange}
           />
         </Col>

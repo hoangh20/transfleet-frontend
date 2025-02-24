@@ -85,8 +85,8 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
             onChange={handleTransportTypeChange}
             value={transportType}
           >
-            <Option value={0}>Đóng hàng</Option>
-            <Option value={1}>Giao hàng nhập</Option>
+            <Option value={0}>Giao hàng nhập</Option>
+            <Option value={1}>Đóng hàng</Option>
           </Select>
         </Form.Item>
       </Form>

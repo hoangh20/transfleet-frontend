@@ -22,10 +22,11 @@ export const createDeliveryOrder = async (data) => {
   }
 };
 
-export const getPackingOrdersByDate = async (date) => {
+
+export const getPackingOrdersByDate = async (startDate, endDate) => {
   try {
     const response = await axios.get(`${API_URL}/orders/packing-orders`, {
-      params: { date }
+      params: { startDate, endDate }
     });
     return response.data;
   } catch (error) {
@@ -34,13 +35,10 @@ export const getPackingOrdersByDate = async (date) => {
   }
 };
 
-export const getDeliveryOrdersByDate = async (date) => {
+export const getDeliveryOrdersByDate = async (startDate, endDate) => {
   try {
     const response = await axios.get(`${API_URL}/orders/delivery-orders`, {
-      params: { date },
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      params: { startDate, endDate }
     });
     return response.data;
   } catch (error) {

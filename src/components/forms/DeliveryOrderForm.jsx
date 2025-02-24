@@ -15,16 +15,16 @@ import moment from 'moment';
 import { createDeliveryOrder } from '../../services/OrderService';
 import { getAllCustomersWithoutPagination } from '../../services/CustomerService';
 import LocationSelector from '../location/LocationSelector';
-import { checkIfRecordExists } from '../../services/ExternalFleetCostService'; 
-import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService'; 
-import { Link } from 'react-router-dom'; 
+import { checkIfRecordExists } from '../../services/ExternalFleetCostService';
+import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
+import { Link } from 'react-router-dom';
 
 const { Option } = Select;
 
 const DeliveryOrderForm = () => {
   const [form] = Form.useForm();
   const [customers, setCustomers] = useState([]);
-  const [routes, setRoutes] = useState([]); 
+  const [routes, setRoutes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedRouteId, setSelectedRouteId] = useState(null);
 
@@ -53,7 +53,7 @@ const DeliveryOrderForm = () => {
     try {
       await createDeliveryOrder(orderData);
       form.resetFields();
-      setSelectedRouteId(null); 
+      setSelectedRouteId(null);
       message.success('Tạo đơn giao hàng thành công');
     } catch (error) {
       message.error('Lỗi khi tạo đơn giao hàng');
@@ -130,7 +130,7 @@ const DeliveryOrderForm = () => {
       title: 'Loại vận chuyển',
       dataIndex: 'type',
       key: 'type',
-      render: (type) => (type === 0 ? 'Đóng hàng' : 'Giao hàng nhập'),
+      render: (type) => (type === 0 ? 'Giao hàng nhập' : 'Đóng hàng'),
     },
   ];
 
@@ -191,7 +191,7 @@ const DeliveryOrderForm = () => {
         <Card title='Chọn Tuyến Vận Tải Tương Ứng' bordered={false} style={{ marginBottom: 16 }}>
           <Table
             columns={columns}
-            dataSource={routes}
+            dataSource={routes.filter(route => route.type === 0)}
             loading={loading}
             rowKey="_id"
             rowSelection={rowSelection}
@@ -268,7 +268,7 @@ const DeliveryOrderForm = () => {
               <Form.Item
                 label='Loại Mooc'
                 name='moocType'
-                rules={[{ required: true, message: 'Vui lòng chọn loại mooc' }]}
+                rules={[{ required: false, message: 'Vui lòng chọn loại mooc' }]}
               >
                 <Select placeholder='Chọn loại mooc'>
                   <Option value={0}>20''</Option>

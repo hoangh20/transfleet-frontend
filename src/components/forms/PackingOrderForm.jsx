@@ -145,7 +145,7 @@ const PackingOrderForm = () => {
       title: 'Loại vận chuyển',
       dataIndex: 'type',
       key: 'type',
-      render: (type) => (type === 0 ? 'Đóng hàng' : 'Giao hàng nhập'),
+      render: (type) => (type === 0 ? 'Giao hàng nhập' : 'Đóng hàng'),
     },
   ];
 
@@ -158,7 +158,7 @@ const PackingOrderForm = () => {
 
   return (
     <>
-      <Card title='Thông Tin Địa Điểm' bordered={false}>
+      <Card title='Thông Tin Địa Điểm' bordered={false} style = {{marginBottom: 16}}>
         <Form form={form} layout='vertical' onFinish={handleSubmit}>
           <Row gutter={16}>
             <Col span={12}>
@@ -210,7 +210,7 @@ const PackingOrderForm = () => {
         >
           <Table
             columns={columns}
-            dataSource={routes}
+            dataSource={routes.filter(route => route.type === 1)}
             loading={loading}
             rowKey='_id'
             rowSelection={rowSelection}
@@ -241,7 +241,7 @@ const PackingOrderForm = () => {
             <Col span={6}>
               <Form.Item
                 label='Ngày'
-                name='date'
+                name='packingDate'
                 rules={[{ required: true, message: 'Vui lòng chọn ngày' }]}
               >
                 <DatePicker style={{ width: '100%' }} />

@@ -97,10 +97,10 @@ export const updateInternalCosts = async (id, updates, userId) => {
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
-export const getHistoryByTypeAndExternalFleetCostId = async (type, externalFleetCostId) => {
+export const getHistoryByTypeAndExternalFleetCostId = async (type, internalCostsId) => {
   try {
     const response = await axios.get(`${API_URL}/external-fleet-cost/internal-costs-history`, {
-      params: { type, externalFleetCostId }
+      params: { type, internalCostsId }
     });
     return response.data;
   } catch (error) {
