@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Col, Row, message, Typography, Tooltip } from 'antd';
+import { Card, Col, Row, message, Typography, Tooltip, Button, Popconfirm } from 'antd';
 import { Link } from 'react-router-dom';
-import { getPackingOrdersByDate, getCostByOrderId } from '../../services/OrderService';
+import { getPackingOrdersByDate, getCostByOrderId, deletePackingOrder } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
 import { getCustomerById } from '../../services/CustomerService';
 
@@ -18,7 +18,8 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
       setLoading(true);
       try {
         const packingOrders = await getPackingOrdersByDate(startDate, endDate);
-        const ordersWithDetails = await Promise.all(packingOrders.map(async (order) => {
+        const filteredOrders = packingOrders.filter(order => order.isCombinedTrip === 0);
+        const ordersWithDetails = await Promise.all(filteredOrders.map(async (order) => {
           const startProvince = await fetchProvinceName(order.location.startPoint.provinceCode);
           const startDistrict = await fetchDistrictName(order.location.startPoint.districtCode);
           const endProvince = await fetchProvinceName(order.location.endPoint.provinceCode);
@@ -74,6 +75,16 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
     onSelectChange(newSelectedRowKeys);
   };
 
+  const handleDelete = async (orderId) => {
+    try {
+      await deletePackingOrder(orderId);
+      setOrders(orders.filter(order => order._id !== orderId));
+      message.success('Xóa đơn đóng hàng thành công');
+    } catch (error) {
+      message.error('Lỗi khi xóa đơn đóng hàng');
+    }
+  };
+
   return (
     <>
       <Title level={3}>Danh Sách Đơn Đóng Hàng</Title>
@@ -83,7 +94,7 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
             <Card
               title={
                 <Link to={`/order/packing-orders/${order._id}`}>
-                  <div>{`Khách Hàng: ${order.shortName}`}</div>
+                  <div>{`📦 ${order.shortName}`}</div>
                 </Link>
               }
               bordered={false}
@@ -92,6 +103,18 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
                 cursor: 'pointer',
                 border: selectedRowKeys.includes(order._id) ? '2px solid #1890ff' : '1px solid #f0f0f0',
               }}
+              extra={
+                <Popconfirm
+                  title="Bạn có chắc chắn muốn xóa đơn đóng hàng này không?"
+                  onConfirm={() => handleDelete(order._id)}
+                  okText="Có"
+                  cancelText="Không"
+                >
+                  <Button type="link" danger>
+                    Xóa
+                  </Button>
+                </Popconfirm>
+              }
             >
               {order.tripFare === 0 ? (
                 <div style={{ color: 'red', fontWeight: 'bold' }}>Không có tuyến</div>
@@ -100,30 +123,35 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
                   title={
                     order.cost ? (
                       <div>
-                        <p>Chi phí tài xế: {order.cost.driverAllowance}</p>
-                        <p>Lương tài xế: {order.cost.driverSalary}</p>
-                        <p>Chi phí nhiên liệu: {order.cost.fuelCost}</p>
-                        <p>Vé đơn: {order.cost.singleTicket}</p>
-                        <p>Vé tháng: {order.cost.monthlyTicket}</p>
-                        <p>Chi phí khác: {order.cost.otherCosts}</p>
-                        <p>Phí đăng ký: {order.cost.registrationFee}</p>
-                        <p>Bảo hiểm: {order.cost.insurance}</p>
-                        <p>Lương đội kỹ thuật: {order.cost.technicalTeamSalary}</p>
-                        <p>Lãi vay ngân hàng: {order.cost.bankLoanInterest}</p>
-                        <p>Chi phí sửa chữa: {order.cost.repairCost}</p>
+                        <p>Cước chuyến: {order.cost.tripFare.toLocaleString()}</p>
+                        <p>Chi phí tài xế: {order.cost.driverAllowance.toLocaleString()}</p>
+                        <p>Lương tài xế: {order.cost.driverSalary.toLocaleString()}</p>
+                        <p>Chi phí nhiên liệu: {order.cost.fuelCost.toLocaleString()}</p>
+                        <p>Vé đơn: {order.cost.singleTicket.toLocaleString()}</p>
+                        <p>Vé tháng: {order.cost.monthlyTicket.toLocaleString()}</p>
+                        <p>Chi phí khác: {order.cost.otherCosts.toLocaleString()}</p>
+                        <p>Phí đăng ký: {order.cost.registrationFee.toLocaleString()}</p>
+                        <p>Bảo hiểm: {order.cost.insurance.toLocaleString()}</p>
+                        <p>Lương đội kỹ thuật: {order.cost.technicalTeamSalary.toLocaleString()}</p>
+                        <p>Lãi vay ngân hàng: {order.cost.bankLoanInterest.toLocaleString()}</p>
+                        <p>Chi phí sửa chữa: {order.cost.repairCost.toLocaleString()}</p>
                       </div>
                     ) : 'Không có thông tin chi phí'
                   }
                 >
                   <div style={{ fontWeight: 'bold', fontSize: '16px', textAlign: 'right', margin: 0, color: 'green' }}>
-                    {order.estimatedProfit.toFixed(2)}
+                    {order.estimatedProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </Tooltip>
               )}
               <p style={{ margin: 0 }}><strong>Điểm Đi:</strong> {order.startLocation}</p>
               <p style={{ margin: 0 }}><strong>Điểm Đến:</strong> {order.endLocation}</p>
               <p style={{ margin: 0 }}><strong>Mooc:</strong> {order.moocType}</p>
+              <p style={{ margin: 0 }}><strong>Thời gian đóng hàng :</strong> {order.estimatedTime ? new Date(order.estimatedTime).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Không có'}</p>
               <p style={{ margin: 0 }}><strong>Số Cont:</strong> {order.containerNumber}</p>
+              {order.note && (
+                <p style={{ margin: 0 }}><strong>Ghi chú:</strong> {order.note}</p>
+              )}
             </Card>
           </Col>
         ))}

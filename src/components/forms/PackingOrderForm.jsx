@@ -11,7 +11,7 @@ import {
   Select,
   Table,
 } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { createPackingOrder } from '../../services/OrderService';
 import { getAllCustomersWithoutPagination } from '../../services/CustomerService';
 import LocationSelector from '../location/LocationSelector';
@@ -48,9 +48,10 @@ const PackingOrderForm = () => {
   }, []);
 
   const handleSubmit = async (values) => {
+    const packingDate = values.packingDate ? dayjs(values.packingDate).format('YYYY-MM-DD') : null;
     const orderData = {
       ...values,
-      date: values.date ? moment(values.date).format('YYYY-MM-DD') : null,
+      packingDate: packingDate,
       externalFleetCostId: selectedRouteId,
     };
 
@@ -302,6 +303,15 @@ const PackingOrderForm = () => {
             <Col span={6}>
               <Form.Item label='Tàu Dự Kiến' name='expectedShip'>
                 <Input placeholder='Nhập tàu dự kiến' />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item
+                label="Thời Gian Giao Hàng Dự Kiến"
+                name="estimatedTime"
+                rules={[{ required: false, message: 'Vui lòng nhập thời gian dự kiến' }]}
+              >
+                <DatePicker showTime placeholder="Chọn thời gian dự kiến" />
               </Form.Item>
             </Col>
             <Col span={6}>

@@ -89,3 +89,51 @@ export const getPackingOrderDetails = async (orderId) => {
     throw error;
   }
 };
+export const deleteDeliveryOrder = async (orderId) => {
+  try {
+    const response = await axios.delete(`${API_URL}/orders/delivery-orders/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting delivery order:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const deletePackingOrder = async (orderId) => {
+  try {
+    const response = await axios.delete(`${API_URL}/orders/packing-orders/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting packing order:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+export const updateCostByOrderId = async (orderId, costData) => {
+  try {
+    const response = await axios.put(`${API_URL}/orders/costs/${orderId}`, costData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating cost by order ID:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+export const getOrderConnectionsByDeliveryDate = async (startDate, endDate) => {
+  try {
+    const response = await axios.get(`${API_URL}/orders/order-connections-by-delivery-date`, {
+      params: { startDate, endDate }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching order connections by delivery date:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+export const deleteOrderConnection = async (connectionId) => {
+  try {
+    const response = await axios.delete(`${API_URL}/orders/order-connections/${connectionId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting order connection:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};

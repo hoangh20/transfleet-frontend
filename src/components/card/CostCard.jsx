@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Spin, message, Button, Input } from 'antd';
-import { getCostByOrderId } from '../../services/OrderService';
+import { getCostByOrderId, updateCostByOrderId } from '../../services/OrderService';
 
 const CostCard = ({ orderId }) => {
   const [cost, setCost] = useState(null);
@@ -28,11 +28,15 @@ const CostCard = ({ orderId }) => {
     setIsEditing(true);
   };
 
-  const handleUpdate = () => {
-    // Logic cập nhật chi phí
-    setCost(editedCost);
-    setIsEditing(false);
-    message.success('Cập nhật chi phí thành công');
+  const handleUpdate = async () => {
+    try {
+      await updateCostByOrderId(orderId, editedCost);
+      setCost(editedCost);
+      setIsEditing(false);
+      message.success('Cập nhật chi phí thành công');
+    } catch (error) {
+      message.error('Lỗi khi cập nhật chi phí');
+    }
   };
 
   const handleChange = (e) => {

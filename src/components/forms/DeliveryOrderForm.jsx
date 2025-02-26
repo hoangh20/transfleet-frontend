@@ -11,7 +11,7 @@ import {
   Select,
   Table,
 } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { createDeliveryOrder } from '../../services/OrderService';
 import { getAllCustomersWithoutPagination } from '../../services/CustomerService';
 import LocationSelector from '../location/LocationSelector';
@@ -44,9 +44,15 @@ const DeliveryOrderForm = () => {
   }, []);
 
   const handleSubmit = async (values) => {
+    const deliveryDate = values.deliveryDate ? dayjs(values.deliveryDate).format('YYYY-MM-DD') : null;
+    if (!deliveryDate) {
+      message.error('Vui lòng chọn ngày giao hàng hợp lệ');
+      return;
+    }
+
     const orderData = {
       ...values,
-      deliveryDate: values.deliveryDate.format('YYYY-MM-DD') ? moment(values.deliveryDate).format('YYYY-MM-DD') : null,
+      deliveryDate: deliveryDate,
       externalFleetCostId: selectedRouteId,
     };
 
@@ -268,7 +274,7 @@ const DeliveryOrderForm = () => {
               <Form.Item
                 label='Loại Mooc'
                 name='moocType'
-                rules={[{ required: false, message: 'Vui lòng chọn loại mooc' }]}
+                rules={[{ required: true, message: 'Vui lòng chọn loại mooc' }]}
               >
                 <Select placeholder='Chọn loại mooc'>
                   <Option value={0}>20''</Option>

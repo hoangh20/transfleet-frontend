@@ -3,6 +3,7 @@ import { Row, Col, DatePicker, Button, Modal, Radio, message } from 'antd';
 import dayjs from 'dayjs';
 import PackingOrderList from '../../components/list/PackingOrderList';
 import DeliveryOrderList from '../../components/list/DeliveryOrderList';
+import CombinedOrderList from '../../components/list/CombinedOrderList';
 import { createOrderConnection } from '../../services/OrderService';
 
 const { RangePicker } = DatePicker;
@@ -48,6 +49,9 @@ const OrderPage = () => {
       );
       message.success('Ghép chuyến thành công!');
       setIsModalVisible(false);
+      setSelectedPackingOrders([]);
+      setSelectedDeliveryOrders([]);
+      setConnectionType(null);
     } catch (error) {
       message.error('Lỗi khi ghép chuyến.');
     }
@@ -110,6 +114,12 @@ const OrderPage = () => {
           <Radio value={2}>Khác ngày</Radio>
         </Radio.Group>
       </Modal>
+
+      <CombinedOrderList
+        startDate={selectedDates[0].format('YYYY-MM-DD')}
+        endDate={selectedDates[1].format('YYYY-MM-DD')}
+        onSelectChange={handleDeliveryOrderSelectChange}
+      />
     </div>
   );
 };
