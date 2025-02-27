@@ -137,3 +137,29 @@ export const deleteOrderConnection = async (connectionId) => {
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+export const connectVehicleToDeliveryOrder = async (deliveryOrderId, vehicleId) => {
+  try {
+    const response = await axios.post(`${API_URL}/orders/connect-vehicle-to-delivery-order`, {
+      deliveryOrderId,
+      vehicleId
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error connecting vehicle to delivery order:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const connectVehicleToPackingOrder = async (packingOrderId, vehicleId) => {
+  try {
+    const response = await axios.post(`${API_URL}/orders/connect-vehicle-to-packing-order`, {
+      packingOrderId,
+      vehicleId
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error connecting vehicle to packing order:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};

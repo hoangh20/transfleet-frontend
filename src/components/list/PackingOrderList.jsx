@@ -18,7 +18,7 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
       setLoading(true);
       try {
         const packingOrders = await getPackingOrdersByDate(startDate, endDate);
-        const filteredOrders = packingOrders.filter(order => order.isCombinedTrip === 0);
+        const filteredOrders = packingOrders.filter(order => order.isCombinedTrip === 0 && order.hasVehicle === 0);
         const ordersWithDetails = await Promise.all(filteredOrders.map(async (order) => {
           const startProvince = await fetchProvinceName(order.location.startPoint.provinceCode);
           const startDistrict = await fetchDistrictName(order.location.startPoint.districtCode);
@@ -124,7 +124,7 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
                     order.cost ? (
                       <div>
                         <p>Cước chuyến: {order.cost.tripFare.toLocaleString()}</p>
-                        <p>Chi phí tài xế: {order.cost.driverAllowance.toLocaleString()}</p>
+                        <p>Công tác phí: {order.cost.driverAllowance.toLocaleString()}</p>
                         <p>Lương tài xế: {order.cost.driverSalary.toLocaleString()}</p>
                         <p>Chi phí nhiên liệu: {order.cost.fuelCost.toLocaleString()}</p>
                         <p>Vé đơn: {order.cost.singleTicket.toLocaleString()}</p>

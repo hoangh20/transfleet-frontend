@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, Row, Col, Spin, message,Button } from 'antd';
+import { Card, Row, Col, Spin, message, Button } from 'antd';
 import { getDeliveryOrderDetails } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
 import CostCard from '../../components/card/CostCard';
@@ -35,10 +35,11 @@ const DeliveryOrderDetailPage = () => {
 
     fetchOrderDetails();
   }, [orderId]);
+
   const handleUpdateStatus = () => {
-      // Logic to update the status
-      message.info('Update status button clicked');
-    };
+    // Logic to update the status
+    message.info('Update status button clicked');
+  };
 
   if (loading) {
     return <Spin size="large" />;
@@ -50,8 +51,10 @@ const DeliveryOrderDetailPage = () => {
 
   return (
     <>
-      <Card title="Chi tiết đơn giao hàng" bordered={false}
-      extra={<Button onClick={handleUpdateStatus}>Cập nhật trạng thái</Button>}
+      <Card
+        title="Chi tiết đơn giao hàng"
+        bordered={false}
+        extra={<Button onClick={handleUpdateStatus}>Cập nhật trạng thái</Button>}
       >
         <Row gutter={[16, 16]}>
           <Col span={12}><strong>Mã đơn hàng:</strong> {orderDetails._id}</Col>
@@ -75,7 +78,7 @@ const DeliveryOrderDetailPage = () => {
           <CostCard orderId={orderDetails._id} />
         </Col>
         <Col span={12}>
-          <DispatchVehicleCard orderId={orderDetails._id} />
+          <DispatchVehicleCard orderId={orderDetails._id} isDeliveryOrder={true} vehicles={orderDetails.vehicles} />
         </Col>
       </Row>
     </>

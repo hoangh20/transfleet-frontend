@@ -118,3 +118,13 @@ export const checkIfRecordExists = async (startPoint, endPoint) => {
     throw error;
   }
 };
+
+export const getPartnerTransportCostsByTransportTrip = async (transportTripId) => {
+  try {
+    const response = await axios.get(`${API_URL}/external-fleet-cost/partner-transport-costs/${transportTripId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching partner transport costs by transport trip:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};

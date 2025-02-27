@@ -19,7 +19,11 @@ const CombinedOrderList = ({ startDate, endDate }) => {
     const fetchCombinedOrders = async () => {
       try {
         const combinedOrders = await getOrderConnectionsByDeliveryDate(startDate, endDate);
-
+        // eslint-disable-next-line no-unused-vars
+        const filteredOrders = combinedOrders.filter(orderConnection => 
+          orderConnection.deliveryOrderId.hasVehicle === 0 && 
+          orderConnection.packingOrderId.hasVehicle === 0
+        );
         const ordersWithDetails = await Promise.all(combinedOrders.map(async (orderConnection) => {
           const enrichOrder = async (order) => {
             const startProvince = await fetchProvinceName(order.location.startPoint.provinceCode);
@@ -59,7 +63,8 @@ const CombinedOrderList = ({ startDate, endDate }) => {
           return {
             _id: orderConnection._id, 
             deliveryOrder: await enrichOrder(orderConnection.deliveryOrderId),
-            packingOrder: await enrichOrder(orderConnection.packingOrderId)
+            packingOrder: await enrichOrder(orderConnection.packingOrderId),
+            type: orderConnection.type // Add type to the order connection
           };
         }));
         setOrders(ordersWithDetails);
@@ -81,6 +86,19 @@ const CombinedOrderList = ({ startDate, endDate }) => {
     }
   };
 
+  const getTypeDescription = (type) => {
+    switch (type) {
+      case 0:
+        return 'Trong ngày cùng điểm';
+      case 1:
+        return 'Trong ngày khác điểm';
+      case 2:
+        return 'Khác ngày';
+      default:
+        return 'Không xác định';
+    }
+  };
+
   const renderOrderCard = (order, type) => (
     <Card
       title={
@@ -97,7 +115,7 @@ const CombinedOrderList = ({ startDate, endDate }) => {
                     order.cost ? (
                       <div>
                         <p>Cước chuyến: {order.cost.tripFare.toLocaleString()}</p>
-                        <p>Chi phí tài xế: {order.cost.driverAllowance.toLocaleString()}</p>
+                        <p>Công tác phí: {order.cost.driverAllowance.toLocaleString()}</p>
                         <p>Lương tài xế: {order.cost.driverSalary.toLocaleString()}</p>
                         <p>Chi phí nhiên liệu: {order.cost.fuelCost.toLocaleString()}</p>
                         <p>Vé lượt: {order.cost.singleTicket.toLocaleString()}</p>
@@ -152,6 +170,7 @@ const CombinedOrderList = ({ startDate, endDate }) => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 8, borderBottom: '1px solid #e8e8e8' }}>
                 <div>
                 <span style={{ fontWeight: 500, marginRight: 16 }}>📅 {new Date(order.deliveryOrder.deliveryDate).toLocaleDateString()}</span>
+                <span style={{ fontWeight: 500, marginRight: 16 }}>Loại: {getTypeDescription(order.type)}</span>
                 </div>
                 <Tooltip title="Tổng lợi nhuận ước tính">
                 <span style={{ backgroundColor: '#52c41a', color: 'white', padding: '2px 8px', borderRadius: 4, fontWeight: 'bold' }}>

@@ -76,7 +76,7 @@ const PackingOrderDetailPage = () => {
           <CostCard orderId={orderDetails._id} />
         </Col>
         <Col span={12}>
-          <DispatchVehicleCard delivery={orderDetails.delivery} />
+          <DispatchVehicleCard orderId={orderDetails._id} isDeliveryOrder={false} vehicles={orderDetails.vehicles} transportTripId={orderDetails.externalFleetCostId} />
         </Col>
       </Row>
     </>

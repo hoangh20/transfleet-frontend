@@ -73,7 +73,7 @@ const CostCard = ({ orderId }) => {
     >
       {isEditing ? (
         <>
-          <p>Phụ cấp tài xế: <Input name="driverAllowance" value={editedCost.driverAllowance} onChange={handleChange} /></p>
+          <p>Công tác phí: <Input name="driverAllowance" value={editedCost.driverAllowance} onChange={handleChange} /></p>
           <p>Lương tài xế: <Input name="driverSalary" value={editedCost.driverSalary} onChange={handleChange} /></p>
           <p>Chi phí nhiên liệu: <Input name="fuelCost" value={editedCost.fuelCost} onChange={handleChange} /></p>
           <p>Vé đơn: <Input name="singleTicket" value={editedCost.singleTicket} onChange={handleChange} /></p>
@@ -88,7 +88,7 @@ const CostCard = ({ orderId }) => {
         </>
       ) : (
         <>
-          <p>Phụ cấp tài xế: {cost.driverAllowance}</p>
+          <p>Công tác phí: {cost.driverAllowance}</p>
           <p>Lương tài xế: {cost.driverSalary}</p>
           <p>Chi phí nhiên liệu: {cost.fuelCost}</p>
           <p>Vé đơn: {cost.singleTicket}</p>
