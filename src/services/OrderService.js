@@ -138,10 +138,10 @@ export const deleteOrderConnection = async (connectionId) => {
   }
 };
 
-export const connectVehicleToDeliveryOrder = async (deliveryOrderId, vehicleId) => {
+export const connectVehicleToDeliveryOrder = async (orderId, vehicleId) => {
   try {
     const response = await axios.post(`${API_URL}/orders/connect-vehicle-to-delivery-order`, {
-      deliveryOrderId,
+      orderId,
       vehicleId
     });
     return response.data;
@@ -151,10 +151,10 @@ export const connectVehicleToDeliveryOrder = async (deliveryOrderId, vehicleId) 
   }
 };
 
-export const connectVehicleToPackingOrder = async (packingOrderId, vehicleId) => {
+export const connectVehicleToPackingOrder = async (orderId, vehicleId) => {
   try {
     const response = await axios.post(`${API_URL}/orders/connect-vehicle-to-packing-order`, {
-      packingOrderId,
+      orderId,
       vehicleId
     });
     return response.data;
