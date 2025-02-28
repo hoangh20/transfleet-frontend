@@ -272,11 +272,11 @@ const DeliveryOrderForm = () => {
             </Col>
             <Col span={8}>
               <Form.Item
-                label='Loại Mooc'
+                label='Loại Cont'
                 name='moocType'
-                rules={[{ required: true, message: 'Vui lòng chọn loại mooc' }]}
+                rules={[{ required: true, message: 'Vui lòng chọn loại cont' }]}
               >
-                <Select placeholder='Chọn loại mooc'>
+                <Select placeholder='Chọn loại cont'>
                   <Option value={0}>20''</Option>
                   <Option value={1}>40''</Option>
                 </Select>

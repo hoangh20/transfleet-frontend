@@ -116,6 +116,9 @@ const AdminMenu = () => {
       >
         <Link to='/operation'>Hoạt động</Link>
       </Menu.Item>
+      <Menu.Item>
+        <Link to='/provinces'>Provinces</Link>
+      </Menu.Item>
     </Menu>
   );
 };

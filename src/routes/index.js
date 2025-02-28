@@ -17,6 +17,7 @@ import SystemDefaultsPage from '../pages/System/SystemDefaultsPage';
 import DeliveryOrderDetailPage from '../pages/Order/DeliveryOrderDetailPage';
 import PackingOrderDetailPage from '../pages/Order/PackingOrderDetailPage';
 import OrderTripListPage from '../pages/Order/OrderTripListPage';
+import ProvincesPage from '../pages/System/provincesPage';
 export const routes = [
   {
     path: '/',
@@ -93,5 +94,9 @@ export const routes = [
   {
     path : '/system',
     page : SystemDefaultsPage
+  },
+  {
+    path : '/provinces',
+    page : ProvincesPage
   }
 ];

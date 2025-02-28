@@ -255,20 +255,9 @@ const PackingOrderForm = () => {
             </Col>
             <Col span={6}>
               <Form.Item
-                label='Số container'
-                name='containerNumber'
-                rules={[
-                  { required: false, message: 'Vui lòng nhập số container' },
-                ]}
-              >
-                <Input placeholder='Nhập số container' />
-              </Form.Item>
-            </Col>
-            <Col span={6}>
-              <Form.Item
-                label='Loại Mooc'
+                label='Loại Cont'
                 name='moocType'
-                rules={[{ required: true, message: 'Vui lòng chọn loại mooc' }]}
+                rules={[{ required: true, message: 'Vui lòng chọn loại cont' }]}
               >
                 <Select
                   placeholder='Chọn loại mooc'
@@ -291,15 +280,6 @@ const PackingOrderForm = () => {
             </Col>
           </Row>
           <Row gutter={16}>
-            <Col span={6}>
-              <Form.Item
-                label='Loại Vỏ'
-                name='containerType'
-                rules={[{ required: true, message: 'Vui lòng nhập loại vỏ' }]}
-              >
-                <Input placeholder='Nhập loại container' />
-              </Form.Item>
-            </Col>
             <Col span={6}>
               <Form.Item label='Tàu Dự Kiến' name='expectedShip'>
                 <Input placeholder='Nhập tàu dự kiến' />
