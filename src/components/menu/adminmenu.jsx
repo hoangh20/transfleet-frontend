@@ -102,13 +102,21 @@ const AdminMenu = () => {
       >
         <Link to='/customer/list'>Khách hàng</Link>
       </Menu.Item> 
-      <Menu.Item
-        key='report'
+
+      <SubMenu
+        key='system'
+        title='Hệ thống'
         icon={<AppstoreOutlined />}
         style={{ fontSize: '18px' }}
       >
-        <Link to='/system'>Tài nguyên hệ thống</Link>
-      </Menu.Item>
+        <Menu.Item key='report' style={{ fontSize: '18px' }}>
+          <Link to='/system'>Tài nguyên hệ thống</Link>
+        </Menu.Item>
+        <Menu.Item key='account-management' style={{ fontSize: '18px' }}>
+          <Link to='/system/account-management'>Quản lý tài khoản</Link>
+        </Menu.Item>
+      </SubMenu>
+
       <Menu.Item
         key='operation'
         icon={<SettingOutlined />}

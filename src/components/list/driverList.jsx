@@ -8,6 +8,8 @@ import {
   Tag,
   Statistic,
   Modal,
+  Button,
+  message,
 } from 'antd';
 import {
   CarOutlined,
@@ -22,6 +24,7 @@ import {
   deleteDriver,
   getVehicleByDriverId,
 } from '../../services/DriverService';
+import { createDriverAccount } from '../../services/UserService';
 import DriverDetail from '../popup/DriverDetail';
 import dayjs from 'dayjs';
 const { Title, Text } = Typography;
@@ -109,6 +112,24 @@ const DriverCard = ({ driver }) => {
     }
   };
 
+  const handleCreateAccount = async () => {
+    const nameParts = driver.name.split(' ');
+    const firstName = nameParts[nameParts.length - 1].normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const lastName = nameParts.slice(0, -1).map(part => part[0].toLowerCase()).join('');
+    const birthDate = new Date(driver.birthDate);
+    const email = `${firstName}.${lastName}${birthDate.getDate()}${birthDate.getMonth() + 1}${birthDate.getFullYear()}@gmail.com`;
+
+
+
+    try {
+      await createDriverAccount(driver._id);
+      message.success(`Tạo tài khoản thành công! Email: ${email}, Mật khẩu: ${driver.phone}`);
+      window.location.reload();
+    } catch (error) {
+      message.error('Lỗi khi tạo tài khoản. Vui lòng thử lại!');
+    }
+  };
+
   return (
     <>
       <Card
@@ -170,7 +191,7 @@ const DriverCard = ({ driver }) => {
           <Col span={12}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <ExperimentOutlined style={{ color: '#1890ff' }} />
-              <Text>{driver.yearsOfExperience} năm kinh nghiệm</Text>
+              <Text>{driver.yearsOfExperience} năm </Text>
             </div>
           </Col>
 
@@ -188,16 +209,18 @@ const DriverCard = ({ driver }) => {
             </div>
           </Col>
           <Col span={24}>
-            <IdcardOutlined style={{ color: '#1890ff' }} />
-            <Text>  Căn cước: {driver.citizenID}</Text>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <IdcardOutlined style={{ color: '#1890ff' }} />
+              <Text copyable>{driver.citizenID}</Text>
+            </div>
           </Col>
-        
+
           <Col span={24}>
             <div>{renderVehicleInfo()}</div>
           </Col>
           <Col span={24}>
             <EnvironmentOutlined style={{ color: '#1890ff' }} />
-            <Text>  Quê quán: {driver.hometown}</Text>
+            <Text> Quê quán: {driver.hometown}</Text>
           </Col>
 
           <Col span={8}>
@@ -237,6 +260,16 @@ const DriverCard = ({ driver }) => {
                 Tổng số chuyến: {driver.successfulTrips + driver.failedTrips}
               </Text>
             </Card>
+          </Col>
+
+          <Col span={24}>
+            {driver.hasAccount === 0 ? (
+              <Button type="primary" onClick={handleCreateAccount}>
+                Thêm tài khoản
+              </Button>
+            ) : (
+              <Tag color="green">Đã có tài khoản</Tag>
+            )}
           </Col>
         </Row>
 

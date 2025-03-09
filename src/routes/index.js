@@ -18,6 +18,7 @@ import DeliveryOrderDetailPage from '../pages/Order/DeliveryOrderDetailPage';
 import PackingOrderDetailPage from '../pages/Order/PackingOrderDetailPage';
 import OrderTripListPage from '../pages/Order/OrderTripListPage';
 import ProvincesPage from '../pages/System/provincesPage';
+import AccountManagementPage from '../pages/System/AccountManagementPage';
 export const routes = [
   {
     path: '/',
@@ -94,6 +95,10 @@ export const routes = [
   {
     path : '/system',
     page : SystemDefaultsPage
+  },
+  {
+    path : '/system/account-management',
+    page : AccountManagementPage
   },
   {
     path : '/provinces',

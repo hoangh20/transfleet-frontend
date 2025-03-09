@@ -48,3 +48,28 @@ export const signoutUser = async () => {
   );
   return response.data;
 };
+
+export const listUsers = async () => {
+  const response = await axiosJWT.get(
+    `${process.env.REACT_APP_API_URL}/user/list-users`
+  );
+  return response.data;
+};
+export const deleteAccount = async (accountId) => {
+  const response = await axiosJWT.delete(
+    `${process.env.REACT_APP_API_URL}/user/delete-user/${accountId}`
+  );
+  return response.data;
+};
+export const createDriverAccount = async (driverId, data, access_token) => {
+  const response = await axiosJWT.post(
+    `${process.env.REACT_APP_API_URL}/user/create-driver-account/${driverId}`,
+    data,
+    {
+      headers: {
+        token: `Bearer ${access_token}`,
+      },
+    },
+  );
+  return response.data;
+};
