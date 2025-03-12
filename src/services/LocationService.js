@@ -1,59 +1,30 @@
-// src/services/LocationService.js
+import axios from 'axios';
+
 export const fetchProvinces = async () => {
-    try {
-      const response = await fetch('https://provinces.open-api.vn/api/p/');
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      throw new Error('Lỗi khi lấy danh sách tỉnh');
-    }
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/provinces-vn/provinces`);
+    return response.data;
   };
   
   export const fetchDistricts = async (provinceCode) => {
-    try {
-      const response = await fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
-      const data = await response.json();
-      return data.districts;
-    } catch (error) {
-      throw new Error(`Lỗi khi lấy danh sách huyện của tỉnh ${provinceCode}`);
-    }
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/provinces-vn/${provinceCode}/districts`);
+    return response.data;
   };
   
   export const fetchWards = async (districtCode) => {
-    try {
-      const response = await fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
-      const data = await response.json();
-      return data.wards;
-    } catch (error) {
-      throw new Error(`Lỗi khi lấy danh sách xã của huyện ${districtCode}`);
-    }
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/provinces-vn/${districtCode}/wards`);
+    return response.data;
   };
   export const fetchProvinceName = async (provinceCode) => {
-    try {
-      const response = await fetch(`https://provinces.open-api.vn/api/p/${provinceCode}`);
-      const data = await response.json();
-      return data.name || 'N/A';
-    } catch {
-      return 'N/A';
-    }
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/provinces-vn/provinces/${provinceCode}`);
+    return response.data.name || 'N/A';
   };
   
   export const fetchDistrictName = async (districtCode) => {
-    try {
-      const response = await fetch(`https://provinces.open-api.vn/api/d/${districtCode}`);
-      const data = await response.json();
-      return data.name || 'N/A';
-    } catch {
-      return 'N/A';
-    }
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/provinces-vn/districts/${districtCode}`);
+    return response.data.name || 'N/A';
   };
   
   export const fetchWardName = async (wardCode) => {
-    try {
-      const response = await fetch(`https://provinces.open-api.vn/api/w/${wardCode}`);
-      const data = await response.json();
-      return data.name || 'N/A';
-    } catch {
-      return 'N/A';
-    }
+    const respone = await axios.get(`${process.env.REACT_APP_API_URL}/provinces-vn/wards/${wardCode}`);
+    return respone.data.name || 'N/A';
   };
