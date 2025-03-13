@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Col, Row, message, Typography, Tooltip, Button, Popconfirm } from 'antd';
+import { Card, message, Typography, Tooltip, Button, Popconfirm, Space, Tag } from 'antd';
 import { Link } from 'react-router-dom';
+import { DeleteOutlined, EnvironmentOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { getPackingOrdersByDate, getCostByOrderId, deletePackingOrder } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
 import { getCustomerById } from '../../services/CustomerService';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
   // eslint-disable-next-line no-unused-vars
@@ -86,48 +87,75 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
   };
 
   return (
-    <>
-      <Title level={3}>Danh Sách Đơn Đóng Hàng</Title>
-      <Row gutter={[16, 16]}>
+    <div style={{ maxWidth: '100%', overflowX: 'auto' }}>
+      <Title level={4} style={{ marginBottom: 16 }}>Danh Sách Đơn Đóng Hàng ({orders.length})</Title>
+      <div style={{ 
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+        gap: '12px'
+      }}>
         {orders.map((order) => (
-          <Col span={8} key={order._id}>
-            <Card
-              title={
-                <Link to={`/order/packing-orders/${order._id}`}>
-                  <div>{`📦 ${order.shortName}`}</div>
-                </Link>
-              }
-              bordered={false}
-              onClick={() => onSelectChangeHandler(order._id)}
-              style={{
-                cursor: 'pointer',
-                border: selectedRowKeys.includes(order._id) ? '2px solid #1890ff' : '1px solid #f0f0f0',
-              }}
-              extra={
-                <Popconfirm
-                  title="Bạn có chắc chắn muốn xóa đơn đóng hàng này không?"
-                  onConfirm={() => handleDelete(order._id)}
-                  okText="Có"
-                  cancelText="Không"
-                >
-                  <Button type="link" danger>
-                    Xóa
-                  </Button>
-                </Popconfirm>
-              }
-            >
-              {order.tripFare === 0 ? (
-                <div style={{ color: 'red', fontWeight: 'bold' }}>Không có tuyến</div>
-              ) : (
-                <Tooltip
-                  title={
+          <Card
+            key={order._id}
+            size="small"
+            title={
+              <Link to={`/order/packing-orders/${order._id}`} style={{ display: 'block' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text strong style={{ fontSize: 14 }}>📦 {order.shortName}</Text>
+                  <Tag color={order.moocType === "20''" ? "blue" : "purple"}>{order.moocType}</Tag>
+                </div>
+              </Link>
+            }
+            hoverable
+            onClick={() => onSelectChangeHandler(order._id)}
+            style={{
+              cursor: 'pointer',
+              border: selectedRowKeys.includes(order._id) 
+                ? '2px solid #1890ff' 
+                : '1px solid #f0f0f0',
+              margin: 0,
+            }}
+            bodyStyle={{ padding: '12px' }}
+            extra={
+              <Popconfirm
+                title="Xóa đơn này?"
+                onConfirm={() => handleDelete(order._id)}
+                okText="Có"
+                cancelText="Không"
+              >
+                <Button 
+                  type="text" 
+                  icon={<DeleteOutlined />} 
+                  size="small"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </Popconfirm>
+            }
+          >
+            <Space direction="vertical" size={4} style={{ width: '100%' }}>
+              {/* Thời gian và lợi nhuận */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  {order.estimatedTime ? 
+                    new Date(order.estimatedTime).toLocaleDateString('vi-VN', { 
+                      day: '2-digit',
+                      month: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    }) 
+                    : '--/-- --:--'}
+                </Text>
+                {order.tripFare === 0 ? (
+                  <Tag color="error">Không tuyến</Tag>
+                ) : (
+                  <Tooltip title={
                     order.cost ? (
                       <div>
                         <p>Cước chuyến: {order.cost.tripFare.toLocaleString()}</p>
                         <p>Công tác phí: {order.cost.driverAllowance.toLocaleString()}</p>
                         <p>Lương tài xế: {order.cost.driverSalary.toLocaleString()}</p>
                         <p>Chi phí nhiên liệu: {order.cost.fuelCost.toLocaleString()}</p>
-                        <p>Vé đơn: {order.cost.singleTicket.toLocaleString()}</p>
+                        <p>Vé lượt: {order.cost.singleTicket.toLocaleString()}</p>
                         <p>Vé tháng: {order.cost.monthlyTicket.toLocaleString()}</p>
                         <p>Chi phí khác: {order.cost.otherCosts.toLocaleString()}</p>
                         <p>Phí đăng ký: {order.cost.registrationFee.toLocaleString()}</p>
@@ -137,26 +165,48 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
                         <p>Chi phí sửa chữa: {order.cost.repairCost.toLocaleString()}</p>
                       </div>
                     ) : 'Không có thông tin chi phí'
-                  }
-                >
-                  <div style={{ fontWeight: 'bold', fontSize: '16px', textAlign: 'right', margin: 0, color: 'green' }}>
-                    {order.estimatedProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  }>
+                    <Text strong style={{ 
+                      color: order.estimatedProfit > 0 ? 'green' : 'red',
+                      fontSize: 14
+                    }}>
+                      {order.estimatedProfit?.toLocaleString() || '--'}
+                    </Text>
+                  </Tooltip>
+                )}
+              </div>
+
+              {/* Địa chỉ */}
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '4px 0' }}>
+                <EnvironmentOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
+                <div style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 12, whiteSpace: 'normal' }}>
+                    <span style={{ fontWeight: 500 }}>Đi: </span>
+                    {order.startLocation}
+                  </Text>
                   </div>
-                </Tooltip>
-              )}
-              <p style={{ margin: 0 }}><strong>Điểm Đi:</strong> {order.startLocation}</p>
-              <p style={{ margin: 0 }}><strong>Điểm Đến:</strong> {order.endLocation}</p>
-              <p style={{ margin: 0 }}><strong>Mooc:</strong> {order.moocType}</p>
-              <p style={{ margin: 0 }}><strong>Thời gian đóng hàng :</strong> {order.estimatedTime ? new Date(order.estimatedTime).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Không có'}</p>
-              <p style={{ margin: 0 }}><strong>Số Cont:</strong> {order.containerNumber}</p>
-              {order.note && (
-                <p style={{ margin: 0 }}><strong>Ghi chú:</strong> {order.note}</p>
-              )}
-            </Card>
-          </Col>
+                  <div style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 12, whiteSpace: 'normal' }}>
+                    <span style={{ fontWeight: 500 }}>Đến: </span>
+                    {order.endLocation}
+                  </Text>
+                </div>
+              </div>
+
+              {/* Thông tin phụ */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
+                <Text>Cont: {order.containerNumber || '--'}</Text>
+                {order.note && (
+                  <Tooltip title={order.note}>
+                    <InfoCircleOutlined style={{ color: '#8c8c8c' }} />
+                  </Tooltip>
+                )}
+              </div>
+            </Space>
+          </Card>
         ))}
-      </Row>
-    </>
+      </div>
+    </div>
   );
 };
 

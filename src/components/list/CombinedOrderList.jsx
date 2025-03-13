@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, message, Typography, Tooltip, Divider, Button, Popconfirm } from 'antd';
+import { Card, message, Typography, Tooltip, Button, Popconfirm, Space, Tag } from 'antd';
 import { Link } from 'react-router-dom';
-import { ArrowRightOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EnvironmentOutlined, InfoCircleOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { 
   getOrderConnectionsByDeliveryDate, 
   getCostByOrderId,
-  deleteOrderConnection // Import the deleteOrderConnection function
+  deleteOrderConnection
 } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
 import { getCustomerById } from '../../services/CustomerService';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const CombinedOrderList = ({ startDate, endDate }) => {
   const [orders, setOrders] = useState([]);
@@ -19,11 +19,6 @@ const CombinedOrderList = ({ startDate, endDate }) => {
     const fetchCombinedOrders = async () => {
       try {
         const combinedOrders = await getOrderConnectionsByDeliveryDate(startDate, endDate);
-        // eslint-disable-next-line no-unused-vars
-        const filteredOrders = combinedOrders.filter(orderConnection => 
-          orderConnection.deliveryOrderId.hasVehicle === 0 && 
-          orderConnection.packingOrderId.hasVehicle === 0
-        );
         const ordersWithDetails = await Promise.all(combinedOrders.map(async (orderConnection) => {
           const enrichOrder = async (order) => {
             const startProvince = await fetchProvinceName(order.location.startPoint.provinceCode);
@@ -64,7 +59,7 @@ const CombinedOrderList = ({ startDate, endDate }) => {
             _id: orderConnection._id, 
             deliveryOrder: await enrichOrder(orderConnection.deliveryOrderId),
             packingOrder: await enrichOrder(orderConnection.packingOrderId),
-            type: orderConnection.type // Add type to the order connection
+            type: orderConnection.type
           };
         }));
         setOrders(ordersWithDetails);
@@ -81,6 +76,7 @@ const CombinedOrderList = ({ startDate, endDate }) => {
       await deleteOrderConnection(connectionId);
       message.success('Xóa kết nối đơn hàng thành công');
       setOrders(orders.filter(order => order._id !== connectionId));
+      window.location.reload();
     } catch (error) {
       message.error('Lỗi khi xóa kết nối đơn hàng');
     }
@@ -101,115 +97,164 @@ const CombinedOrderList = ({ startDate, endDate }) => {
 
   const renderOrderCard = (order, type) => (
     <Card
+      size="small"
       title={
-        <Link to={`/order/${type}-orders/${order._id}`}>
-          <div style={{ display: 'flex', alignItems: 'center', margin: 0 }}>
-            <span style={{ marginRight: 8 }}>
-              {type === 'delivery' ? '🚚 Đơn giao hàng:' : '📦 Đơn đóng hàng:'}
-            </span>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              {order.customerName}
-              {order.cost && (
-                <Tooltip
-                  title={
-                    order.cost ? (
-                      <div>
-                        <p>Cước chuyến: {order.cost.tripFare.toLocaleString()}</p>
-                        <p>Công tác phí: {order.cost.driverAllowance.toLocaleString()}</p>
-                        <p>Lương tài xế: {order.cost.driverSalary.toLocaleString()}</p>
-                        <p>Chi phí nhiên liệu: {order.cost.fuelCost.toLocaleString()}</p>
-                        <p>Vé lượt: {order.cost.singleTicket.toLocaleString()}</p>
-                        <p>Vé tháng: {order.cost.monthlyTicket.toLocaleString()}</p>
-                        <p>Chi phí khác: {order.cost.otherCosts.toLocaleString()}</p>
-                        <p>Phí đăng ký: {order.cost.registrationFee.toLocaleString()}</p>
-                        <p>Bảo hiểm: {order.cost.insurance.toLocaleString()}</p>
-                        <p>Lương đội kỹ thuật: {order.cost.technicalTeamSalary.toLocaleString()}</p>
-                        <p>Lãi vay ngân hàng: {order.cost.bankLoanInterest.toLocaleString()}</p>
-                        <p>Chi phí sửa chữa: {order.cost.repairCost.toLocaleString()}</p>
-                      </div>
-                    ) : 'Không có thông tin chi phí'
-                  }
-                >
-                  <div style={{ fontWeight: 'bold', fontSize: '16px', textAlign: 'right', margin: 0, color: 'green', marginLeft: 8 }}>
-                    {order.estimatedProfit !== null ? order.estimatedProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'Không có'}
-                  </div>
-                </Tooltip>
-              )}
-            </div>
+        <Link to={`/order/${type}-orders/${order._id}`} style={{ display: 'block' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text strong style={{ fontSize: 14 }}>
+              {type === 'delivery' ? '🚚 Đơn giao hàng' : '📦 Đơn đóng hàng'}
+            </Text>
+            <Tag color={order.moocType === "20''" ? "blue" : "purple"}>{order.moocType}</Tag>
           </div>
         </Link>
       }
-      bordered={false}
       style={{
-        position: 'relative',
         border: '1px solid #f0f0f0',
         borderRadius: 8,
         height: '100%'
       }}
+      bodyStyle={{ padding: '12px' }}
     >
-      {order.tripFare === 0 && (
-        <div style={{ color: 'red', fontWeight: 'bold', textAlign: 'right' }}>Không có tuyến</div>
-      )}
-      <p style={{ margin: 0 }}><strong>Điểm Đi:</strong> {order.startLocation}</p>
-      <p style={{ margin: 0 }}><strong>Điểm Đến:</strong> {order.endLocation}</p>
-      <p style={{ margin: 0 }}><strong>Mooc:</strong> {order.moocType}</p>
-      <p style={{ margin: 0 }}><strong>Số Cont:</strong> {order.containerNumber}</p>
-      {order.note && <p style={{ margin: 0 }}><strong>Ghi chú:</strong> {order.note}</p>}
+      <Space direction="vertical" size={4} style={{ width: '100%' }}>
+        {/* Thời gian và lợi nhuận */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            {order.deliveryDate ? 
+              new Date(order.deliveryDate).toLocaleDateString('vi-VN', { 
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+              }) 
+              : '--/-- --:--'}
+          </Text>
+          {order.tripFare === 0 ? (
+            <Tag color="error">Không tuyến</Tag>
+          ) : (
+            <Tooltip title={
+              order.cost ? (
+                <div>
+                  <p>Cước chuyến: {order.cost.tripFare.toLocaleString()}</p>
+                  <p>Công tác phí: {order.cost.driverAllowance.toLocaleString()}</p>
+                  <p>Lương tài xế: {order.cost.driverSalary.toLocaleString()}</p>
+                  <p>Chi phí nhiên liệu: {order.cost.fuelCost.toLocaleString()}</p>
+                  <p>Vé lượt: {order.cost.singleTicket.toLocaleString()}</p>
+                  <p>Vé tháng: {order.cost.monthlyTicket.toLocaleString()}</p>
+                  <p>Chi phí khác: {order.cost.otherCosts.toLocaleString()}</p>
+                  <p>Phí đăng ký: {order.cost.registrationFee.toLocaleString()}</p>
+                  <p>Bảo hiểm: {order.cost.insurance.toLocaleString()}</p>
+                  <p>Lương đội kỹ thuật: {order.cost.technicalTeamSalary.toLocaleString()}</p>
+                  <p>Lãi vay ngân hàng: {order.cost.bankLoanInterest.toLocaleString()}</p>
+                  <p>Chi phí sửa chữa: {order.cost.repairCost.toLocaleString()}</p>
+                </div>
+              ) : 'Không có thông tin chi phí'
+            }>
+              <Text strong style={{ 
+                color: order.estimatedProfit > 0 ? 'green' : 'red',
+                fontSize: 14
+              }}>
+                {order.estimatedProfit?.toLocaleString() || '--'}
+              </Text>
+            </Tooltip>
+          )}
+        </div>
+
+        {/* Tên khách hàng */}
+        <Text style={{ fontSize: 12, fontWeight: 500 }}>
+          Khách hàng: {order.customerName}
+        </Text>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '4px 0' }}>
+            <EnvironmentOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
+            <div style={{ flex: 1 }}>
+              <Text style={{ fontSize: 12, whiteSpace: 'normal' }}>
+                <span style={{ fontWeight: 500 }}>Đi: </span>
+                {order.startLocation}
+              </Text>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '4px 0' }}>
+            <EnvironmentOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
+            <div style={{ flex: 1 }}>
+              <Text style={{ fontSize: 12, whiteSpace: 'normal' }}>
+                <span style={{ fontWeight: 500 }}>Đến: </span>
+                {order.endLocation}
+              </Text>
+            </div>
+          </div>
+
+          {/* Thông tin phụ */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
+          <Text>Cont: {order.containerNumber || '--'}</Text>
+          {order.note && (
+            <Tooltip title={order.note}>
+              <InfoCircleOutlined style={{ color: '#8c8c8c' }} />
+            </Tooltip>
+          )}
+        </div>
+      </Space>
     </Card>
   );
 
   return (
-    <div style={{ padding: 24 }}>
-      <Title level={3} style={{ marginBottom: 24 }}>Danh Sách Đơn Hàng Ghép</Title>
-      <Row gutter={[24, 24]}>
+    <div style={{ maxWidth: '100%', overflowX: 'auto' }}>
+      <Title level={4} style={{ marginBottom: 16 }}>Danh Sách Đơn Hàng Ghép ({orders.length})</Title>
+      <div style={{ 
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 600px))',
+        gap: '12px'
+      }}>
         {orders.map((order) => {
           const totalEstimatedProfit = (order.deliveryOrder.estimatedProfit || 0) + (order.packingOrder.estimatedProfit || 0);
-            return (
-            <Col span={24} key={order.deliveryOrder._id}>
-              <Card className="combined-order-group" style={{ border: '1px solid #1890ff', borderRadius: 8, position: 'relative', background: '#fafafa' }} bodyStyle={{ padding: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 8, borderBottom: '1px solid #e8e8e8' }}>
+          return (
+            <Card
+              key={order._id}
+              style={{ 
+                border: '1px solid #1890ff', 
+                borderRadius: 8, 
+                backgroundColor: '#fafafa' 
+              }}
+              bodyStyle={{ padding: '16px' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div>
-                <span style={{ fontWeight: 500, marginRight: 16 }}>📅 {new Date(order.deliveryOrder.deliveryDate).toLocaleDateString()}</span>
-                <span style={{ fontWeight: 500, marginRight: 16 }}>Loại: {getTypeDescription(order.type)}</span>
+                  <Text strong style={{ fontSize: 12 }}>
+                    📅 {new Date(order.deliveryOrder.deliveryDate).toLocaleDateString()}
+                  </Text>
+                  <Tag color="geekblue" style={{ marginLeft: 8 }}>
+                    {getTypeDescription(order.type)}
+                  </Tag>
                 </div>
                 <Tooltip title="Tổng lợi nhuận ước tính">
-                <span style={{ backgroundColor: '#52c41a', color: 'white', padding: '2px 8px', borderRadius: 4, fontWeight: 'bold' }}>
-                  {totalEstimatedProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
+                  <Text strong style={{ 
+                    color: totalEstimatedProfit > 0 ? 'green' : 'red',
+                    fontSize: 14
+                  }}>
+                    {totalEstimatedProfit.toLocaleString()}
+                  </Text>
                 </Tooltip>
                 <Popconfirm
-                title="Bạn có chắc chắn muốn xóa kết nối đơn hàng này không?"
-                onConfirm={() => handleDelete(order._id)}
-                okText="Yes"
-                cancelText="No"
+                  title="Bạn có chắc chắn muốn xóa kết nối đơn hàng này không?"
+                  onConfirm={() => handleDelete(order._id)}
+                  okText="Có"
+                  cancelText="Không"
                 >
-                <Button type="primary" danger>Hủy kết nối</Button>
+                  <Button 
+                    type="text" 
+                    icon={<DeleteOutlined />} 
+                    size="small"
+                    danger
+                  />
                 </Popconfirm>
               </div>
-              <Row gutter={24} align="middle">
-                <Col xs={24} md={11}>{renderOrderCard(order.deliveryOrder, 'delivery')}</Col>
-                <Col xs={24} md={1} style={{ textAlign: 'center' }}>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center', 
-                  width: '40px', 
-                  height: '40px', 
-                  borderRadius: '50%', 
-                  backgroundColor: 'white', 
-                  border: '1px solid #1890ff' 
-                }}>
-                  <ArrowRightOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
-                </div>
-                </Col>
-                <Col xs={24} md={11}>{renderOrderCard(order.packingOrder, 'packing')}</Col>
-              </Row>
-              <Divider style={{ margin: '16px 0 0 0' }} />
-              </Card>
-            </Col>
-            );
+              <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                {renderOrderCard(order.deliveryOrder, 'delivery')}
+                <ArrowRightOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
+                {renderOrderCard(order.packingOrder, 'packing')}
+              </div>
+            </Card>
+          );
         })}
-      </Row>
+      </div>
     </div>
   );
 };

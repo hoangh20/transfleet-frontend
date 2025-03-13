@@ -14,13 +14,20 @@ const { RangePicker } = DatePicker;
 
 const OrderTripListPage = () => {
   const [filteredTrips, setFilteredTrips] = useState([]);
-  const [selectedDateRange, setSelectedDateRange] = useState([dayjs(), dayjs()]);
+  const [selectedDateRange, setSelectedDateRange] = useState(() => {
+    const savedDates = localStorage.getItem('selectedDateRange');
+    return savedDates ? JSON.parse(savedDates).map(date => dayjs(date)) : [dayjs(), dayjs()];
+  });
   const [selectedMenuItem, setSelectedMenuItem] = useState('all');
   const navigate = useNavigate();
 
   useEffect(() => {
     filterTrips(selectedDateRange, selectedMenuItem);
   }, [selectedDateRange, selectedMenuItem]);
+
+  useEffect(() => {
+    localStorage.setItem('selectedDateRange', JSON.stringify(selectedDateRange));
+  }, [selectedDateRange]);
 
   const handleViewDetail = (trip) => {
     const path = trip.type === 'delivery' ? `/order/delivery-orders/${trip._id}` : `/order/packing-orders/${trip._id}`;
@@ -71,57 +78,65 @@ const OrderTripListPage = () => {
   };
 
   return (
-    <div style={{ padding: '24px' }}>
-      <RangePicker
-        value={selectedDateRange}
-        onChange={handleDateChange}
-        style={{ marginBottom: 16 }}
-      />
-      <Row gutter={[16, 16]} style={{ marginBottom: '16px', marginTop: '16px' }}>
-        <Col span={24}>
-          <Menu onClick={handleMenuClick} selectedKeys={[selectedMenuItem]} mode="horizontal">
-            <Menu.Item key="all">Tất cả</Menu.Item>
-            <Menu.Item key="delivery">Chuyến giao hàng</Menu.Item>
-            <Menu.Item key="packing">Chuyến đóng hàng</Menu.Item>
-            <Menu.Item key="combined">Chuyến ghép</Menu.Item>
-          </Menu>
-        </Col>
-      </Row>
-      {filteredTrips.map((trip, index, trips) => {
-        if (trip.combined) {
-          if (index % 2 === 0) {
+    <div style={{ padding: '16px', maxWidth: '100%', overflowX: 'auto' }}>
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <RangePicker
+          value={selectedDateRange}
+          onChange={handleDateChange}
+          style={{ marginBottom: 16 }}
+        />
+        <Menu
+          onClick={handleMenuClick}
+          selectedKeys={[selectedMenuItem]}
+          mode="horizontal"
+          style={{ flex: 1, minWidth: '200px' }}
+        >
+          <Menu.Item key="all">Tất cả</Menu.Item>
+          <Menu.Item key="delivery">Chuyến giao hàng</Menu.Item>
+          <Menu.Item key="packing">Chuyến đóng hàng</Menu.Item>
+          <Menu.Item key="combined">Chuyến ghép</Menu.Item>
+        </Menu>
+      </div>
+      <Row gutter={[16, 16]}>
+        {filteredTrips.map((trip, index, trips) => {
+          if (trip.combined) {
+            if (index % 2 === 0) {
+              return (
+                <Col key={trip._id} xs={24} md={12}>
+                  <CombinedOrderWrapper>
+                    <OrderTripCard
+                      trip={trip}
+                      customerName={trip.customerName}
+                      type={trip.type}
+                      onViewDetail={() => handleViewDetail(trip)}
+                    />
+                    {index + 1 < trips.length && trips[index + 1].combined && (
+                      <OrderTripCard
+                        trip={trips[index + 1]}
+                        customerName={trips[index + 1].customerName}
+                        type={trips[index + 1].type}
+                        onViewDetail={() => handleViewDetail(trips[index + 1])}
+                      />
+                    )}
+                  </CombinedOrderWrapper>
+                </Col>
+              );
+            }
+          } else if (!trip.combined && (index === 0 || !trips[index - 1].combined)) {
             return (
-              <CombinedOrderWrapper key={trip._id}>
+              <Col key={trip._id} xs={24} md={12}>
                 <OrderTripCard
                   trip={trip}
                   customerName={trip.customerName}
                   type={trip.type}
                   onViewDetail={() => handleViewDetail(trip)}
                 />
-                {index + 1 < trips.length && trips[index + 1].combined && (
-                  <OrderTripCard
-                    trip={trips[index + 1]}
-                    customerName={trips[index + 1].customerName}
-                    type={trips[index + 1].type}
-                    onViewDetail={() => handleViewDetail(trips[index + 1])}
-                  />
-                )}
-              </CombinedOrderWrapper>
+              </Col>
             );
           }
-        } else if (!trip.combined && (index === 0 || !trips[index - 1].combined)) {
-          return (
-            <OrderTripCard
-              key={trip._id}
-              trip={trip}
-              customerName={trip.customerName}
-              type={trip.type}
-              onViewDetail={() => handleViewDetail(trip)}
-            />
-          );
-        }
-        return null;
-      })}
+          return null;
+        })}
+      </Row>
     </div>
   );
 };

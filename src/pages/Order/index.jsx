@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Row, Col, DatePicker, Button, Modal, Radio, message } from 'antd';
 import dayjs from 'dayjs';
 import PackingOrderList from '../../components/list/PackingOrderList';
@@ -9,12 +9,19 @@ import { createOrderConnection } from '../../services/OrderService';
 const { RangePicker } = DatePicker;
 
 const OrderPage = () => {
-  const [selectedDates, setSelectedDates] = useState([dayjs(), dayjs()]);
+  const [selectedDates, setSelectedDates] = useState(() => {
+    const savedDates = localStorage.getItem('selectedDates');
+    return savedDates ? JSON.parse(savedDates).map(date => dayjs(date)) : [dayjs(), dayjs()];
+  });
   const [selectedPackingOrders, setSelectedPackingOrders] = useState([]);
   const [selectedDeliveryOrders, setSelectedDeliveryOrders] = useState([]);
   const [connectionType, setConnectionType] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  useEffect(() => {
+    localStorage.setItem('selectedDates', JSON.stringify(selectedDates));
+  }, [selectedDates]);
+  
   const handleDateChange = (dates) => {
     if (dates && dates.length === 2) {
       setSelectedDates(dates);
@@ -52,28 +59,31 @@ const OrderPage = () => {
       setSelectedPackingOrders([]);
       setSelectedDeliveryOrders([]);
       setConnectionType(null);
+      window.location.reload();
     } catch (error) {
       message.error('Lỗi khi ghép chuyến.');
     }
   };
 
   return (
-    <div>
+    <div style={{ padding: '16px', maxWidth: '100%', overflowX: 'auto' }}>
       <h1>Danh Sách Đơn Hàng</h1>
-      <RangePicker
-        value={selectedDates}
-        onChange={handleDateChange}
-        style={{ marginBottom: 16 }}
-      />
-      <Button
-        type="primary"
-        onClick={handleGetSelectedOrders}
-        style={{ marginTop: 16, marginBottom: 16, marginLeft: 16 }}
-      >
-        Ghép Đơn Hàng Đã Chọn
-      </Button>
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <RangePicker
+          value={selectedDates}
+          onChange={handleDateChange}
+          style={{ marginBottom: 16 }}
+        />
+        <Button
+          type="primary"
+          onClick={handleGetSelectedOrders}
+          style={{ marginBottom: 16 }}
+        >
+          Ghép Đơn Hàng Đã Chọn
+        </Button>
+      </div>
       <Row gutter={16}>
-        <Col span={11}>
+        <Col xs={24} md={11}>
           <DeliveryOrderList
             startDate={selectedDates[0].format('YYYY-MM-DD')}
             endDate={selectedDates[1].format('YYYY-MM-DD')}
@@ -82,14 +92,18 @@ const OrderPage = () => {
         </Col>
 
         <Col
-          span={1}
+          xs={24}
+          md={1}
           style={{
             borderRight: '1px solid #e8e8e8',
             marginTop: 16,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
           }}
         />
 
-        <Col span={11}>
+        <Col xs={24} md={11}>
           <PackingOrderList
             startDate={selectedDates[0].format('YYYY-MM-DD')}
             endDate={selectedDates[1].format('YYYY-MM-DD')}
