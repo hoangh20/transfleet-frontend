@@ -10,7 +10,8 @@ const NumberInput = (props) => {
   const { value, onChange, ...rest } = props;
 
   const handleChange = (e) => {
-
+    const newValue = e.target.value.replace(/[^0-9]/g, ''); // Chỉ cho phép nhập số
+    onChange(newValue);
   };
 
   return <Input {...rest} value={value} onChange={handleChange} />;
@@ -225,6 +226,60 @@ const SystemDefaultsPage = () => {
                   suffix={
                     <HistoryOutlined
                       onClick={() => showHistoryModal('Lịch sử thay đổi chi phí vé tháng', 'monthlyTicket')}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  }
+                  disabled={!isEditing}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Định mức nhẹ cho cấp dầu"
+                name="lightRate"
+                rules={[{ required: true, message: 'Vui lòng nhập định mức nhẹ' }]}
+              >
+                <NumberInput
+                  placeholder="Nhập định mức nhẹ"
+                  suffix={
+                    <HistoryOutlined
+                      onClick={() => showHistoryModal('Lịch sử thay đổi định mức nhẹ', 'lightRate')}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  }
+                  disabled={!isEditing}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Định mức nặng cho cấp dầu"
+                name="heavyRate"
+                rules={[{ required: true, message: 'Vui lòng nhập định mức nặng' }]}
+              >
+                <NumberInput
+                  placeholder="Nhập định mức nặng"
+                  suffix={
+                    <HistoryOutlined
+                      onClick={() => showHistoryModal('Lịch sử thay đổi định mức nặng', 'heavyRate')}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  }
+                  disabled={!isEditing}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Định mức rỗng cho cấp dầu"
+                name="emtyRate"
+                rules={[{ required: true, message: 'Vui lòng nhập định mức rỗng' }]}
+              >
+                <NumberInput
+                  placeholder="Nhập định mức rỗng"
+                  suffix={
+                    <HistoryOutlined
+                      onClick={() => showHistoryModal('Lịch sử thay đổi định mức rỗng', 'emtyRate')}
                       style={{ cursor: 'pointer' }}
                     />
                   }

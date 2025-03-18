@@ -10,10 +10,11 @@ import {
   Card,
   Select,
   Table,
+  Alert,
 } from 'antd';
 import dayjs from 'dayjs';
 import { createDeliveryOrder } from '../../services/OrderService';
-import { getAllCustomersWithoutPagination } from '../../services/CustomerService';
+import { getCustomerTripFaresByExternalFleetCostId } from '../../services/ExternalFleetCostService';
 import LocationSelector from '../location/LocationSelector';
 import { checkIfRecordExists } from '../../services/ExternalFleetCostService';
 import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
@@ -29,27 +30,46 @@ const DeliveryOrderForm = () => {
   const [selectedRouteId, setSelectedRouteId] = useState(null);
 
   useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const response = await getAllCustomersWithoutPagination();
-        setCustomers(
-          Array.isArray(response.customers) ? response.customers : [],
-        );
-      } catch (error) {
-        message.error('Lỗi khi tải danh sách khách hàng');
-      }
-    };
+    if (selectedRouteId) {
+      fetchCustomersByRoute(selectedRouteId);
+    } else {
+      setCustomers([]);
+    }
+  }, [selectedRouteId]);
 
-    fetchCustomers();
-  }, []);
+  const fetchCustomersByRoute = async (routeId) => {
+    setLoading(true);
+    try {
+      const response = await getCustomerTripFaresByExternalFleetCostId(routeId);
+      const fares = response.data || [];
+      if (fares.length > 0) {
+        setCustomers(
+          fares.map((fare) => ({
+            _id: fare.customer._id,
+            name: fare.customer.name,
+            shortName: fare.customer.shortName,
+          }))
+        );
+      } else {
+        setCustomers([]);
+        message.info('Không có khách hàng nào trong tuyến.');
+      }
+    } catch (error) {
+      message.error('Lỗi khi tải danh sách khách hàng trong tuyến.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (values) => {
-    const deliveryDate = values.deliveryDate ? dayjs(values.deliveryDate).format('YYYY-MM-DD') : null;
-    if (!deliveryDate) {
-      message.error('Vui lòng chọn ngày giao hàng hợp lệ');
+    if (!selectedRouteId) {
+      message.warning('Vui lòng chọn tuyến vận tải trước khi tạo đơn giao hàng.');
       return;
     }
 
+    const deliveryDate = values.deliveryDate
+      ? dayjs(values.deliveryDate).format('YYYY-MM-DD')
+      : null;
     const orderData = {
       ...values,
       deliveryDate: deliveryDate,
@@ -107,7 +127,8 @@ const DeliveryOrderForm = () => {
               };
             })
           );
-          setRoutes(updatedRoutes);
+          const filteredRoutes = updatedRoutes.filter((route) => route.type === 0);
+          setRoutes(filteredRoutes); 
         } else {
           setRoutes([]);
         }
@@ -142,7 +163,7 @@ const DeliveryOrderForm = () => {
 
   const rowSelection = {
     type: 'radio',
-    onChange: (selectedRowKeys, selectedRows) => {
+    onChange: (selectedRowKeys) => {
       setSelectedRouteId(selectedRowKeys[0]);
     },
   };
@@ -197,7 +218,7 @@ const DeliveryOrderForm = () => {
         <Card title='Chọn Tuyến Vận Tải Tương Ứng' bordered={false} style={{ marginBottom: 16 }}>
           <Table
             columns={columns}
-            dataSource={routes.filter(route => route.type === 0)}
+            dataSource={routes}
             loading={loading}
             rowKey="_id"
             rowSelection={rowSelection}
@@ -212,7 +233,7 @@ const DeliveryOrderForm = () => {
       <Card title='Thông Tin Đơn Giao Hàng Nhập' bordered={false} style={{ marginBottom: 16 }}>
         <Form form={form} layout='vertical' onFinish={handleSubmit}>
           <Row gutter={16}>
-            <Col span={8}>
+            <Col span={6}>
               <Form.Item
                 label='Ngày Giao Hàng'
                 name='deliveryDate'
@@ -221,47 +242,16 @@ const DeliveryOrderForm = () => {
                 <DatePicker style={{ width: '100%' }} />
               </Form.Item>
             </Col>
-            <Col span={8}>
-              <Form.Item
-                label='Khách Hàng'
-                name='customer'
-                rules={[{ required: true, message: 'Vui lòng chọn khách hàng' }]}
-              >
-                <Select
-                  showSearch
-                  placeholder='Chọn khách hàng'
-                  optionFilterProp='children'
-                  filterOption={(input, option) => {
-                    const children = option.children;
-                    if (Array.isArray(children)) {
-                      return children.join('').toLowerCase().includes(input.toLowerCase());
-                    }
-                    if (typeof children === 'string') {
-                      return children.toLowerCase().includes(input.toLowerCase());
-                    }
-                    return false;
-                  }}
-                >
-                  {customers.map((customer) => (
-                    <Option key={customer._id} value={customer._id}>
-                      {customer.name} ({customer.shortName})
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={8}>
+            <Col span={6}>
               <Form.Item
                 label='Số Container'
                 name='containerNumber'
-                rules={[{ required: true, message: 'Vui lòng nhập số container' }]}
+                rules={[{ required: false, message: 'Vui lòng nhập số container' }]}
               >
                 <Input placeholder='Nhập số container' />
               </Form.Item>
             </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={8}>
+            <Col span={6}>
               <Form.Item
                 label='Chủ Vỏ'
                 name='owner'
@@ -270,16 +260,37 @@ const DeliveryOrderForm = () => {
                 <Input placeholder='Nhập tên chủ sở hữu' />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col span={6}>
               <Form.Item
                 label='Loại Cont'
-                name='moocType'
+                name='contType'
                 rules={[{ required: true, message: 'Vui lòng chọn loại cont' }]}
               >
                 <Select placeholder='Chọn loại cont'>
                   <Option value={0}>20''</Option>
                   <Option value={1}>40''</Option>
                 </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            
+            <Col span={8}>
+              <Form.Item
+                label='Trọng Lượng (kg)'
+                name='weight'
+                rules={[{ required: true, message: 'Vui lòng nhập trọng lượng' }]}
+              >
+                <Input type='number' placeholder='Nhập trọng lượng (kg)' />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label='Thời Gian Đóng Hàng Dự Kiến'
+                name='estimatedTime'
+                rules={[{ required: false, message: 'Vui lòng nhập thời gian dự kiến' }]}
+              >
+                <DatePicker showTime placeholder='Chọn thời gian dự kiến' />
               </Form.Item>
             </Col>
             <Col span={8}>
@@ -289,14 +300,48 @@ const DeliveryOrderForm = () => {
             </Col>
           </Row>
           <Row gutter={16}>
-            <Col span={6}>
-              <Form.Item
-                label="Thời Gian Giao Hàng Dự Kiến"
-                name="estimatedTime"
-                rules={[{ required: false, message: 'Vui lòng nhập thời gian dự kiến' }]}
-              >
-                <DatePicker showTime placeholder="Chọn thời gian dự kiến" />
-              </Form.Item>
+            <Col span={24}>
+              {selectedRouteId ? (
+                customers.length > 0 ? (
+                  <Form.Item
+                    label="Khách Hàng"
+                    name="customer"
+                    rules={[{ required: true, message: "Vui lòng chọn khách hàng" }]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder="Chọn khách hàng"
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().includes(input.toLowerCase())
+                      }
+                    >
+                      {customers.map((customer) => (
+                        <Option key={customer._id} value={customer._id}>
+                          {customer.name} ({customer.shortName})
+                        </Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                ) : (
+                  <Alert style = {{ marginBottom: 16 }}
+                    message="Không có khách hàng nào trong tuyến."
+                    description={
+                      <Link to={`/transport-route/delivery/${selectedRouteId}`}>
+                        Xem chi tiết tuyến vận tải
+                      </Link>
+                    }
+                    type="info"
+                    showIcon
+                  />
+                )
+              ) : (
+                <Alert style = {{ marginBottom: 16 }}
+                  message="Vui lòng chọn tuyến vận tải trước."
+                  type="warning"
+                  showIcon
+                />
+              )}
             </Col>
           </Row>
           <Form.Item>

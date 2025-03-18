@@ -6,7 +6,7 @@ import { getExternalFleetCostById, getInternalCostsByExternalFleetCostId, update
 import PartnerTransportCostList from '../../components/list/PartnerTransportCostList';
 import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 
-const DetailCostPage = () => {
+const PackingDetailCostPage = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [costDetails, setCostDetails] = useState(null);
@@ -148,13 +148,9 @@ const DetailCostPage = () => {
   ];
 
   const historyTypeLabels = {
-    driverAllowance: 'Công tác phí lái xe',
-    driverSalary: 'Lương lái xe',
-    fuelCost: 'Chi phí xăng dầu',
     singleTicket: 'Vé lượt',
-    monthlyTicket: 'Vé tháng',
     otherCosts: 'Chi phí khác',
-    tripFare: 'Cước phí',
+    tripFarePacking: 'Cước chuyến đóng hàng(gắp vỏ)',
   };
 
   if (loading) {
@@ -173,6 +169,18 @@ const DetailCostPage = () => {
           <Descriptions.Item label="Điểm đến">{costDetails.endPoint.fullName}</Descriptions.Item>
           <Descriptions.Item label="Loại vận chuyển">{costDetails.type === 0 ? 'Giao hàng nhập' : 'Đóng hàng'}</Descriptions.Item>
           <Descriptions.Item label="Số đối tác hoạt động">{partnerTransportCosts.length}</Descriptions.Item>
+          <Descriptions.Item label="Công tác phí lái xe">
+            {costDetails.driverAllowance.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+          </Descriptions.Item>
+          <Descriptions.Item label="Lương lái xe">
+            {costDetails.driverSalary.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+          </Descriptions.Item>
+          <Descriptions.Item label="Số km đặc">
+            {costDetails.solidDistance} km
+          </Descriptions.Item>
+          <Descriptions.Item label="Số km rỗng">
+            {costDetails.emtyDistance} km
+          </Descriptions.Item>
         </Descriptions>
       </Card>
       <div style={{ display: 'flex', gap: '24px', marginTop: '24px' }}>
@@ -190,54 +198,6 @@ const DetailCostPage = () => {
         >
           <Form form={form20} layout="vertical" onFinish={(values) => handleSubmit(values, 0)} initialValues={internalCosts20}>
             <Descriptions bordered column={1}>
-              <Descriptions.Item label="Cước phí">
-                {isEditing ? (
-                  <Input.Group compact>
-                    <Form.Item name="tripFare" noStyle>
-                      <Input style={{ width: 'calc(100% - 32px)' }} />
-                    </Form.Item>
-                  </Input.Group>
-                ) : (
-                  internalCosts20.tripFare
-                )}
-                <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('tripFare')} style={{ float: 'right' }} />
-              </Descriptions.Item>
-              <Descriptions.Item label="Công tác phí lái xe">
-                {isEditing ? (
-                  <Input.Group compact>
-                    <Form.Item name="driverAllowance" noStyle>
-                      <Input style={{ width: 'calc(100% - 32px)' }} />
-                    </Form.Item>
-                  </Input.Group>
-                ) : (
-                  internalCosts20.driverAllowance
-                )}
-                <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('driverAllowance')} style={{ float: 'right' }} />
-              </Descriptions.Item>
-              <Descriptions.Item label="Lương lái xe">
-                {isEditing ? (
-                  <Input.Group compact>
-                    <Form.Item name="driverSalary" noStyle>
-                      <Input style={{ width: 'calc(100% - 32px)' }} />
-                    </Form.Item>
-                  </Input.Group>
-                ) : (
-                  internalCosts20.driverSalary
-                )}
-                <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('driverSalary')} style={{ float: 'right' }} />
-              </Descriptions.Item>
-              <Descriptions.Item label="Chi phí xăng dầu">
-                {isEditing ? (
-                  <Input.Group compact>
-                    <Form.Item name="fuelCost" noStyle>
-                      <Input style={{ width: 'calc(100% - 32px)' }} />
-                    </Form.Item>
-                  </Input.Group>
-                ) : (
-                  internalCosts20.fuelCost
-                )}
-                <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('fuelCost')} style={{ float: 'right' }} />
-              </Descriptions.Item>
               <Descriptions.Item label="Vé lượt">
                 {isEditing ? (
                   <Input.Group compact>
@@ -262,10 +222,22 @@ const DetailCostPage = () => {
                 )}
                 <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('otherCosts')} style={{ float: 'right' }} />
               </Descriptions.Item>
+              <Descriptions.Item label="Cước chuyến đóng hàng(gắp vỏ)">
+                {isEditing ? (
+                  <Input.Group compact>
+                    <Form.Item name="tripFarePacking" noStyle>
+                      <Input style={{ width: 'calc(100% - 32px)' }} />
+                    </Form.Item>
+                  </Input.Group>
+                ) : (
+                  internalCosts20.tripFarePacking
+                )}
+                <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('tripFarePacking')} style={{ float: 'right' }} />
+              </Descriptions.Item>
             </Descriptions>
             {isEditing && (
               <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading} style = {{marginTop: 16}}>
+                <Button type="primary" htmlType="submit" loading={loading} style={{ marginTop: 16 }}>
                   Cập nhật
                 </Button>
               </Form.Item>
@@ -286,54 +258,6 @@ const DetailCostPage = () => {
         >
           <Form form={form40} layout="vertical" onFinish={(values) => handleSubmit(values, 1)} initialValues={internalCosts40}>
             <Descriptions bordered column={1}>
-              <Descriptions.Item label="Cước phí">
-                {isEditing ? (
-                  <Input.Group compact>
-                    <Form.Item name="tripFare" noStyle>
-                      <Input style={{ width: 'calc(100% - 32px)' }} />
-                    </Form.Item>
-                  </Input.Group>
-                ) : (
-                  internalCosts40.tripFare
-                )}
-                <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('tripFare')} style={{ float: 'right' }} />
-              </Descriptions.Item>
-              <Descriptions.Item label="Công tác phí lái xe">
-                {isEditing ? (
-                  <Input.Group compact>
-                    <Form.Item name="driverAllowance" noStyle>
-                      <Input style={{ width: 'calc(100% - 32px)' }} />
-                    </Form.Item>
-                  </Input.Group>
-                ) : (
-                  internalCosts40.driverAllowance
-                )}
-                <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('driverAllowance')} style={{ float: 'right' }} />
-              </Descriptions.Item>
-              <Descriptions.Item label="Lương lái xe">
-                {isEditing ? (
-                  <Input.Group compact>
-                    <Form.Item name="driverSalary" noStyle>
-                      <Input style={{ width: 'calc(100% - 32px)' }} />
-                    </Form.Item>
-                  </Input.Group>
-                ) : (
-                  internalCosts40.driverSalary
-                )}
-                <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('driverSalary')} style={{ float: 'right' }} />
-              </Descriptions.Item>
-              <Descriptions.Item label="Chi phí xăng dầu">
-                {isEditing ? (
-                  <Input.Group compact>
-                    <Form.Item name="fuelCost" noStyle>
-                      <Input style={{ width: 'calc(100% - 32px)' }} />
-                    </Form.Item>
-                  </Input.Group>
-                ) : (
-                  internalCosts40.fuelCost
-                )}
-                <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('fuelCost')} style={{ float: 'right' }} />
-              </Descriptions.Item>
               <Descriptions.Item label="Vé lượt">
                 {isEditing ? (
                   <Input.Group compact>
@@ -358,10 +282,22 @@ const DetailCostPage = () => {
                 )}
                 <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('otherCosts')} style={{ float: 'right' }} />
               </Descriptions.Item>
+              <Descriptions.Item label="Cước chuyến đóng hàng(gắp vỏ)">
+                {isEditing ? (
+                  <Input.Group compact>
+                    <Form.Item name="tripFarePacking" noStyle>
+                      <Input style={{ width: 'calc(100% - 32px)' }} />
+                    </Form.Item>
+                  </Input.Group>
+                ) : (
+                  internalCosts40.tripFarePacking
+                )}
+                <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('tripFarePacking')} style={{ float: 'right' }} />
+              </Descriptions.Item>
             </Descriptions>
             {isEditing && (
               <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading} style = {{marginTop: 16}}>
+                <Button type="primary" htmlType="submit" loading={loading} style={{ marginTop: 16 }}>
                   Cập nhật
                 </Button>
               </Form.Item>
@@ -391,4 +327,4 @@ const DetailCostPage = () => {
   );
 };
 
-export default DetailCostPage;
+export default PackingDetailCostPage;

@@ -1,5 +1,5 @@
 import React, { useState,} from 'react';
-import { Modal, Form, Select, Button, message } from 'antd';
+import { Modal, Form, Select, Button, message,Input } from 'antd';
 import LocationSelector from './LocationSelector';
 import { createExternalFleetCost } from '../../services/ExternalFleetCostService';
 
@@ -42,6 +42,10 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
         endPoint: destination,
         type: transportType,
         moocType: moocType,
+        driverAllowance: parseFloat(cost.driverAllowance),
+        driverSalary: parseFloat(cost.driverSalary),
+        solidDistance: parseFloat(cost.solidDistance),
+        emtyDistance: parseFloat(cost.emtyDistance),
         cost: parseFloat(cost),
       };
 
@@ -88,6 +92,38 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
             <Option value={0}>Giao hàng nhập</Option>
             <Option value={1}>Đóng hàng</Option>
           </Select>
+        </Form.Item>
+        <Form.Item label="Công tác phí">
+          <Input
+            type="number"
+            placeholder="Nhập công tác phí"
+            value={cost.driverAllowance || ''}
+            onChange={(e) => setCost({ ...cost, driverAllowance: e.target.value })}
+          />
+        </Form.Item>
+        <Form.Item label="Lương tài xế">
+          <Input
+            type="number"
+            placeholder="Nhập lương tài xế"
+            value={cost.driverSalary || ''}
+            onChange={(e) => setCost({ ...cost, driverSalary: e.target.value })}
+          />
+        </Form.Item>
+        <Form.Item label="Khoảng cách đặc">
+          <Input
+            type="number"
+            placeholder="Nhập khoảng cách đặc"
+            value={cost.solidDistance || ''}
+            onChange={(e) => setCost({ ...cost, solidDistance: e.target.value })}
+          />
+        </Form.Item>
+        <Form.Item label="Khoảng cách rỗng">
+          <Input
+            type="number"
+            placeholder="Nhập khoảng cách rỗng"
+            value={cost.emtyDistance || ''}
+            onChange={(e) => setCost({ ...cost, emtyDistance: e.target.value })}
+          />
         </Form.Item>
       </Form>
     </Modal>

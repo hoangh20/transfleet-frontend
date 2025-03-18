@@ -128,3 +128,43 @@ export const getPartnerTransportCostsByTransportTrip = async (transportTripId) =
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+export const createCustomerTripFare = async (data) => {
+  try {
+    const response = await axios.post(`${API_URL}/external-fleet-cost/create-customer-trip-fare`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating customer trip fare:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const updateCustomerTripFare = async (id, data) => {
+  try {
+    const response = await axios.put(`${API_URL}/external-fleet-cost/update-customer-trip-fare/${id}`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating customer trip fare:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const deleteCustomerTripFare = async (id) => {
+  try {
+    const response = await axios.delete(`${API_URL}/external-fleet-cost/delete-customer-trip-fare/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting customer trip fare:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const getCustomerTripFaresByExternalFleetCostId = async (externalFleetCostId) => {
+  try {
+    const response = await axios.get(`${API_URL}/external-fleet-cost/list/${externalFleetCostId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching customer trip fares by external fleet cost ID:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};

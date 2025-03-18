@@ -10,45 +10,66 @@ import {
   Card,
   Select,
   Table,
+  Alert,
 } from 'antd';
 import dayjs from 'dayjs';
 import { createPackingOrder } from '../../services/OrderService';
-import { getAllCustomersWithoutPagination } from '../../services/CustomerService';
+import { getAllCustomersWithoutPagination } from '../../services/CustomerService'; // Import the new API
 import LocationSelector from '../location/LocationSelector';
-import { checkIfRecordExists } from '../../services/ExternalFleetCostService'; // Import the new API function
+import { checkIfRecordExists } from '../../services/ExternalFleetCostService';
 import {
   fetchProvinceName,
   fetchDistrictName,
   fetchWardName,
-} from '../../services/LocationService'; // Import location services
-import { Link } from 'react-router-dom'; // Import Link from react-router-dom
+} from '../../services/LocationService';
+import { Link } from 'react-router-dom';
 
 const { Option } = Select;
 
 const PackingOrderForm = () => {
   const [form] = Form.useForm();
   const [customers, setCustomers] = useState([]);
-  const [routes, setRoutes] = useState([]); // State to store transport routes
+  const [routes, setRoutes] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedRouteId, setSelectedRouteId] = useState(null); // State to store selected route ID
+  const [selectedRouteId, setSelectedRouteId] = useState(null);
 
   useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const response = await getAllCustomersWithoutPagination();
-        setCustomers(
-          Array.isArray(response.customers) ? response.customers : [],
-        );
-      } catch (error) {
-        message.error('Lỗi khi tải danh sách khách hàng');
-      }
-    };
-
-    fetchCustomers();
+    fetchCustomers(); // Fetch all customers when the component mounts
   }, []);
 
+  const fetchCustomers = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllCustomersWithoutPagination();
+      const customersData = response.customers || [];
+      if (customersData.length > 0) {
+        setCustomers(
+          customersData.map((customer) => ({
+            _id: customer._id,
+            name: customer.name,
+            shortName: customer.shortName,
+          }))
+        );
+      } else {
+        setCustomers([]);
+        message.info('Không có khách hàng nào.');
+      }
+    } catch (error) {
+      message.error('Lỗi khi tải danh sách khách hàng.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (values) => {
-    const packingDate = values.packingDate ? dayjs(values.packingDate).format('YYYY-MM-DD') : null;
+    if (!selectedRouteId) {
+      message.warning('Vui lòng chọn tuyến vận tải trước khi tạo đơn đóng hàng.');
+      return;
+    }
+
+    const packingDate = values.packingDate
+      ? dayjs(values.packingDate).format('YYYY-MM-DD')
+      : null;
     const orderData = {
       ...values,
       packingDate: packingDate,
@@ -58,7 +79,7 @@ const PackingOrderForm = () => {
     try {
       await createPackingOrder(orderData);
       form.resetFields();
-      setSelectedRouteId(null); // Reset selected route ID
+      setSelectedRouteId(null);
       message.success('Tạo đơn đóng hàng thành công');
     } catch (error) {
       message.error('Lỗi khi tạo đơn đóng hàng');
@@ -81,22 +102,14 @@ const PackingOrderForm = () => {
         if (response && response.length > 0) {
           const updatedRoutes = await Promise.all(
             response.map(async (route) => {
-              const startProvince = await fetchProvinceName(
-                route.startPoint.provinceCode,
-              );
-              const startDistrict = await fetchDistrictName(
-                route.startPoint.districtCode,
-              );
+              const startProvince = await fetchProvinceName(route.startPoint.provinceCode);
+              const startDistrict = await fetchDistrictName(route.startPoint.districtCode);
               const startWard = route.startPoint.wardCode
                 ? await fetchWardName(route.startPoint.wardCode)
                 : null;
 
-              const endProvince = await fetchProvinceName(
-                route.endPoint.provinceCode,
-              );
-              const endDistrict = await fetchDistrictName(
-                route.endPoint.districtCode,
-              );
+              const endProvince = await fetchProvinceName(route.endPoint.provinceCode);
+              const endDistrict = await fetchDistrictName(route.endPoint.districtCode);
               const endWard = route.endPoint.wardCode
                 ? await fetchWardName(route.endPoint.wardCode)
                 : null;
@@ -112,16 +125,14 @@ const PackingOrderForm = () => {
                   fullName: `${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`,
                 },
               };
-            }),
+            })
           );
-          console.log('Updated Routes:', updatedRoutes); // Log updated routes
-          setRoutes(updatedRoutes);
+          const filteredRoutes = updatedRoutes.filter((route) => route.type === 1);
+          setRoutes(filteredRoutes);
         } else {
-          console.error('Invalid data structure:', response); // Log invalid data structure
           setRoutes([]);
         }
       } catch (error) {
-        console.error('Error checking routes:', error); // Log error
         message.error('Lỗi khi kiểm tra tuyến vận tải');
       } finally {
         setLoading(false);
@@ -142,12 +153,6 @@ const PackingOrderForm = () => {
       key: 'endPoint',
       render: (endPoint) => endPoint.fullName || 'N/A',
     },
-    {
-      title: 'Loại vận chuyển',
-      dataIndex: 'type',
-      key: 'type',
-      render: (type) => (type === 0 ? 'Giao hàng nhập' : 'Đóng hàng'),
-    },
   ];
 
   const rowSelection = {
@@ -159,7 +164,7 @@ const PackingOrderForm = () => {
 
   return (
     <>
-      <Card title='Thông Tin Địa Điểm' bordered={false} style = {{marginBottom: 16}}>
+      <Card title='Thông Tin Địa Điểm' bordered={false} style={{ marginBottom: 16 }}>
         <Form form={form} layout='vertical' onFinish={handleSubmit}>
           <Row gutter={16}>
             <Col span={12}>
@@ -203,7 +208,7 @@ const PackingOrderForm = () => {
           </Row>
         </Form>
       </Card>
-      {routes.length > 0 ? (
+      {routes.filter((route) => route.type === 1).length > 0 ? (
         <Card
           title='Chọn Tuyến Vận Tải Tương Ứng'
           bordered={false}
@@ -211,7 +216,7 @@ const PackingOrderForm = () => {
         >
           <Table
             columns={columns}
-            dataSource={routes.filter(route => route.type === 1)}
+            dataSource={routes} 
             loading={loading}
             rowKey='_id'
             rowSelection={rowSelection}
@@ -278,6 +283,15 @@ const PackingOrderForm = () => {
                 </Select>
               </Form.Item>
             </Col>
+            <Col span={6}>
+              <Form.Item
+                label='Trọng Lượng (Tấn)'
+                name='weight'
+                rules={[{ required: true, message: 'Vui lòng nhập trọng lượng' }]}
+              >
+                <Input type='number' placeholder='Nhập trọng lượng (Tấn)' />
+              </Form.Item>
+            </Col>
           </Row>
           <Row gutter={16}>
             <Col span={6}>
@@ -287,11 +301,36 @@ const PackingOrderForm = () => {
             </Col>
             <Col span={6}>
               <Form.Item
-                label="Thời Gian Giao Hàng Dự Kiến"
-                name="estimatedTime"
+                label='Loại Đóng Hàng'
+                name='closeCombination'
+                rules={[{ required: true, message: 'Vui lòng chọn loại đóng hàng' }]}
+              >
+                <Select
+                  placeholder='Chọn loại đóng hàng'
+                  showSearch
+                  optionFilterProp='children'
+                  filterOption={(input, option) => {
+                    const children = option.children;
+                    if (typeof children === 'string') {
+                      return children
+                        .toLowerCase()
+                        .includes(input.toLowerCase());
+                    }
+                    return false;
+                  }}
+                >
+                  <Option value={0}>Gắp vỏ</Option>
+                  <Option value={1}>Đóng kết hợp</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item
+                label='Thời Gian Đóng Hàng Dự Kiến'
+                name='estimatedTime'
                 rules={[{ required: false, message: 'Vui lòng nhập thời gian dự kiến' }]}
               >
-                <DatePicker showTime placeholder="Chọn thời gian dự kiến" />
+                <DatePicker showTime placeholder='Chọn thời gian dự kiến' />
               </Form.Item>
             </Col>
             <Col span={6}>
@@ -302,40 +341,39 @@ const PackingOrderForm = () => {
           </Row>
           <Row gutter={16}>
             <Col span={24}>
-              <Form.Item
-                label='Khách Hàng'
-                name='customer'
-                rules={[
-                  { required: true, message: 'Vui lòng chọn khách hàng' },
-                ]}
-              >
-                <Select
-                  showSearch
-                  placeholder='Chọn khách hàng'
-                  optionFilterProp='children'
-                  filterOption={(input, option) => {
-                    const children = option.children;
-                    if (Array.isArray(children)) {
-                      return children
-                        .join('')
-                        .toLowerCase()
-                        .includes(input.toLowerCase());
-                    }
-                    if (typeof children === 'string') {
-                      return children
-                        .toLowerCase()
-                        .includes(input.toLowerCase());
-                    }
-                    return false;
-                  }}
+              {customers.length > 0 ? (
+                <Form.Item
+                  label="Khách Hàng"
+                  name="customer"
+                  rules={[{ required: true, message: "Vui lòng chọn khách hàng" }]}
                 >
-                  {customers.map((customer) => (
-                    <Option key={customer._id} value={customer._id}>
-                      {customer.name} ({customer.shortName})
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
+                  <Select
+                    showSearch
+                    placeholder="Chọn khách hàng"
+                    optionFilterProp="children"
+                    filterOption={(input, option) => {
+                      const children = option.children;
+                      if (typeof children === 'string') {
+                        return children.toLowerCase().includes(input.toLowerCase());
+                      }
+                      return false;
+                    }}
+                  >
+                    {customers.map((customer) => (
+                      <Option key={customer._id} value={customer._id}>
+                        {`${customer.name} (${customer.shortName})`}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              ) : (
+                <Alert
+                  style={{ marginBottom: 16 }}
+                  message="Không có khách hàng nào."
+                  type="info"
+                  showIcon
+                />
+              )}
             </Col>
           </Row>
           <Form.Item>

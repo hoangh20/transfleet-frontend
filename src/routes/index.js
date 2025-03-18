@@ -10,7 +10,8 @@ import VehicleDetailPage from '../pages/vehicle/VehicleDetailPage';
 import CustommerPage from '../pages/customer/index';
 import PartnerPage from '../pages/Partner/index';
 import PartnerCostPage from '../pages/TransportRoute/cost';
-import DetailCostPage from '../pages/TransportRoute/detailCost';
+import PackingDetailCostPage from '../pages/TransportRoute/packingDetailCost';
+import DeliveryDetailCostPage from '../pages/TransportRoute/deliveryDetailCost';
 import CreateOrderPage from '../pages/Order/create';
 import OrderPage from '../pages/Order/index';
 import SystemDefaultsPage from '../pages/System/SystemDefaultsPage';
@@ -69,8 +70,12 @@ export const routes = [
     page: PartnerCostPage,
   },
   {
-    path: '/transport-route/detail/:id',
-    page: DetailCostPage,
+    path: '/transport-route/packing/:id',
+    page: PackingDetailCostPage,
+  },
+  {
+    path: '/transport-route/delivery/:id',
+    page: DeliveryDetailCostPage,
   },
   {
     path: '/order/create',

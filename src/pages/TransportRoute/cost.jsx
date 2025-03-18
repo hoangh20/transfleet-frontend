@@ -162,7 +162,11 @@ const PartnerCostPage = () => {
             rowKey="_id"
             onRow={(record) => ({
               onClick: () => {
-                navigate(`/transport-route/detail/${record._id}`);
+                if (record.type === 0) {
+                  navigate(`/transport-route/delivery/${record._id}`);
+                } else if (record.type === 1) {
+                  navigate(`/transport-route/packing/${record._id}`);
+                }
               },
             })}
             pagination={{
