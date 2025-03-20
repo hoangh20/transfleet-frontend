@@ -33,7 +33,16 @@ const SystemService = {
       console.error('Error fetching history:', error);
       throw error.response ? error.response.data : new Error('Network Error');
     }
-  }
+  },
+  async getFuelPrice() {
+    try {
+      const response = await axios.get(`${API_URL}/fuel-price`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching fuel price:', error);
+      throw error.response ? error.response.data : new Error('Network Error');
+    }
+  },
 };
 
 export default SystemService;

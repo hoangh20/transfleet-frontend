@@ -235,15 +235,15 @@ const SystemDefaultsPage = () => {
             </Col>
             <Col span={12}>
               <Form.Item
-                label="Định mức nhẹ cho cấp dầu"
-                name="lightRate"
-                rules={[{ required: true, message: 'Vui lòng nhập định mức nhẹ' }]}
+                label="Định mức cấp dầu <8T"
+                name="rate8"
+                rules={[{ required: true, message: 'Vui lòng nhập định mức nặng' }]}
               >
                 <NumberInput
-                  placeholder="Nhập định mức nhẹ"
+                  placeholder="Nhập định mức cấp dầu <8T"
                   suffix={
                     <HistoryOutlined
-                      onClick={() => showHistoryModal('Lịch sử thay đổi định mức nhẹ', 'lightRate')}
+                      onClick={() => showHistoryModal('Lịch sử thay đổi định mức', 'rate8')}
                       style={{ cursor: 'pointer' }}
                     />
                   }
@@ -253,15 +253,52 @@ const SystemDefaultsPage = () => {
             </Col>
             <Col span={12}>
               <Form.Item
-                label="Định mức nặng cho cấp dầu"
-                name="heavyRate"
+                label="Định mức cấp dầu < 15T"
+                name="rate15"
+                rules={[{ required: true, message: 'Vui lòng nhập định mức nhẹ' }]}
+              >
+                <NumberInput
+                  placeholder="Nhập định mức cấp dầu < 15T"
+                  suffix={
+                    <HistoryOutlined
+                name="rate15"
+                      onClick={() => showHistoryModal('Lịch sử thay đổi định mức nhẹ', 'rate15')}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  }
+                  disabled={!isEditing}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Định mức cấp dầu 15-->26T"
+                name="rate26"
                 rules={[{ required: true, message: 'Vui lòng nhập định mức nặng' }]}
               >
                 <NumberInput
-                  placeholder="Nhập định mức nặng"
+                  placeholder="Nhập định mức cấp dầu 15-->26T"
                   suffix={
                     <HistoryOutlined
-                      onClick={() => showHistoryModal('Lịch sử thay đổi định mức nặng', 'heavyRate')}
+                      onClick={() => showHistoryModal('Lịch sử thay đổi định mức nặng', 'rate26')}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  }
+                  disabled={!isEditing}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Định mức cấp dầu > 26T"
+                name="rate27"
+                rules={[{ required: true, message: 'Vui lòng nhập định mức nặng' }]}
+              >
+                <NumberInput
+                  placeholder="Nhập định mức cấp dầu > 26T"
+                  suffix={
+                    <HistoryOutlined
+                      onClick={() => showHistoryModal('Lịch sử thay đổi định mức nặng', 'rate27')}
                       style={{ cursor: 'pointer' }}
                     />
                   }

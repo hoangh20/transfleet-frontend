@@ -18,6 +18,7 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
     const fetchOrders = async () => {
       setLoading(true);
       try {
+        const fuelPrice = parseFloat(localStorage.getItem('fuelPrice')) || 0;
         const deliveryOrders = await getDeliveryOrdersByDate(startDate, endDate);
         const filteredOrders = deliveryOrders.filter(order => order.isCombinedTrip === 0 && order.hasVehicle === 0);
         const ordersWithDetails = await Promise.all(filteredOrders.map(async (order) => {
@@ -28,10 +29,14 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
           const customer = await getCustomerById(order.customer);
           const cost = await getCostByOrderId(order._id);
           const tripFare = cost ? cost.tripFare : 0;
-          const estimatedProfit = cost ? cost.tripFare - (
+
+          // Tính fuelCost
+          const fuelCost = cost ? fuelPrice * cost.fuel*1000 : 0;
+
+          const estimatedProfit = cost ? tripFare - (
+            fuelCost +
             cost.driverAllowance +
             cost.driverSalary +
-            cost.fuelCost +
             cost.singleTicket +
             cost.monthlyTicket +
             cost.otherCosts +
@@ -46,6 +51,7 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
             ...order,
             cost,
             tripFare,
+            fuelCost, 
             estimatedProfit,
             startLocation: `${startProvince}, ${startDistrict}`,
             endLocation: `${endProvince}, ${endDistrict}`,
@@ -148,28 +154,33 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
                 {order.tripFare === 0 ? (
                   <Tag color="error">Không tuyến</Tag>
                 ) : (
-                  <Tooltip title={
-                    order.cost ? (
-                      <div>
-                        <p>Cước chuyến: {order.cost.tripFare.toLocaleString()}</p>
-                        <p>Công tác phí: {order.cost.driverAllowance.toLocaleString()}</p>
-                        <p>Lương tài xế: {order.cost.driverSalary.toLocaleString()}</p>
-                        <p>Chi phí nhiên liệu: {order.cost.fuelCost.toLocaleString()}</p>
-                        <p>Vé lượt: {order.cost.singleTicket.toLocaleString()}</p>
-                        <p>Vé tháng: {order.cost.monthlyTicket.toLocaleString()}</p>
-                        <p>Chi phí khác: {order.cost.otherCosts.toLocaleString()}</p>
-                        <p>Phí đăng ký: {order.cost.registrationFee.toLocaleString()}</p>
-                        <p>Bảo hiểm: {order.cost.insurance.toLocaleString()}</p>
-                        <p>Lương đội kỹ thuật: {order.cost.technicalTeamSalary.toLocaleString()}</p>
-                        <p>Lãi vay ngân hàng: {order.cost.bankLoanInterest.toLocaleString()}</p>
-                        <p>Chi phí sửa chữa: {order.cost.repairCost.toLocaleString()}</p>
-                      </div>
-                    ) : 'Không có thông tin chi phí'
-                  }>
-                    <Text strong style={{ 
-                      color: order.estimatedProfit > 0 ? 'green' : 'red',
-                      fontSize: 14
-                    }}>
+                  <Tooltip
+                    title={
+                      order.cost ? (
+                        <div>
+                          <p>Cước chuyến: {order.cost.tripFare?.toLocaleString() || '--'}</p>
+                          <p>Công tác phí: {order.cost.driverAllowance?.toLocaleString() || '--'}</p>
+                          <p>Lương tài xế: {order.cost.driverSalary?.toLocaleString() || '--'}</p>
+                          <p>Chi phí nhiên liệu: {order.fuelCost?.toLocaleString() || '--'}</p>
+                          <p>Vé lượt: {order.cost.singleTicket?.toLocaleString() || '--'}</p>
+                          <p>Vé tháng: {order.cost.monthlyTicket?.toLocaleString() || '--'}</p>
+                          <p>Chi phí khác: {order.cost.otherCosts?.toLocaleString() || '--'}</p>
+                          <p>Phí đăng ký: {order.cost.registrationFee?.toLocaleString() || '--'}</p>
+                          <p>Bảo hiểm: {order.cost.insurance?.toLocaleString() || '--'}</p>
+                          <p>Lương đội kỹ thuật: {order.cost.technicalTeamSalary?.toLocaleString() || '--'}</p>
+                          <p>Lãi vay ngân hàng: {order.cost.bankLoanInterest?.toLocaleString() || '--'}</p>
+                          <p>Chi phí sửa chữa: {order.cost.repairCost?.toLocaleString() || '--'}</p>
+                        </div>
+                      ) : 'Không có thông tin chi phí'
+                    }
+                  >
+                    <Text
+                      strong
+                      style={{
+                        color: order.estimatedProfit > 0 ? 'green' : 'red',
+                        fontSize: 14,
+                      }}
+                    >
                       {order.estimatedProfit?.toLocaleString() || '--'}
                     </Text>
                   </Tooltip>

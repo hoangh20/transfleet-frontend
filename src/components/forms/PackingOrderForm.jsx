@@ -14,7 +14,7 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import { createPackingOrder } from '../../services/OrderService';
-import { getAllCustomersWithoutPagination } from '../../services/CustomerService'; // Import the new API
+import { getAllCustomersWithoutPagination } from '../../services/CustomerService';
 import LocationSelector from '../location/LocationSelector';
 import { checkIfRecordExists } from '../../services/ExternalFleetCostService';
 import {

@@ -1,15 +1,33 @@
-// AdminHeader.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from 'antd';
 import { BellOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import UserDrop from '../drop/userDrop';
+import SystemService from '../../services/SystemService';
 
 const { Header } = Layout;
 
 const AdminHeader = () => {
   const user = useSelector((state) => state.user);
+  const [fuelPrice, setFuelPrice] = useState(null);
+
+  useEffect(() => {
+    const fetchFuelPrice = async () => {
+      try {
+        const response = await SystemService.getFuelPrice();
+        if (response.data?.region1) {
+          const fuelPrice = response.data.region1; 
+          setFuelPrice(fuelPrice); 
+          localStorage.setItem('fuelPrice', fuelPrice);
+        }
+      } catch (error) {
+        console.error('Error fetching fuel price:', error);
+      }
+    };
+
+    fetchFuelPrice();
+  }, []);
 
   return (
     <Header
@@ -53,6 +71,18 @@ const AdminHeader = () => {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        {/* Thêm giá dầu vào đây */}
+        {fuelPrice && (
+          <span style={{ 
+            fontSize: '16px',
+            color: '#003082',
+            fontWeight: '500',
+            marginRight: '20px'
+          }}>
+            Giá Dầu: {fuelPrice} VNĐ
+          </span>
+        )}
+
         <BellOutlined style={{ fontSize: '24px' }} />
         <QuestionCircleOutlined style={{ fontSize: '24px' }} />
         <span style={{ fontSize: '18px', marginRight: '10px' }}>
