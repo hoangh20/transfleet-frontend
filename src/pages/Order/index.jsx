@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import PackingOrderList from '../../components/list/PackingOrderList';
 import DeliveryOrderList from '../../components/list/DeliveryOrderList';
 import CombinedOrderList from '../../components/list/CombinedOrderList';
-import { createOrderConnection } from '../../services/OrderService';
+import { createOrderConnection, getPackingOrderDetails } from '../../services/OrderService';
 
 const { RangePicker } = DatePicker;
 
@@ -21,7 +21,7 @@ const OrderPage = () => {
   useEffect(() => {
     localStorage.setItem('selectedDates', JSON.stringify(selectedDates));
   }, [selectedDates]);
-  
+
   const handleDateChange = (dates) => {
     if (dates && dates.length === 2) {
       setSelectedDates(dates);
@@ -38,12 +38,24 @@ const OrderPage = () => {
     setSelectedDeliveryOrders(selectedRowKeys);
   };
 
-  const handleGetSelectedOrders = () => {
+  const handleGetSelectedOrders = async () => {
     if (selectedPackingOrders.length === 0 || selectedDeliveryOrders.length === 0) {
       message.error('Vui lòng chọn cả đơn đóng hàng và đơn giao hàng.');
       return;
     }
-    setIsModalVisible(true);
+
+    try {
+      const packingOrderId = selectedPackingOrders[0];
+      const packingOrderDetails = await getPackingOrderDetails(packingOrderId);
+      if (packingOrderDetails.closeCombination === 0) {
+        message.error('Không thể kết hợp đơn đóng gắp vỏ.');
+        return;
+      }
+
+      setIsModalVisible(true);
+    } catch (error) {
+      message.error('Lỗi khi kiểm tra chi tiết đơn đóng hàng.');
+    }
   };
 
   const handleCreateOrderConnection = async () => {

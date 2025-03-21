@@ -1,5 +1,6 @@
-import React, { useState,} from 'react';
-import { Modal, Form, Select, Button, message,Input } from 'antd';
+import React, { useState } from 'react';
+import { Modal, Form, Select, Button, message, Input } from 'antd';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import LocationSelector from './LocationSelector';
 import { createExternalFleetCost } from '../../services/ExternalFleetCostService';
 
@@ -13,6 +14,7 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
   const [cost, setCost] = useState('');
   const [transportType, setTransportType] = useState(null);
   const [moocType, setMoocType] = useState(null);
+  const navigate = useNavigate(); // Initialize navigate
 
   const handleDepartureChange = (location) => {
     setDeparture(location);
@@ -30,8 +32,14 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
     try {
       // eslint-disable-next-line no-unused-vars
       const values = await form.validateFields();
-      
-      if (!departure.provinceCode || !departure.districtCode || !destination.provinceCode || !destination.districtCode || transportType === null) {
+
+      if (
+        !departure.provinceCode ||
+        !departure.districtCode ||
+        !destination.provinceCode ||
+        !destination.districtCode ||
+        transportType === null
+      ) {
         message.error('Vui lòng điền đầy đủ thông tin');
         return;
       }
@@ -49,8 +57,18 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
         cost: parseFloat(cost),
       };
 
-      await createExternalFleetCost(data);
-      message.success('Tạo mới tuyến vận tải thành công');
+      const response = await createExternalFleetCost(data);
+      console.log('API Response:', response);
+
+      if (response &&  response._id) {
+        message.success('Tạo mới tuyến vận tải thành công');
+        const routeType = response.type === 0 ? 'delivery' : 'packing';
+        navigate(`/transport-route/${routeType}/${response._id}`);
+      } else {
+        message.error('Không thể lấy thông tin tuyến vận tải vừa tạo.');
+        return;
+      }
+
       onSubmit(data);
       form.resetFields();
       setDeparture({});
@@ -59,7 +77,6 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
       setTransportType(null);
       setMoocType(null);
       setSelectedPartner(null);
-      
     } catch (error) {
       console.error('Validation failed:', error);
       message.error('Lỗi khi tạo tuyến vận tải');

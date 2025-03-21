@@ -55,6 +55,7 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
             endLocation: `${endProvince}, ${endDistrict}`,
             shortName: customer.shortName,
             moocType: order.moocType === 0 ? "20''" : "40''",
+            closeCombination: order.closeCombination === 0 ? "Gắp vỏ" : "Kết hợp",
             containerNumber: order.containerNumber 
           };
         }));
@@ -86,6 +87,7 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
       setOrders(orders.filter(order => order._id !== orderId));
       message.success('Xóa đơn đóng hàng thành công');
     } catch (error) {
+      console.error('Delete packing order error:', error);
       message.error('Lỗi khi xóa đơn đóng hàng');
     }
   };
@@ -106,6 +108,7 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
               <Link to={`/order/packing-orders/${order._id}`} style={{ display: 'block' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text strong style={{ fontSize: 14 }}>📦 {order.shortName}</Text>
+                  <Tag color={order.closeCombination === "gắp vỏ" ? "blue" : "blue"}>{order.closeCombination}</Tag>
                   <Tag color={order.moocType === "20''" ? "blue" : "purple"}>{order.moocType}</Tag>
                 </div>
               </Link>

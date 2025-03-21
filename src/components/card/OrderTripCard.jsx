@@ -66,7 +66,7 @@ const OrderTripCard = ({
   };
 
   const steps = statusMap[type] || [];
-  const currentStep = trip.status < steps.length ? trip.status : 0;
+  const currentStep = trip.status-1 < steps.length ? trip.status : 0;
 
   const handleUpdateStatus = async (orderId) => {
     try {

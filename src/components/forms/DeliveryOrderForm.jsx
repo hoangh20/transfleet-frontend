@@ -29,6 +29,7 @@ const DeliveryOrderForm = () => {
   const [loading, setLoading] = useState(false);
   const [selectedRouteId, setSelectedRouteId] = useState(null);
 
+
   useEffect(() => {
     if (selectedRouteId) {
       fetchCustomersByRoute(selectedRouteId);
@@ -74,6 +75,7 @@ const DeliveryOrderForm = () => {
       ...values,
       deliveryDate: deliveryDate,
       externalFleetCostId: selectedRouteId,
+      customer: values.customer,
     };
 
     try {
@@ -128,7 +130,7 @@ const DeliveryOrderForm = () => {
             })
           );
           const filteredRoutes = updatedRoutes.filter((route) => route.type === 0);
-          setRoutes(filteredRoutes); 
+          setRoutes(filteredRoutes);
         } else {
           setRoutes([]);
         }
@@ -227,7 +229,18 @@ const DeliveryOrderForm = () => {
         </Card>
       ) : (
         <Card title='Chọn Tuyến Vận Tải Tương Ứng' bordered={false} style={{ marginBottom: 16 }}>
-          <p>Không tìm được tuyến vận tải nào. <Link to="/transport-route">Bạn có muốn tạo tuyến vận tải mới?</Link></p>
+          <p>Không tìm được tuyến vận tải nào. <Link
+  to={{
+    pathname: '/transport-route',
+    state: {
+      startPoint: form.getFieldValue(['location', 'startPoint']),
+      endPoint: form.getFieldValue(['location', 'endPoint']),
+      openCreateModal: true, 
+    },
+  }}
+>
+  Bạn có muốn tạo tuyến vận tải mới?
+</Link></p>
         </Card>
       )}
       <Card title='Thông Tin Đơn Giao Hàng Nhập' bordered={false} style={{ marginBottom: 16 }}>

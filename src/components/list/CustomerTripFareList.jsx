@@ -43,16 +43,16 @@ const CustomerTripFareList = ({ externalFleetCostId, fetchCostDetails }) => {
     setLoading(true);
     try {
       const response = await getCustomerTripFaresByExternalFleetCostId(externalFleetCostId);
-      const fares = response.data || []; // Truy cập vào thuộc tính `data` của API trả về
+      const fares = response.data || [];
       const faresWithCustomerNames = fares.map((fare) => ({
         ...fare,
-        customerName: fare.customer?.name || 'Không xác định', // Lấy tên khách hàng từ `customer`
+        customerName: fare.customer?.name || 'Không xác định',
       }));
       setCustomerTripFares(faresWithCustomerNames);
       setFilteredCustomerTripFares(faresWithCustomerNames);
     } catch (error) {
       message.error('Lỗi khi tải thông tin cước chuyến của khách hàng');
-      setCustomerTripFares([]); // Đặt giá trị mặc định là mảng rỗng
+      setCustomerTripFares([]); 
       setFilteredCustomerTripFares([]);
     } finally {
       setLoading(false);
@@ -251,7 +251,7 @@ const CustomerTripFareList = ({ externalFleetCostId, fetchCostDetails }) => {
             <Input type="number" placeholder="Nhập cước chuyến kết hợp 40''" />
           </Form.Item>
           <p style={{ color: 'gray', fontSize: '12px' }}>
-            * Nếu không có 2 loại cước chuyến, vui lòng chỉ nhập ở ô cước chuyến, không nhập ở cước chuyến kết hợp.
+            * Nếu không có 2 loại cước chuyến, vui lòng nhập cả 2 cước chuyến giống nhau.
           </p>
         </Form>
       </Modal>
@@ -311,7 +311,7 @@ const CustomerTripFareList = ({ externalFleetCostId, fetchCostDetails }) => {
             <Input type="number" placeholder="Nhập cước chuyến kết hợp 40''" />
           </Form.Item>
           <p style={{ color: 'gray', fontSize: '12px' }}>
-            * Nếu không có 2 loại cước chuyến, vui lòng chỉ nhập ở ô cước chuyến, không nhập ở cước chuyến kết hợp.
+            * Nếu không có 2 loại cước chuyến, vui lòng nhập cả 2 cước chuyến giống nhau.
           </p>
         </Form>
       </Modal>

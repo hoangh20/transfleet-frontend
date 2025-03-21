@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, Spin, Descriptions, message, Form, Input, Button, Modal, Table } from 'antd';
 import { HistoryOutlined } from '@ant-design/icons';
-import { getExternalFleetCostById, getInternalCostsByExternalFleetCostId, updateInternalCosts, getHistoryByTypeAndExternalFleetCostId } from '../../services/ExternalFleetCostService';
+import { getExternalFleetCostById,updateExternalFleetCost, getInternalCostsByExternalFleetCostId, updateInternalCosts, getHistoryByTypeAndExternalFleetCostId } from '../../services/ExternalFleetCostService';
 import PartnerTransportCostList from '../../components/list/PartnerTransportCostList';
 import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 
@@ -14,6 +14,7 @@ const PackingDetailCostPage = () => {
   const [internalCosts40, setInternalCosts40] = useState({});
   const [partnerTransportCosts, setPartnerTransportCosts] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [editedDetails, setEditedDetails] = useState({});
   const [form20] = Form.useForm();
   const [form40] = Form.useForm();
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
@@ -68,6 +69,24 @@ const PackingDetailCostPage = () => {
       setLoading(false);
     }
   };
+   const handleSaveDetails = async () => {
+      setLoading(true);
+      try {
+        const updatedData = {
+          ...costDetails,
+          ...editedDetails,
+        };
+        await updateExternalFleetCost(id, updatedData);
+        message.success('Cập nhật thông tin thành công');
+        setCostDetails(updatedData);
+        setIsEditing(false);
+        setEditedDetails({});
+      } catch (error) {
+        message.error('Lỗi khi cập nhật thông tin');
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const fetchInternalCosts = async () => {
     try {
@@ -151,6 +170,7 @@ const PackingDetailCostPage = () => {
     singleTicket: 'Vé lượt',
     otherCosts: 'Chi phí khác',
     tripFarePacking: 'Cước chuyến đóng hàng(gắp vỏ)',
+    tripFarePacking1: 'Cước chuyến đóng hàng(kết hợp)',
   };
 
   if (loading) {
@@ -163,26 +183,93 @@ const PackingDetailCostPage = () => {
 
   return (
     <div style={{ padding: '24px' }}>
-      <Card title="Chi tiết chuyến vận tải" bordered={false}>
-        <Descriptions bordered column={1}>
-          <Descriptions.Item label="Điểm đi">{costDetails.startPoint.fullName}</Descriptions.Item>
-          <Descriptions.Item label="Điểm đến">{costDetails.endPoint.fullName}</Descriptions.Item>
-          <Descriptions.Item label="Loại vận chuyển">{costDetails.type === 0 ? 'Giao hàng nhập' : 'Đóng hàng'}</Descriptions.Item>
-          <Descriptions.Item label="Số đối tác hoạt động">{partnerTransportCosts.length}</Descriptions.Item>
-          <Descriptions.Item label="Công tác phí lái xe">
-            {costDetails.driverAllowance.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-          </Descriptions.Item>
-          <Descriptions.Item label="Lương lái xe">
-            {costDetails.driverSalary.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-          </Descriptions.Item>
-          <Descriptions.Item label="Số km đặc">
-            {costDetails.solidDistance} km
-          </Descriptions.Item>
-          <Descriptions.Item label="Số km rỗng">
-            {costDetails.emtyDistance} km
-          </Descriptions.Item>
-        </Descriptions>
-      </Card>
+      <Card title="Chi tiết chuyến vận tải" bordered={false}
+            extra={
+                !isEditing ? (
+                  <Button type="primary" onClick={() => setIsEditing(true)}>
+                    Chỉnh sửa
+                  </Button>
+                ) : (
+                  <Button type="primary" onClick={handleSaveDetails}>
+                    Lưu
+                  </Button>
+                )
+              }>
+              <Descriptions bordered column={1}>
+                <Descriptions.Item label="Điểm đi">{costDetails.startPoint.fullName}</Descriptions.Item>
+                <Descriptions.Item label="Điểm đến">{costDetails.endPoint.fullName}</Descriptions.Item>
+                <Descriptions.Item label="Loại vận chuyển">{costDetails.type === 0 ? 'Giao hàng nhập' : 'Đóng hàng'}</Descriptions.Item>
+                <Descriptions.Item label="Số đối tác hoạt động">{partnerTransportCosts.length}</Descriptions.Item>
+              </Descriptions>
+              <Descriptions bordered column={1}>
+                <Descriptions.Item label="Công tác phí lái xe">
+                  {isEditing ? (
+                    <Input
+                      value={editedDetails.driverAllowance || costDetails.driverAllowance}
+                      onChange={(e) =>
+                        setEditedDetails({
+                          ...editedDetails,
+                          driverAllowance: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    costDetails.driverAllowance.toLocaleString('vi-VN', {
+                      style: 'currency',
+                      currency: 'VND',
+                    })
+                  )}
+                </Descriptions.Item>
+                <Descriptions.Item label="Lương lái xe">
+                  {isEditing ? (
+                    <Input
+                      value={editedDetails.driverSalary || costDetails.driverSalary}
+                      onChange={(e) =>
+                        setEditedDetails({
+                          ...editedDetails,
+                          driverSalary: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    costDetails.driverSalary.toLocaleString('vi-VN', {
+                      style: 'currency',
+                      currency: 'VND',
+                    })
+                  )}
+                </Descriptions.Item>
+                <Descriptions.Item label="Số km đặc">
+                  {isEditing ? (
+                    <Input
+                      value={editedDetails.solidDistance || costDetails.solidDistance}
+                      onChange={(e) =>
+                        setEditedDetails({
+                          ...editedDetails,
+                          solidDistance: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    `${costDetails.solidDistance} km`
+                  )}
+                </Descriptions.Item>
+                <Descriptions.Item label="Số km rỗng">
+                  {isEditing ? (
+                    <Input
+                      value={editedDetails.emtyDistance || costDetails.emtyDistance}
+                      onChange={(e) =>
+                        setEditedDetails({
+                          ...editedDetails,
+                          emtyDistance: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    `${costDetails.emtyDistance} km`
+                  )}
+                </Descriptions.Item>
+              </Descriptions>
+            </Card>
       <div style={{ display: 'flex', gap: '24px', marginTop: '24px' }}>
         <Card
           title='Chi phí đội xe nội bộ (Mooc 20")'
@@ -233,6 +320,18 @@ const PackingDetailCostPage = () => {
                   internalCosts20.tripFarePacking
                 )}
                 <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('tripFarePacking')} style={{ float: 'right' }} />
+              </Descriptions.Item>
+              <Descriptions.Item label="Cước chuyến đóng hàng(kết hợp)">
+                {isEditing ? (
+                  <Input.Group compact>
+                    <Form.Item name="tripFarePacking1" noStyle>
+                      <Input style={{ width: 'calc(100% - 32px)' }} />
+                    </Form.Item>
+                  </Input.Group>
+                ) : (
+                  internalCosts20.tripFarePacking1
+                )}
+                <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('tripFarePacking1')} style={{ float: 'right' }} />
               </Descriptions.Item>
             </Descriptions>
             {isEditing && (
@@ -293,6 +392,18 @@ const PackingDetailCostPage = () => {
                   internalCosts40.tripFarePacking
                 )}
                 <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('tripFarePacking')} style={{ float: 'right' }} />
+              </Descriptions.Item>
+              <Descriptions.Item label="Cước chuyến đóng hàng(kết hợp)">
+                {isEditing ? (
+                  <Input.Group compact>
+                    <Form.Item name="tripFarePacking1" noStyle>
+                      <Input style={{ width: 'calc(100% - 32px)' }} />
+                    </Form.Item>
+                  </Input.Group>
+                ) : (
+                  internalCosts40.tripFarePacking1
+                )}
+                <Button type="link" icon={<HistoryOutlined />} onClick={() => showHistoryModal('tripFarePacking1')} style={{ float: 'right' }} />
               </Descriptions.Item>
             </Descriptions>
             {isEditing && (
