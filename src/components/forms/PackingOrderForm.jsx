@@ -22,7 +22,7 @@ import {
   fetchDistrictName,
   fetchWardName,
 } from '../../services/LocationService';
-import { Link } from 'react-router-dom';
+import CreateExternalFleetCost from '../location/CreateExternalFleetCost'; // Import modal
 
 const { Option } = Select;
 
@@ -32,6 +32,8 @@ const PackingOrderForm = () => {
   const [routes, setRoutes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedRouteId, setSelectedRouteId] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false); // Quản lý trạng thái modal
+  const [modalData, setModalData] = useState({}); // Lưu dữ liệu để điền vào modal
 
   useEffect(() => {
     fetchCustomers(); // Fetch all customers when the component mounts
@@ -231,9 +233,17 @@ const PackingOrderForm = () => {
         >
           <p>
             Không tìm được tuyến vận tải nào.{' '}
-            <Link to='/transport-route'>
+            <Button
+              type="link"
+              onClick={() => {
+                const startPoint = form.getFieldValue(['location', 'startPoint']);
+                const endPoint = form.getFieldValue(['location', 'endPoint']);
+                setModalData({ startPoint, endPoint, transportType: 1 });
+                setIsModalVisible(true);
+              }}
+            >
               Bạn có muốn tạo tuyến vận tải mới?
-            </Link>
+            </Button>
           </p>
         </Card>
       )}
@@ -392,6 +402,15 @@ const PackingOrderForm = () => {
           </Form.Item>
         </Form>
       </Card>
+      <CreateExternalFleetCost
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onSubmit={(data) => {
+          message.success('Tuyến vận tải mới đã được tạo.');
+          setIsModalVisible(false);
+        }}
+        initialData={modalData}
+      />
     </>
   );
 };

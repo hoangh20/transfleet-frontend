@@ -19,6 +19,7 @@ import LocationSelector from '../location/LocationSelector';
 import { checkIfRecordExists } from '../../services/ExternalFleetCostService';
 import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 import { Link } from 'react-router-dom';
+import CreateExternalFleetCost from '../location/CreateExternalFleetCost'; // Import modal
 
 const { Option } = Select;
 
@@ -28,6 +29,8 @@ const DeliveryOrderForm = () => {
   const [routes, setRoutes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedRouteId, setSelectedRouteId] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false); // State để quản lý modal
+  const [modalData, setModalData] = useState({}); // Lưu dữ liệu để điền vào modal
 
 
   useEffect(() => {
@@ -142,6 +145,12 @@ const DeliveryOrderForm = () => {
     }
   };
 
+  const handleModalSubmit = (data) => {
+    message.success('Tuyến vận tải mới đã được tạo.');
+    setIsModalVisible(false);
+    // Có thể thêm logic để tải lại danh sách tuyến vận tải nếu cần
+  };
+
   const columns = [
     {
       title: 'Điểm đi',
@@ -228,19 +237,20 @@ const DeliveryOrderForm = () => {
           />
         </Card>
       ) : (
-        <Card title='Chọn Tuyến Vận Tải Tương Ứng' bordered={false} style={{ marginBottom: 16 }}>
-          <p>Không tìm được tuyến vận tải nào. <Link
-  to={{
-    pathname: '/transport-route',
-    state: {
-      startPoint: form.getFieldValue(['location', 'startPoint']),
-      endPoint: form.getFieldValue(['location', 'endPoint']),
-      openCreateModal: true, 
-    },
-  }}
->
-  Bạn có muốn tạo tuyến vận tải mới?
-</Link></p>
+        <Card title="Chọn Tuyến Vận Tải Tương Ứng" bordered={false} style={{ marginBottom: 16 }}>
+          <p>Không tìm được tuyến vận tải nào.
+          <Button
+            type="link"
+            onClick={() => {
+              const startPoint = form.getFieldValue(['location', 'startPoint']);
+              const endPoint = form.getFieldValue(['location', 'endPoint']);
+              setModalData({ startPoint, endPoint, transportType: 0 });
+              setIsModalVisible(true); 
+            }}
+          >
+            Bạn có muốn tạo tuyến vận tải mới?
+          </Button>
+          </p>
         </Card>
       )}
       <Card title='Thông Tin Đơn Giao Hàng Nhập' bordered={false} style={{ marginBottom: 16 }}>
@@ -364,6 +374,12 @@ const DeliveryOrderForm = () => {
           </Form.Item>
         </Form>
       </Card>
+      <CreateExternalFleetCost
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onSubmit={handleModalSubmit}
+        initialData={modalData} // Truyền dữ liệu địa chỉ vào modal
+      />
     </>
   );
 };

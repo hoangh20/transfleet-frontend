@@ -4,16 +4,31 @@ import { fetchProvinces, fetchDistricts, fetchWards } from '../../services/Locat
 
 const { Option } = Select;
 
-const LocationSelector = ({ label, onChange }) => {
+const LocationSelector = ({ label, value = {}, onChange }) => {
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
-  const [selectedProvince, setSelectedProvince] = useState('');
-  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [selectedProvince, setSelectedProvince] = useState(value.provinceCode || '');
+  const [selectedDistrict, setSelectedDistrict] = useState(value.districtCode || '');
+  const [selectedWard, setSelectedWard] = useState(value.wardCode || '');
 
   useEffect(() => {
     loadProvinces();
   }, []);
+
+  useEffect(() => {
+    if (value.provinceCode) {
+      setSelectedProvince(value.provinceCode);
+      loadDistricts(value.provinceCode);
+    }
+    if (value.districtCode) {
+      setSelectedDistrict(value.districtCode);
+      loadWards(value.districtCode);
+    }
+    if (value.wardCode) {
+      setSelectedWard(value.wardCode);
+    }
+  }, [value]);
 
   const loadProvinces = async () => {
     try {
@@ -47,24 +62,21 @@ const LocationSelector = ({ label, onChange }) => {
 
   const handleProvinceChange = (value) => {
     setSelectedProvince(value);
-    setDistricts([]);
-    setWards([]);
-    if (value) {
-      loadDistricts(value);
-    }
+    setSelectedDistrict('');
+    setSelectedWard('');
+    loadDistricts(value);
     onChange({ provinceCode: value, districtCode: '', wardCode: '' });
   };
 
   const handleDistrictChange = (value) => {
     setSelectedDistrict(value);
-    setWards([]);
-    if (value) {
-      loadWards(value);
-    }
+    setSelectedWard('');
+    loadWards(value);
     onChange({ provinceCode: selectedProvince, districtCode: value, wardCode: '' });
   };
 
   const handleWardChange = (value) => {
+    setSelectedWard(value);
     onChange({ provinceCode: selectedProvince, districtCode: selectedDistrict, wardCode: value });
   };
 
@@ -110,6 +122,7 @@ const LocationSelector = ({ label, onChange }) => {
           <Select
             placeholder="Chọn phường/xã (không bắt buộc)"
             onChange={handleWardChange}
+            value={selectedWard}
             disabled={!selectedDistrict}
             showSearch
             filterOption={(input, option) =>

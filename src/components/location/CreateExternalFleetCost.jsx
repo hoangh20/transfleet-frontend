@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Form, Select, Button, message, Input } from 'antd';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import LocationSelector from './LocationSelector';
@@ -6,23 +6,29 @@ import { createExternalFleetCost } from '../../services/ExternalFleetCostService
 
 const { Option } = Select;
 
-const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
+const CreateExternalFleetCost = ({ visible, onCancel, onSubmit, initialData }) => {
   const [form] = Form.useForm();
   const [selectedPartner, setSelectedPartner] = useState(null);
-  const [departure, setDeparture] = useState({});
-  const [destination, setDestination] = useState({});
+  const [departure, setDeparture] = useState(initialData?.startPoint || {});
+  const [destination, setDestination] = useState(initialData?.endPoint || {});
   const [cost, setCost] = useState('');
-  const [transportType, setTransportType] = useState(null);
+  const [transportType, setTransportType] = useState(initialData?.transportType || null);
   const [moocType, setMoocType] = useState(null);
   const navigate = useNavigate(); // Initialize navigate
 
-  const handleDepartureChange = (location) => {
-    setDeparture(location);
-  };
+  useEffect(() => {
+    if (initialData) {
+      setDeparture(initialData.startPoint || {});
+      setDestination(initialData.endPoint || {});
+      setTransportType(initialData.transportType || 0);
+      form.setFieldsValue({
+        departure: initialData.startPoint || {},
+        destination: initialData.endPoint || {},
+        transportType: initialData.transportType || 0,
 
-  const handleDestinationChange = (location) => {
-    setDestination(location);
-  };
+      });
+    }
+  }, [initialData, form]);
 
   const handleTransportTypeChange = (value) => {
     setTransportType(value);
@@ -98,8 +104,8 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit }) => {
       ]}
     >
       <Form form={form} layout="vertical">
-        <LocationSelector label="Điểm đi" onChange={handleDepartureChange} />
-        <LocationSelector label="Điểm đến" onChange={handleDestinationChange} />
+        <LocationSelector label="Điểm đi" value={departure} onChange={setDeparture} />
+        <LocationSelector label="Điểm đến" value={destination} onChange={setDestination} />
         <Form.Item label="Loại vận chuyển">
           <Select
             placeholder="Chọn loại vận chuyển"
