@@ -108,7 +108,7 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
               <Link to={`/order/delivery-orders/${order._id}`} style={{ display: 'block' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text strong style={{ fontSize: 14 }}>🚚 {order.shortName}</Text>
-                  <Tag color={order.moocType === "20''" ? "blue" : "purple"}>{order.moocType}</Tag>
+                  <Tag color={order.contType === "20''" ? "blue" : "purple"}>{order.contType}</Tag>
                 </div>
               </Link>
             }

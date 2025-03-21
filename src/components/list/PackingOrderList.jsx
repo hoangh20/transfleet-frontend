@@ -109,7 +109,7 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text strong style={{ fontSize: 14 }}>📦 {order.shortName}</Text>
                   <Tag color={order.closeCombination === "gắp vỏ" ? "blue" : "blue"}>{order.closeCombination}</Tag>
-                  <Tag color={order.moocType === "20''" ? "blue" : "purple"}>{order.moocType}</Tag>
+                  <Tag color={order.contType === "20''" ? "blue" : "purple"}>{order.contType}</Tag>
                 </div>
               </Link>
             }
