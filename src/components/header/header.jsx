@@ -79,7 +79,7 @@ const AdminHeader = () => {
             fontWeight: '500',
             marginRight: '20px'
           }}>
-            Giá Dầu: {fuelPrice} VNĐ
+            Giá Dầu Hôm Nay : {fuelPrice} VNĐ
           </span>
         )}
 

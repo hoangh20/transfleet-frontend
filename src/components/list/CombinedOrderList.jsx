@@ -18,50 +18,64 @@ const CombinedOrderList = ({ startDate, endDate }) => {
   useEffect(() => {
     const fetchCombinedOrders = async () => {
       try {
+        const fuelPrice = parseFloat(localStorage.getItem('fuelPrice')) || 0; // Lấy giá trị fuelPrice từ localStorage
         const combinedOrders = await getOrderConnectionsByDeliveryDate(startDate, endDate);
-        const ordersWithDetails = await Promise.all(combinedOrders.map(async (orderConnection) => {
-          const enrichOrder = async (order) => {
-            const startProvince = await fetchProvinceName(order.location.startPoint.provinceCode);
-            const startDistrict = await fetchDistrictName(order.location.startPoint.districtCode);
-            const endProvince = await fetchProvinceName(order.location.endPoint.provinceCode);
-            const endDistrict = await fetchDistrictName(order.location.endPoint.districtCode);
-            const customer = await getCustomerById(order.customer);
-            const cost = await getCostByOrderId(order._id);
-            const tripFare = cost ? cost.tripFare : 0;
-            const estimatedProfit = cost ? cost.tripFare - (
-              cost.driverAllowance +
-              cost.driverSalary +
-              cost.fuelCost +
-              cost.singleTicket +
-              cost.monthlyTicket +
-              cost.otherCosts +
-              cost.registrationFee +
-              cost.insurance +
-              cost.technicalTeamSalary +
-              cost.bankLoanInterest +
-              cost.repairCost
-            ) : 0;
+
+        const ordersWithDetails = await Promise.all(
+          combinedOrders.map(async (orderConnection) => {
+            const enrichOrder = async (order) => {
+              const startProvince = await fetchProvinceName(order.location.startPoint.provinceCode);
+              const startDistrict = await fetchDistrictName(order.location.startPoint.districtCode);
+              const endProvince = await fetchProvinceName(order.location.endPoint.provinceCode);
+              const endDistrict = await fetchDistrictName(order.location.endPoint.districtCode);
+              const customer = await getCustomerById(order.customer);
+              const cost = await getCostByOrderId(order._id);
+              const tripFare = cost ? cost.tripFare : 0;
+
+              // Tính fuelCost
+              const fuelCost = cost ? fuelPrice * cost.fuel * 1000 : 0;
+
+              // Tính estimatedProfit
+              const estimatedProfit = cost
+                ? tripFare -
+                  (
+                    fuelCost +
+                    cost.driverAllowance +
+                    cost.driverSalary +
+                    cost.singleTicket +
+                    cost.monthlyTicket +
+                    cost.otherCosts +
+                    cost.registrationFee +
+                    cost.insurance +
+                    cost.technicalTeamSalary +
+                    cost.bankLoanInterest +
+                    cost.repairCost
+                  )
+                : 0;
+
+              return {
+                ...order,
+                cost,
+                tripFare,
+                fuelCost, // Thêm fuelCost vào đối tượng
+                estimatedProfit,
+                startLocation: `${startProvince}, ${startDistrict}`,
+                endLocation: `${endProvince}, ${endDistrict}`,
+                customerName: customer.shortName,
+                moocType: order.moocType === 0 ? "20''" : "40''",
+                containerNumber: order.containerNumber || 'Không có',
+              };
+            };
 
             return {
-              ...order,
-              cost,
-              tripFare,
-              estimatedProfit,
-              startLocation: `${startProvince}, ${startDistrict}`,
-              endLocation: `${endProvince}, ${endDistrict}`,
-              customerName: customer.shortName,
-              moocType: order.moocType === 0 ? "20''" : "40''",
-              containerNumber: order.containerNumber || 'Không có',
+              _id: orderConnection._id,
+              deliveryOrder: await enrichOrder(orderConnection.deliveryOrderId),
+              packingOrder: await enrichOrder(orderConnection.packingOrderId),
+              type: orderConnection.type,
             };
-          };
+          })
+        );
 
-          return {
-            _id: orderConnection._id, 
-            deliveryOrder: await enrichOrder(orderConnection.deliveryOrderId),
-            packingOrder: await enrichOrder(orderConnection.packingOrderId),
-            type: orderConnection.type
-          };
-        }));
         setOrders(ordersWithDetails);
       } catch (error) {
         message.error('Lỗi khi tải danh sách đơn hàng');
@@ -131,28 +145,33 @@ const CombinedOrderList = ({ startDate, endDate }) => {
           {order.tripFare === 0 ? (
             <Tag color="error">Không tuyến</Tag>
           ) : (
-            <Tooltip title={
-              order.cost ? (
-                <div>
-                  <p>Cước chuyến: {order.cost.tripFare.toLocaleString()}</p>
-                  <p>Công tác phí: {order.cost.driverAllowance.toLocaleString()}</p>
-                  <p>Lương tài xế: {order.cost.driverSalary.toLocaleString()}</p>
-                  <p>Chi phí nhiên liệu: {order.cost.fuelCost.toLocaleString()}</p>
-                  <p>Vé lượt: {order.cost.singleTicket.toLocaleString()}</p>
-                  <p>Vé tháng: {order.cost.monthlyTicket.toLocaleString()}</p>
-                  <p>Chi phí khác: {order.cost.otherCosts.toLocaleString()}</p>
-                  <p>Phí đăng ký: {order.cost.registrationFee.toLocaleString()}</p>
-                  <p>Bảo hiểm: {order.cost.insurance.toLocaleString()}</p>
-                  <p>Lương đội kỹ thuật: {order.cost.technicalTeamSalary.toLocaleString()}</p>
-                  <p>Lãi vay ngân hàng: {order.cost.bankLoanInterest.toLocaleString()}</p>
-                  <p>Chi phí sửa chữa: {order.cost.repairCost.toLocaleString()}</p>
-                </div>
-              ) : 'Không có thông tin chi phí'
-            }>
-              <Text strong style={{ 
-                color: order.estimatedProfit > 0 ? 'green' : 'red',
-                fontSize: 14
-              }}>
+            <Tooltip
+              title={
+                order.cost ? (
+                  <div>
+                    <p>Cước chuyến: {order.cost.tripFare?.toLocaleString() || '--'}</p>
+                    <p>Chi phí nhiên liệu: {order.fuelCost?.toLocaleString() || '--'}</p>
+                    <p>Công tác phí: {order.cost.driverAllowance?.toLocaleString() || '--'}</p>
+                    <p>Lương tài xế: {order.cost.driverSalary?.toLocaleString() || '--'}</p>
+                    <p>Vé lượt: {order.cost.singleTicket?.toLocaleString() || '--'}</p>
+                    <p>Vé tháng: {order.cost.monthlyTicket?.toLocaleString() || '--'}</p>
+                    <p>Chi phí khác: {order.cost.otherCosts?.toLocaleString() || '--'}</p>
+                    <p>Phí đăng ký: {order.cost.registrationFee?.toLocaleString() || '--'}</p>
+                    <p>Bảo hiểm: {order.cost.insurance?.toLocaleString() || '--'}</p>
+                    <p>Lương đội kỹ thuật: {order.cost.technicalTeamSalary?.toLocaleString() || '--'}</p>
+                    <p>Lãi vay ngân hàng: {order.cost.bankLoanInterest?.toLocaleString() || '--'}</p>
+                    <p>Chi phí sửa chữa: {order.cost.repairCost?.toLocaleString() || '--'}</p>
+                  </div>
+                ) : 'Không có thông tin chi phí'
+              }
+            >
+              <Text
+                strong
+                style={{
+                  color: order.estimatedProfit > 0 ? 'green' : 'red',
+                  fontSize: 14,
+                }}
+              >
                 {order.estimatedProfit?.toLocaleString() || '--'}
               </Text>
             </Tooltip>

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Button, Steps } from 'antd';
+import { Card, Row, Col, Button, Steps, message } from 'antd';
 import {
   fetchProvinceName,
   fetchDistrictName,
 } from '../../services/LocationService';
+import { updateDeliveryOrderStatus, updatePackingOrderStatus } from '../../services/OrderService';
 
 const { Step } = Steps;
 
@@ -46,27 +47,41 @@ const OrderTripCard = ({
 
   const statusMap = {
     delivery: [
-      'Mới',
       'Đã giao xe',
       'Đang giao hàng',
       'Đã giao hàng',
       'Đang hạ vỏ',
       'Đã hạ vỏ',
-      'Kết thúc',
+      'Hoàn thành',
     ],
     packing: [
       'Đã giao xe',
-      'Đang lên kho đóng hàng',
+      'Đang lên kho ',
       'Chờ đóng hàng',
       'Đã đóng hàng',
       'Đang về cảng',
       'Đã hạ cảng',
-      'Kết thúc',
+      'Hoàn thành',
     ],
   };
 
   const steps = statusMap[type] || [];
   const currentStep = trip.status < steps.length ? trip.status : 0;
+
+  const handleUpdateStatus = async (orderId) => {
+    try {
+      if (type === 'delivery') {
+        await updateDeliveryOrderStatus(orderId);
+        message.success('Cập nhật trạng thái đơn giao hàng thành công');
+      } else if (type === 'packing') {
+        await updatePackingOrderStatus(orderId);
+        message.success('Cập nhật trạng thái đơn đóng hàng thành công');
+      }
+      onUpdateStatus(orderId);
+    } catch (error) {
+      message.error('Lỗi khi cập nhật trạng thái đơn hàng');
+    }
+  };
 
   return (
     <Card
@@ -78,7 +93,10 @@ const OrderTripCard = ({
           <Button type='link' onClick={() => onViewDetail(trip._id)}>
             Xem chi tiết
           </Button>
-          <Button type='link' onClick={() => onUpdateStatus(trip._id)}>
+          <Button
+            type='link'
+            onClick={() => handleUpdateStatus(trip._id)} 
+          >
             Cập nhật trạng thái
           </Button>
         </div>

@@ -261,11 +261,11 @@ const PackingOrderForm = () => {
             <Col span={6}>
               <Form.Item
                 label='Loại Cont'
-                name='moocType'
+                name='contType'
                 rules={[{ required: true, message: 'Vui lòng chọn loại cont' }]}
               >
                 <Select
-                  placeholder='Chọn loại mooc'
+                  placeholder='Chọn loại cont'
                   showSearch
                   optionFilterProp='children'
                   filterOption={(input, option) => {
@@ -322,6 +322,15 @@ const PackingOrderForm = () => {
                   <Option value={0}>Gắp vỏ</Option>
                   <Option value={1}>Đóng kết hợp</Option>
                 </Select>
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item
+                label='Số Container'
+                name='containerNumber'
+                rules={[{ required: false, message: 'Vui lòng nhập số container' }]}
+              >
+                <Input placeholder='Nhập số container' />
               </Form.Item>
             </Col>
             <Col span={6}>

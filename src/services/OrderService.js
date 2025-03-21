@@ -163,3 +163,23 @@ export const connectVehicleToPackingOrder = async (orderId, vehicleId) => {
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+export const updateDeliveryOrderStatus = async (orderId, status) => {
+  try {
+    const response = await axios.put(`${API_URL}/orders/update-status-delivery/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating delivery order status:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const updatePackingOrderStatus = async (orderId, status) => {
+  try {
+    const response = await axios.put(`${API_URL}/orders/update-status-packing/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating packing order status:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};

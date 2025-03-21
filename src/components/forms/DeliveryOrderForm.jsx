@@ -286,7 +286,7 @@ const DeliveryOrderForm = () => {
             </Col>
             <Col span={8}>
               <Form.Item
-                label='Thời Gian Đóng Hàng Dự Kiến'
+                label='Thời Gian Hoàn Thành Dự Kiến'
                 name='estimatedTime'
                 rules={[{ required: false, message: 'Vui lòng nhập thời gian dự kiến' }]}
               >

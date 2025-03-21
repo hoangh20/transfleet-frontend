@@ -42,6 +42,14 @@ const OrderTripListPage = () => {
     setSelectedMenuItem(e.key);
   };
 
+  const handleUpdateStatus = (orderId) => {
+    setFilteredTrips((prevTrips) =>
+      prevTrips.map((trip) =>
+        trip._id === orderId ? { ...trip, status: trip.status + 1 } : trip
+      )
+    );
+  };
+
   const filterTrips = async (selectedDateRange, selectedMenuItem) => {
     try {
       const [startDate, endDate] = selectedDateRange;
@@ -49,21 +57,25 @@ const OrderTripListPage = () => {
 
       if (selectedMenuItem === 'all' || selectedMenuItem === 'delivery') {
         const deliveryOrders = await getDeliveryOrdersByDate(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'));
-        trips = trips.concat(deliveryOrders.filter(order => order.isCombinedTrip === 0).map(order => ({ ...order, type: 'delivery' })));
-      }
+        trips = trips.concat(deliveryOrders.filter(order => order.isCombinedTrip === 0 && order.hasVehicle !== 0).map(order => ({ ...order, type: 'delivery' })));
+            }
 
-      if (selectedMenuItem === 'all' || selectedMenuItem === 'packing') {
+            if (selectedMenuItem === 'all' || selectedMenuItem === 'packing') {
         const packingOrders = await getPackingOrdersByDate(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'));
-        trips = trips.concat(packingOrders.filter(order => order.isCombinedTrip === 0).map(order => ({ ...order, type: 'packing' })));
-      }
+        trips = trips.concat(packingOrders.filter(order => order.isCombinedTrip === 0 && order.hasVehicle !== 0).map(order => ({ ...order, type: 'packing' })));
+            }
 
-      if (selectedMenuItem === 'all' || selectedMenuItem === 'combined') {
+            if (selectedMenuItem === 'all' || selectedMenuItem === 'combined') {
         const combinedOrders = await getOrderConnectionsByDeliveryDate(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'));
         combinedOrders.forEach(order => {
-          trips.push({ ...order.deliveryOrderId, type: 'delivery', combined: true });
-          trips.push({ ...order.packingOrderId, type: 'packing', combined: true });
+          if (order.deliveryOrderId.hasVehicle !== 0) {
+            trips.push({ ...order.deliveryOrderId, type: 'delivery', combined: true });
+          }
+          if (order.packingOrderId.hasVehicle !== 0) {
+            trips.push({ ...order.packingOrderId, type: 'packing', combined: true });
+          }
         });
-      }
+            }
 
       // Fetch customer names
       const tripsWithCustomerNames = await Promise.all(trips.map(async (trip) => {
@@ -109,6 +121,8 @@ const OrderTripListPage = () => {
                       customerName={trip.customerName}
                       type={trip.type}
                       onViewDetail={() => handleViewDetail(trip)}
+                      onUpdateStatus={handleUpdateStatus} 
+
                     />
                     {index + 1 < trips.length && trips[index + 1].combined && (
                       <OrderTripCard
@@ -116,6 +130,8 @@ const OrderTripListPage = () => {
                         customerName={trips[index + 1].customerName}
                         type={trips[index + 1].type}
                         onViewDetail={() => handleViewDetail(trips[index + 1])}
+                        onUpdateStatus={handleUpdateStatus}
+
                       />
                     )}
                   </CombinedOrderWrapper>
@@ -130,6 +146,7 @@ const OrderTripListPage = () => {
                   customerName={trip.customerName}
                   type={trip.type}
                   onViewDetail={() => handleViewDetail(trip)}
+                  onUpdateStatus={handleUpdateStatus} 
                 />
               </Col>
             );
