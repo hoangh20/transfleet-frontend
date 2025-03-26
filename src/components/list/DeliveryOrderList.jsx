@@ -56,6 +56,7 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
             startLocation: `${startProvince}, ${startDistrict}`,
             endLocation: `${endProvince}, ${endDistrict}`,
             shortName: customer.shortName,
+            contType: order.contType === 0 ? "20''" : "40''",
             moocType: order.moocType === 0 ? "20''" : "40''",
             containerNumber: order.containerNumber 
           };
@@ -152,7 +153,7 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
                     : '--/-- --:--'}
                 </Text>
                 {order.tripFare === 0 ? (
-                  <Tag color="error">Không tuyến</Tag>
+                  <Tag color="error">Không có cước phí</Tag>
                 ) : (
                   <Tooltip
                     title={

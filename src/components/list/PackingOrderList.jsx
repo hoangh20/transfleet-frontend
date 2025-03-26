@@ -54,6 +54,7 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
             startLocation: `${startProvince}, ${startDistrict}`,
             endLocation: `${endProvince}, ${endDistrict}`,
             shortName: customer.shortName,
+            contType: order.contType === 0 ? "20''" : "40''",
             moocType: order.moocType === 0 ? "20''" : "40''",
             closeCombination: order.closeCombination === 0 ? "Gắp vỏ" : "Kết hợp",
             containerNumber: order.containerNumber 
@@ -153,7 +154,7 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
                     : '--/-- --:--'}
                 </Text>
                 {order.tripFare === 0 ? (
-                  <Tag color="error">Không tuyến</Tag>
+                  <Tag color="error">Không có cước phí</Tag>
                 ) : (
                   <Tooltip title={
                     order.cost ? (
