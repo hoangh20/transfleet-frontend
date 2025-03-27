@@ -14,26 +14,31 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import { createDeliveryOrder } from '../../services/OrderService';
-import { getCustomerTripFaresByExternalFleetCostId } from '../../services/ExternalFleetCostService';
+import { getCustomerTripFaresByExternalFleetCostId, createCustomerTripFare } from '../../services/ExternalFleetCostService';
+import { getAllCustomersWithoutPagination } from '../../services/CustomerService';
 import LocationSelector from '../location/LocationSelector';
 import { checkIfRecordExists } from '../../services/ExternalFleetCostService';
 import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 import { Link } from 'react-router-dom';
-import CreateExternalFleetCost from '../location/CreateExternalFleetCost'; // Import modal
+import CreateExternalFleetCost from '../location/CreateExternalFleetCost';
+import AddCustomerTripFareModal from '../popup/AddCustomerTripFareModal'; 
 
 const { Option } = Select;
 
 const DeliveryOrderForm = () => {
   const [form] = Form.useForm();
+  const [createForm] = Form.useForm(); 
   const [customers, setCustomers] = useState([]);
+  const [allCustomers, setAllCustomers] = useState([]);
   const [routes, setRoutes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedRouteId, setSelectedRouteId] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false); // State để quản lý modal
-  const [modalData, setModalData] = useState({}); // Lưu dữ liệu để điền vào modal
-
+  const [isModalVisible, setIsModalVisible] = useState(false); // State for CreateExternalFleetCost modal
+  const [isAddCustomerModalVisible, setIsAddCustomerModalVisible] = useState(false); // State for AddCustomerTripFareModal
+  const [modalData, setModalData] = useState({});
 
   useEffect(() => {
+    fetchAllCustomers();
     if (selectedRouteId) {
       fetchCustomersByRoute(selectedRouteId);
     } else {
@@ -62,6 +67,28 @@ const DeliveryOrderForm = () => {
       message.error('Lỗi khi tải danh sách khách hàng trong tuyến.');
     } finally {
       setLoading(false);
+    }
+  };
+  const fetchAllCustomers = async () => {
+    try {
+      const response = await getAllCustomersWithoutPagination();
+      setAllCustomers(response.customers || []);
+    } catch (error) {
+      message.error('Lỗi khi tải danh sách khách hàng.');
+    }
+  };
+  const handleAddCustomerSubmit = async () => {
+    try {
+      const values = await createForm.validateFields();
+      await createCustomerTripFare({
+        ...values,
+        externalFleetCostId: selectedRouteId,
+      });
+      message.success('Thêm khách hàng mới thành công!');
+      setIsAddCustomerModalVisible(false);
+      fetchCustomersByRoute(selectedRouteId); // Reload the customer list
+    } catch (error) {
+      message.error('Lỗi khi thêm khách hàng mới.');
     }
   };
 
@@ -100,7 +127,7 @@ const DeliveryOrderForm = () => {
     });
 
     const { startPoint, endPoint } = form.getFieldValue('location');
-    if (startPoint && endPoint) {
+    if (startPoint || endPoint) {
       setLoading(true);
       try {
         const response = await checkIfRecordExists(startPoint, endPoint);
@@ -145,10 +172,24 @@ const DeliveryOrderForm = () => {
     }
   };
 
+  const handleRouteSelection = (selectedRouteId) => {
+    const selectedRoute = routes.find((route) => route._id === selectedRouteId);
+    if (selectedRoute) {
+      form.setFieldsValue({
+        location: {
+          startPoint: selectedRoute.startPoint,
+          endPoint: selectedRoute.endPoint,
+        },
+      });
+    }
+    setSelectedRouteId(selectedRouteId);
+  };
+
   const handleModalSubmit = (data) => {
     message.success('Tuyến vận tải mới đã được tạo.');
     setIsModalVisible(false);
-    // Có thể thêm logic để tải lại danh sách tuyến vận tải nếu cần
+    setModalData(data);
+    setRoutes([data]);
   };
 
   const columns = [
@@ -175,7 +216,7 @@ const DeliveryOrderForm = () => {
   const rowSelection = {
     type: 'radio',
     onChange: (selectedRowKeys) => {
-      setSelectedRouteId(selectedRowKeys[0]);
+      handleRouteSelection(selectedRowKeys[0]);
     },
   };
 
@@ -326,40 +367,63 @@ const DeliveryOrderForm = () => {
             <Col span={24}>
               {selectedRouteId ? (
                 customers.length > 0 ? (
-                  <Form.Item
-                    label="Khách Hàng"
-                    name="customer"
-                    rules={[{ required: true, message: "Vui lòng chọn khách hàng" }]}
-                  >
-                    <Select
-                      showSearch
-                      placeholder="Chọn khách hàng"
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.children.toLowerCase().includes(input.toLowerCase())
-                      }
-                    >
-                      {customers.map((customer) => (
-                        <Option key={customer._id} value={customer._id}>
-                          {customer.name} ({customer.shortName})
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
+                  <Row align="middle" gutter={16}>
+                    <Col flex="auto">
+                      <Form.Item
+                        label="Khách Hàng"
+                        name="customer"
+                        rules={[{ required: true, message: "Vui lòng chọn khách hàng" }]}
+                      >
+                        <Select
+                          showSearch
+                          placeholder="Chọn khách hàng"
+                          optionFilterProp="children"
+                          filterOption={(input, option) =>
+                            option.children.toLowerCase().includes(input.toLowerCase())
+                          }
+                        >
+                          {customers.map((customer) => (
+                            <Option key={customer._id} value={customer._id}>
+                              {customer.name} ({customer.shortName})
+                            </Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                    <Col>
+                      <Button
+                        type="primary"
+                        onClick={() => setIsAddCustomerModalVisible(true)}
+                      >
+                        Thêm mới khách hàng
+                      </Button>
+                    </Col>
+                  </Row>
                 ) : (
-                  <Alert style = {{ marginBottom: 16 }}
+                  <Alert
+                    style={{ marginBottom: 16 }}
                     message="Không có khách hàng nào trong tuyến."
                     description={
-                      <Link to={`/transport-route/delivery/${selectedRouteId}`}>
-                        Xem chi tiết tuyến vận tải
-                      </Link>
+                      <>
+                        <Link to={`/transport-route/delivery/${selectedRouteId}`}>
+                          Xem chi tiết tuyến vận tải.
+                        </Link>
+                        <Button
+                          type="link"
+                          onClick={() => setIsAddCustomerModalVisible(true)}
+                          style={{ marginLeft: 8 }}
+                        >
+                          Thêm khách hàng vào tuyến
+                        </Button>
+                      </>
                     }
                     type="info"
                     showIcon
                   />
                 )
               ) : (
-                <Alert style = {{ marginBottom: 16 }}
+                <Alert
+                  style={{ marginBottom: 16 }}
                   message="Vui lòng chọn tuyến vận tải trước."
                   type="warning"
                   showIcon
@@ -378,7 +442,14 @@ const DeliveryOrderForm = () => {
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onSubmit={handleModalSubmit}
-        initialData={modalData} // Truyền dữ liệu địa chỉ vào modal
+        initialData={modalData} 
+      />
+      <AddCustomerTripFareModal
+        visible={isAddCustomerModalVisible}
+        onCancel={() => setIsAddCustomerModalVisible(false)}
+        onSubmit={handleAddCustomerSubmit}
+        form={createForm}
+        customers={allCustomers}
       />
     </>
   );

@@ -22,7 +22,7 @@ import {
   fetchDistrictName,
   fetchWardName,
 } from '../../services/LocationService';
-import CreateExternalFleetCost from '../location/CreateExternalFleetCost'; // Import modal
+import CreateExternalFleetCost from '../location/CreateExternalFleetCost'; 
 
 const { Option } = Select;
 
@@ -32,8 +32,8 @@ const PackingOrderForm = () => {
   const [routes, setRoutes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedRouteId, setSelectedRouteId] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false); // Quản lý trạng thái modal
-  const [modalData, setModalData] = useState({}); // Lưu dữ liệu để điền vào modal
+  const [isModalVisible, setIsModalVisible] = useState(false); 
+  const [modalData, setModalData] = useState({}); 
 
   useEffect(() => {
     fetchCustomers(); // Fetch all customers when the component mounts
@@ -97,7 +97,7 @@ const PackingOrderForm = () => {
     });
 
     const { startPoint, endPoint } = form.getFieldValue('location');
-    if (startPoint && endPoint) {
+    if (startPoint || endPoint) {
       setLoading(true);
       try {
         const response = await checkIfRecordExists(startPoint, endPoint);
@@ -142,6 +142,19 @@ const PackingOrderForm = () => {
     }
   };
 
+  const handleRouteSelection = (selectedRouteId) => {
+    const selectedRoute = routes.find((route) => route._id === selectedRouteId);
+    if (selectedRoute) {
+      form.setFieldsValue({
+        location: {
+          startPoint: selectedRoute.startPoint,
+          endPoint: selectedRoute.endPoint,
+        },
+      });
+    }
+    setSelectedRouteId(selectedRouteId);
+  };
+
   const columns = [
     {
       title: 'Điểm đi',
@@ -160,7 +173,7 @@ const PackingOrderForm = () => {
   const rowSelection = {
     type: 'radio',
     onChange: (selectedRowKeys, selectedRows) => {
-      setSelectedRouteId(selectedRowKeys[0]);
+      handleRouteSelection(selectedRowKeys[0]);
     },
   };
 

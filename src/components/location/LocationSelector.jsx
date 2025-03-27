@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Form, Select, message, Row, Col } from 'antd';
 import { fetchProvinces, fetchDistricts, fetchWards } from '../../services/LocationService';
 
@@ -11,6 +11,10 @@ const LocationSelector = ({ label, value = {}, onChange }) => {
   const [selectedProvince, setSelectedProvince] = useState(value.provinceCode || '');
   const [selectedDistrict, setSelectedDistrict] = useState(value.districtCode || '');
   const [selectedWard, setSelectedWard] = useState(value.wardCode || '');
+
+  // Refs for managing focus
+  const districtRef = useRef(null);
+  const wardRef = useRef(null);
 
   useEffect(() => {
     loadProvinces();
@@ -66,6 +70,9 @@ const LocationSelector = ({ label, value = {}, onChange }) => {
     setSelectedWard('');
     loadDistricts(value);
     onChange({ provinceCode: value, districtCode: '', wardCode: '' });
+
+    // Focus on the district field
+    setTimeout(() => districtRef.current?.focus(), 0);
   };
 
   const handleDistrictChange = (value) => {
@@ -73,6 +80,9 @@ const LocationSelector = ({ label, value = {}, onChange }) => {
     setSelectedWard('');
     loadWards(value);
     onChange({ provinceCode: selectedProvince, districtCode: value, wardCode: '' });
+
+    // Focus on the ward field
+    setTimeout(() => wardRef.current?.focus(), 0);
   };
 
   const handleWardChange = (value) => {
@@ -102,6 +112,7 @@ const LocationSelector = ({ label, value = {}, onChange }) => {
         </Col>
         <Col span={8}>
           <Select
+            ref={districtRef} // Ref for district field
             placeholder="Chọn quận/huyện"
             onChange={handleDistrictChange}
             value={selectedDistrict}
@@ -120,6 +131,7 @@ const LocationSelector = ({ label, value = {}, onChange }) => {
         </Col>
         <Col span={8}>
           <Select
+            ref={wardRef} // Ref for ward field
             placeholder="Chọn phường/xã (không bắt buộc)"
             onChange={handleWardChange}
             value={selectedWard}
