@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, Row, Col, Spin, message, Button } from 'antd';
-import { getPackingOrderDetails } from '../../services/OrderService';
+import { Card, Row, Col, Spin, message, Button, Modal, Form, Input } from 'antd';
+import { getPackingOrderDetails, updatePackingOrder } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
 import CostCard from '../../components/card/CostCard';
 import DispatchVehicleCard from '../../components/card/DispatchVehicleCard';
@@ -12,6 +12,19 @@ const PackingOrderDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [startLocation, setStartLocation] = useState('');
   const [endLocation, setEndLocation] = useState('');
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [form] = Form.useForm();
+
+  const statusMap = {
+    0: 'Mới',
+    1: 'Đã giao xe',
+    2: 'Đang lên kho',
+    3: 'Chờ đóng hàng',
+    4: 'Đã đóng hàng',
+    5: 'Đang về cảng',
+    6: 'Đã về cảng',
+    7: 'Hoàn thành',
+  };
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -37,8 +50,27 @@ const PackingOrderDetailPage = () => {
   }, [orderId]);
 
   const handleUpdateStatus = () => {
-    // Logic to update the status
-    message.info('Update status button clicked');
+    setIsModalVisible(true);
+    form.setFieldsValue({
+      containerNumber: orderDetails.containerNumber,
+      note: orderDetails.note,
+    });
+  };
+
+  const handleModalOk = async () => {
+    try {
+      const values = await form.validateFields();
+      await updatePackingOrder(orderId, values);
+      message.success('Cập nhật thông tin đơn hàng thành công');
+      setOrderDetails({ ...orderDetails, ...values });
+      setIsModalVisible(false);
+    } catch (error) {
+      message.error('Lỗi khi cập nhật thông tin đơn hàng');
+    }
+  };
+
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
   };
 
   if (loading) {
@@ -54,18 +86,20 @@ const PackingOrderDetailPage = () => {
       <Card
         title="Chi tiết đơn đóng hàng"
         bordered={false}
-        extra={<Button onClick={handleUpdateStatus}>Cập nhật trạng thái</Button>}
+        extra={<Button onClick={handleUpdateStatus}>Cập nhật thông tin đơn hàng</Button>}
       >
         <Row gutter={[16, 16]}>
           <Col span={12}><strong>Khách hàng:</strong> {orderDetails.customer.name}</Col>
           <Col span={12}><strong>Ngày tạo:</strong> {new Date(orderDetails.createdAt).toLocaleString()}</Col>
+          <Col span={12}><strong>Thời gian dự kiến:</strong> {orderDetails.estimatedTime ? new Date(orderDetails.estimatedTime).toLocaleString() : 'Chưa có'}</Col>
           <Col span={12}><strong>Điểm đi:</strong> {startLocation}</Col>
           <Col span={12}><strong>Điểm đến:</strong> {endLocation}</Col>
           <Col span={12}><strong>Số container:</strong> {orderDetails.containerNumber}</Col>
-          <Col span={12}><strong>Loại mooc:</strong> {orderDetails.moocType === 0 ? "20''" : "40''"}</Col>
+          <Col span={12}><strong>Loại cont:</strong> {orderDetails.contType === 0 ? "20''" : "40''"}</Col>
           <Col span={12}><strong>Chủ sở hữu:</strong> {orderDetails.owner}</Col>
           <Col span={12}><strong>Ghi chú:</strong> {orderDetails.note}</Col>
-          <Col span={12}><strong>Trạng thái:</strong> {orderDetails.status}</Col>
+          <Col span={12}><strong>Trạng thái:</strong> {statusMap[orderDetails.status]}</Col>
+          <Col span={12}><strong>Loại đóng hàng: </strong> {orderDetails.closeCombination === 1 ? 'Đóng kết hợp' : 'Gắp vỏ'}</Col>
           <Col span={12}><strong>Đã có xe:</strong> {orderDetails.hasVehicle ? 'Có' : 'Không'}</Col>
           <Col span={12}><strong>Ghép chuyến:</strong> {orderDetails.isCombinedTrip ? 'Có' : 'Không'}</Col>
         </Row>
@@ -76,9 +110,40 @@ const PackingOrderDetailPage = () => {
           <CostCard orderId={orderDetails._id} />
         </Col>
         <Col span={12}>
-          <DispatchVehicleCard orderId={orderDetails._id} isDeliveryOrder={false} vehicles={orderDetails.vehicles} transportTripId={orderDetails.externalFleetCostId} />
+          <DispatchVehicleCard
+            orderId={orderDetails._id}
+            isDeliveryOrder={false}
+            vehicles={orderDetails.vehicles}
+            transportTripId={orderDetails.externalFleetCostId}
+          />
         </Col>
       </Row>
+
+      <Modal
+        title="Cập nhật thông tin đơn hàng"
+        visible={isModalVisible}
+        onOk={handleModalOk}
+        onCancel={handleModalCancel}
+        okText="Lưu"
+        cancelText="Hủy"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Số container"
+            name="containerNumber"
+            rules={[{ required: false, message: 'Vui lòng nhập số container' }]}
+          >
+            <Input placeholder="Nhập số container" />
+          </Form.Item>
+          <Form.Item
+            label="Ghi chú"
+            name="note"
+            rules={[{ required: false }]}
+          >
+            <Input.TextArea placeholder="Nhập ghi chú" rows={4} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   );
 };

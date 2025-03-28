@@ -34,6 +34,7 @@ const PackingOrderForm = () => {
   const [selectedRouteId, setSelectedRouteId] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false); 
   const [modalData, setModalData] = useState({}); 
+  const [quantity, setQuantity] = useState(1); // State for quantity selection
 
   useEffect(() => {
     fetchCustomers(); // Fetch all customers when the component mounts
@@ -79,10 +80,12 @@ const PackingOrderForm = () => {
     };
 
     try {
-      await createPackingOrder(orderData);
+      for (let i = 0; i < quantity; i++) {
+        await createPackingOrder(orderData);
+      }
       form.resetFields();
       setSelectedRouteId(null);
-      message.success('Tạo đơn đóng hàng thành công');
+      message.success(`Tạo ${quantity} đơn đóng hàng thành công`);
     } catch (error) {
       message.error('Lỗi khi tạo đơn đóng hàng');
     }
@@ -408,11 +411,24 @@ const PackingOrderForm = () => {
               )}
             </Col>
           </Row>
-          <Form.Item>
-            <Button type='primary' htmlType='submit'>
-              Tạo Đơn Đóng Hàng Mới
-            </Button>
-          </Form.Item>
+          <Row gutter={16} align="middle">
+            <Col span={6}>
+              <Form.Item label="Số Lượng Đơn" name="quantity">
+                <Input
+                  type="number"
+                  min={1}
+                  value={quantity}
+                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  placeholder="Nhập số lượng đơn"
+                />
+              </Form.Item>
+            </Col>
+            <Col>
+              <Button type='primary' htmlType='submit'>
+                Tạo Đơn Đóng Hàng Mới
+              </Button>
+            </Col>
+          </Row>
         </Form>
       </Card>
       <CreateExternalFleetCost

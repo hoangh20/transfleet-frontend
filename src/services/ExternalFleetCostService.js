@@ -168,3 +168,34 @@ export const getCustomerTripFaresByExternalFleetCostId = async (externalFleetCos
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+
+export const createEmptyDistance = async (data) => {
+  try {
+    const response = await axios.post(`${API_URL}/external-fleet-cost/empty-distance/create`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating empty distance:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const getEmptyDistance = async (query = {}) => {
+  try {
+    const response = await axios.get(`${API_URL}/external-fleet-cost/empty-distance`, { params: query });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching empty distance:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const getAllEmptyDistances = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/external-fleet-cost/empty-distances/get-all`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching all empty distances:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
