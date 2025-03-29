@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, DatePicker, Button, Modal, Radio, message } from 'antd';
+import { Row, Col, DatePicker, Button, Modal, Radio, message, Input } from 'antd';
 import dayjs from 'dayjs';
 import PackingOrderList from '../../components/list/PackingOrderList';
 import DeliveryOrderList from '../../components/list/DeliveryOrderList';
 import CombinedOrderList from '../../components/list/CombinedOrderList';
-import { createOrderConnection, getPackingOrderDetails } from '../../services/OrderService';
+import { createOrderConnection, getPackingOrderDetails, getDeliveryOrderDetails,} from '../../services/OrderService';
+import { getEmptyDistance,createEmptyDistance } from '../../services/ExternalFleetCostService'; // Import the API
 
 const { RangePicker } = DatePicker;
 
@@ -17,6 +18,8 @@ const OrderPage = () => {
   const [selectedDeliveryOrders, setSelectedDeliveryOrders] = useState([]);
   const [connectionType, setConnectionType] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [emptyDistance, setEmptyDistance] = useState(null); 
+  const [emptyDistanceInput, setEmptyDistanceInput] = useState(''); 
 
   useEffect(() => {
     localStorage.setItem('selectedDates', JSON.stringify(selectedDates));
@@ -47,9 +50,27 @@ const OrderPage = () => {
     try {
       const packingOrderId = selectedPackingOrders[0];
       const packingOrderDetails = await getPackingOrderDetails(packingOrderId);
+      const deliveryOrderId = selectedDeliveryOrders[0];
+      const deliveryOrderDetails = await getDeliveryOrderDetails(deliveryOrderId);
       if (packingOrderDetails.closeCombination === 0) {
         message.error('Không thể kết hợp đơn đóng gắp vỏ.');
         return;
+      }
+
+      const deliveryRouteId = deliveryOrderDetails.externalFleetCostId;
+      const packingRouteId = packingOrderDetails.externalFleetCostId;
+
+    if (!deliveryRouteId || !packingRouteId) {
+      message.error('Không thể lấy thông tin tuyến vận tải. Vui lòng kiểm tra lại.');
+      return;
+    }
+      const response = await getEmptyDistance({ deliveryRouteId, packingRouteId });
+
+      if (!response || response.data === null) {
+        setEmptyDistance(null);
+      } else {
+        setEmptyDistance(response.data.emptyDistance);
+        console.log('Khoảng cách rỗng:', response.data.emptyDistance);
       }
 
       setIsModalVisible(true);
@@ -59,18 +80,42 @@ const OrderPage = () => {
   };
 
   const handleCreateOrderConnection = async () => {
+    if (emptyDistance === null && !emptyDistanceInput) {
+      message.error('Vui lòng nhập khoảng cách rỗng trước khi ghép chuyến.');
+      return;
+    }
+
     try {
+      if (emptyDistance === null && emptyDistanceInput) {
+        const packingOrderId = selectedPackingOrders[0];
+        const packingOrderDetails = await getPackingOrderDetails(packingOrderId);
+        const deliveryOrderId = selectedDeliveryOrders[0];
+        const deliveryOrderDetails = await getDeliveryOrderDetails(deliveryOrderId);
+        const newEmptyDistance = parseFloat(emptyDistanceInput);
+        await createEmptyDistance({
+          deliveryRouteId: deliveryOrderDetails.externalFleetCostId,
+          packingRouteId: packingOrderDetails.externalFleetCostId,
+          emptyDistance: newEmptyDistance,
+        });
+        message.success('Khoảng cách rỗng mới đã được tạo thành công.');
+      }
+      const distanceToSend = emptyDistanceInput
+      ? parseFloat(emptyDistanceInput) // Use user input if provided
+      : emptyDistance;
       // eslint-disable-next-line no-unused-vars
       const response = await createOrderConnection(
-        selectedDeliveryOrders[0],
-        selectedPackingOrders[0],
-        connectionType
+        selectedDeliveryOrders[0], // deliveryOrderId
+        selectedPackingOrders[0],  // packingOrderId
+        connectionType,            // type
+        distanceToSend             // emptyDistance
       );
       message.success('Ghép chuyến thành công!');
       setIsModalVisible(false);
       setSelectedPackingOrders([]);
       setSelectedDeliveryOrders([]);
       setConnectionType(null);
+      setEmptyDistance(null);
+      setEmptyDistanceInput('');
       window.location.reload();
     } catch (error) {
       message.error('Lỗi khi ghép chuyến.');
@@ -139,6 +184,32 @@ const OrderPage = () => {
           <Radio value={1}>Cùng ngày khác điểm</Radio>
           <Radio value={2}>Khác ngày</Radio>
         </Radio.Group>
+
+        <div style={{ marginTop: 16 }}>
+          {emptyDistance === null ? (
+            <>
+              <p style={{ color: 'red' }}>
+                Chưa có thông tin về khoảng cách rỗng giữa 2 tuyến, vui lòng nhập mới:
+              </p>
+              <Input
+                type="number"
+                placeholder="Nhập khoảng cách rỗng (km)"
+                value={emptyDistanceInput}
+                onChange={(e) => setEmptyDistanceInput(e.target.value)}
+              />
+            </>
+          ) : (
+            <>
+              <p>Khoảng cách rỗng giữa 2 tuyến:</p>
+              <Input
+                type="number"
+                placeholder="Chỉnh sửa khoảng cách rỗng (km) nếu cần"
+                value={emptyDistanceInput || emptyDistance}
+                onChange={(e) => setEmptyDistanceInput(e.target.value)}
+              />
+            </>
+          )}
+        </div>
       </Modal>
 
       <CombinedOrderList

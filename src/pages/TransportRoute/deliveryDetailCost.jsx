@@ -252,21 +252,6 @@ const DeliveryDetailCost = () => {
               `${costDetails.solidDistance} km`
             )}
           </Descriptions.Item>
-          <Descriptions.Item label="Số km rỗng">
-            {isEditing ? (
-              <Input
-                value={editedDetails.emtyDistance || costDetails.emtyDistance}
-                onChange={(e) =>
-                  setEditedDetails({
-                    ...editedDetails,
-                    emtyDistance: e.target.value,
-                  })
-                }
-              />
-            ) : (
-              `${costDetails.emtyDistance} km`
-            )}
-          </Descriptions.Item>
         </Descriptions>
       </Card>
       <div style={{ display: 'flex', gap: '24px', marginTop: '24px' }}>

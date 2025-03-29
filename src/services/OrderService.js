@@ -56,12 +56,13 @@ export const getCostByOrderId = async (orderId) => {
   }
 };
 
-export const createOrderConnection = async (deliveryOrderId, packingOrderId, type) => {
+export const createOrderConnection = async (deliveryOrderId, packingOrderId, type, emptyDistance) => {
   try {
     const response = await axios.post(`${API_URL}/orders/order-connections`, {
       deliveryOrderId,
       packingOrderId,
-      type
+      type,
+      emptyDistance
     });
     return response.data;
   } catch (error) {

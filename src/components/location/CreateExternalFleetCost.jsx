@@ -59,8 +59,6 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit, initialData }) =
         driverAllowance: parseFloat(cost.driverAllowance),
         driverSalary: parseFloat(cost.driverSalary),
         solidDistance: parseFloat(cost.solidDistance),
-        emtyDistance: parseFloat(cost.emtyDistance),
-        cost: parseFloat(cost),
       };
 
       const response = await createExternalFleetCost(data);
@@ -138,14 +136,6 @@ const CreateExternalFleetCost = ({ visible, onCancel, onSubmit, initialData }) =
             placeholder="Nhập khoảng cách đặc"
             value={cost.solidDistance || ''}
             onChange={(e) => setCost({ ...cost, solidDistance: e.target.value })}
-          />
-        </Form.Item>
-        <Form.Item label="Khoảng cách rỗng">
-          <Input
-            type="number"
-            placeholder="Nhập khoảng cách rỗng"
-            value={cost.emtyDistance || ''}
-            onChange={(e) => setCost({ ...cost, emtyDistance: e.target.value })}
           />
         </Form.Item>
       </Form>

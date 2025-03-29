@@ -76,7 +76,7 @@ const CostCard = ({ orderId }) => {
           <p>Cước chuyến: <Input name="tripFare" value={editedCost.tripFare} onChange={handleChange} /></p>
           <p>Công tác phí: <Input name="driverAllowance" value={editedCost.driverAllowance} onChange={handleChange} /></p>
           <p>Lương tài xế: <Input name="driverSalary" value={editedCost.driverSalary} onChange={handleChange} /></p>
-          <p>Chi phí nhiên liệu: <Input name="fuelCost" value={editedCost.fuelCost} onChange={handleChange} /></p>
+          <p>Cấp dầu: <Input name="fuelCost" value={editedCost.fuel} onChange={handleChange} /></p>
           <p>Vé đơn: <Input name="singleTicket" value={editedCost.singleTicket} onChange={handleChange} /></p>
           <p>Vé tháng: <Input name="monthlyTicket" value={editedCost.monthlyTicket} onChange={handleChange} /></p>
           <p>Chi phí khác: <Input name="otherCosts" value={editedCost.otherCosts} onChange={handleChange} /></p>
@@ -91,7 +91,7 @@ const CostCard = ({ orderId }) => {
           <p>Cước chuyến: {cost.tripFare}</p>
           <p>Công tác phí: {cost.driverAllowance}</p>
           <p>Lương tài xế: {cost.driverSalary}</p>
-          <p>Chi phí nhiên liệu: {cost.fuelCost}</p>
+          <p>Cấp dầu: {cost.fuel}</p>
           <p>Vé đơn: {cost.singleTicket}</p>
           <p>Vé tháng: {cost.monthlyTicket}</p>
           <p>Chi phí khác: {cost.otherCosts}</p>
