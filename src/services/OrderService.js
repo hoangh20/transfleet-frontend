@@ -204,3 +204,22 @@ export const updatePackingOrder = async (orderId, orderData) => {
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+export const exportDeliveryOrderToSheet = async (orderId) => {
+  try {
+    const response = await axios.post(`${API_URL}/orders/delivery-orders/write-to-sheet/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error exporting delivery order to sheet:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+export const exportPackingOrderToSheet = async (orderId) => {
+  try {
+    const response = await axios.post(`${API_URL}/orders/packing-orders/write-to-sheet/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error exporting packing order to sheet:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+}

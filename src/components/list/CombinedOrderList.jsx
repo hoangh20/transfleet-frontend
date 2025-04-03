@@ -76,7 +76,10 @@ const CombinedOrderList = ({ startDate, endDate }) => {
           })
         );
 
-        setOrders(ordersWithDetails);
+        // Filter out orders where deliveryOrder.hasVehicle === 1
+        const filteredOrders = ordersWithDetails.filter(order => order.deliveryOrder.hasVehicle !== 1);
+
+        setOrders(filteredOrders);
       } catch (error) {
         message.error('Lỗi khi tải danh sách đơn hàng');
       }

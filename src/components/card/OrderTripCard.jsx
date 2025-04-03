@@ -4,7 +4,7 @@ import {
   fetchProvinceName,
   fetchDistrictName,
 } from '../../services/LocationService';
-import { updateDeliveryOrderStatus, updatePackingOrderStatus } from '../../services/OrderService';
+import { updateDeliveryOrderStatus, updatePackingOrderStatus, exportDeliveryOrderToSheet, exportPackingOrderToSheet } from '../../services/OrderService';
 
 const { Step } = Steps;
 
@@ -68,18 +68,36 @@ const OrderTripCard = ({
   const steps = statusMap[type] || [];
   const currentStep = trip.status-1 < steps.length ? trip.status : 0;
 
+  const handleExportOrder = async (orderId) => {
+    try {
+      if (type === 'delivery' && trip.status === 6) {
+        await exportDeliveryOrderToSheet(orderId);
+        message.success('Đơn giao hàng đã được xuất ra file thành công');
+      } else if (type === 'packing' && trip.status === 7) {
+        await exportPackingOrderToSheet(orderId);
+        message.success('Đơn đóng hàng đã được xuất ra file thành công');
+      } else {
+        message.error('Không thể xuất đơn hàng vào file với trạng thái hiện tại.');
+      }
+    } catch (error) {
+      message.error('Lỗi khi xuất đơn hàng vào file.');
+    }
+  };
+
   const handleUpdateStatus = async (orderId) => {
     try {
       if (type === 'delivery') {
+        // Update status for delivery orders
         await updateDeliveryOrderStatus(orderId);
         message.success('Cập nhật trạng thái đơn giao hàng thành công');
       } else if (type === 'packing') {
+        // Update status for packing orders
         await updatePackingOrderStatus(orderId);
         message.success('Cập nhật trạng thái đơn đóng hàng thành công');
       }
       onUpdateStatus(orderId);
     } catch (error) {
-      message.error('Lỗi khi cập nhật trạng thái đơn hàng');
+      message.error('Lỗi khi cập nhật trạng thái đơn hàng.');
     }
   };
 
@@ -93,12 +111,21 @@ const OrderTripCard = ({
           <Button type='link' onClick={() => onViewDetail(trip._id)}>
             Xem chi tiết
           </Button>
-          <Button
-            type='link'
-            onClick={() => handleUpdateStatus(trip._id)} 
-          >
-            Cập nhật trạng thái
-          </Button>
+          {(type === 'delivery' && trip.status === 6 && trip.writeToSheet === 0) || (type === 'packing' && trip.status === 7 && trip.writeToSheet === 0) ? (
+            <Button
+              type='link'
+              onClick={() => handleExportOrder(trip._id)}
+            >
+              Xuất vào file
+            </Button>
+          ) : (
+            <Button
+              type='link'
+              onClick={() => handleUpdateStatus(trip._id)}
+            >
+              Cập nhật trạng thái
+            </Button>
+          )}
         </div>
       }
     >

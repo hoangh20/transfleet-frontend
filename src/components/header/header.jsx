@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from 'antd';
-import { BellOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { BellOutlined, QuestionCircleOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import UserDrop from '../drop/userDrop';
@@ -69,7 +69,24 @@ const AdminHeader = () => {
           </span>
         </Link>
       </div>
-
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <FileExcelOutlined style={{ fontSize: '24px', color: '#003082', marginRight: '15px' }} />
+        <a
+          href='https://docs.google.com/spreadsheets/d/1guTkaEbCAXWMdNfjMSdMZA9b17r6CCv0nqBqirzds58/edit?usp=sharing'
+          target='_blank'
+          rel='noopener noreferrer'
+          style={{
+        display: 'flex',
+        alignItems: 'center',
+        textDecoration: 'none',
+        color: '#003082',
+        fontWeight: '500',
+        fontSize: '16px',
+          }}
+        >
+          Truy cập trang Sheet
+        </a>
+      </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
         {/* Thêm giá dầu vào đây */}
         {fuelPrice && (
