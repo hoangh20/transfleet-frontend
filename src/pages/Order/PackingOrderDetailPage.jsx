@@ -100,7 +100,7 @@ const PackingOrderDetailPage = () => {
           <Col span={12}><strong>Ghi chú:</strong> {orderDetails.note}</Col>
           <Col span={12}><strong>Trạng thái:</strong> {statusMap[orderDetails.status]}</Col>
           <Col span={12}><strong>Loại đóng hàng: </strong> {orderDetails.closeCombination === 1 ? 'Đóng kết hợp' : 'Gắp vỏ'}</Col>
-          <Col span={12}><strong>Đã có xe:</strong> {orderDetails.hasVehicle ? 'Có' : 'Không'}</Col>
+          <Col span={12}><strong>Đã có xe:</strong> {orderDetails.hasVehicle === 1 ? 'Có' : 'Không'}</Col>
           <Col span={12}><strong>Ghép chuyến:</strong> {orderDetails.isCombinedTrip ? 'Có' : 'Không'}</Col>
         </Row>
       </Card>

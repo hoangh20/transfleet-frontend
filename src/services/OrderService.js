@@ -223,3 +223,23 @@ export const exportPackingOrderToSheet = async (orderId) => {
     throw error.response ? error.response.data : new Error('Network Error');
   }
 }
+
+export const exportOrderConnectionsToSheet = async (connectionId) => {
+  try {
+    const response = await axios.post(`${API_URL}/orders/order-connections/write-to-sheet/${connectionId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error exporting order connections to sheet:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const getVehicleByOrderId = async (orderId) => {
+  try {
+    const response = await axios.get(`${API_URL}/orders/vehicles/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching vehicle by order ID:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};

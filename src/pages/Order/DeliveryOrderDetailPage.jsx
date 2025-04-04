@@ -5,6 +5,7 @@ import { getDeliveryOrderDetails, updateDeliveryOrder } from '../../services/Ord
 import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
 import CostCard from '../../components/card/CostCard';
 import DispatchVehicleCard from '../../components/card/DispatchVehicleCard';
+import LocationSelector from '../../components/location/LocationSelector';
 
 const DeliveryOrderDetailPage = () => {
   const { orderId } = useParams();
@@ -25,44 +26,53 @@ const DeliveryOrderDetailPage = () => {
     6: 'Hoàn thành',
   };
 
-  useEffect(() => {
-    const fetchOrderDetails = async () => {
-      try {
-        const response = await getDeliveryOrderDetails(orderId);
-        setOrderDetails(response);
+  const fetchOrderDetails = React.useCallback(async () => {
+    try {
+      const response = await getDeliveryOrderDetails(orderId);
+      setOrderDetails(response);
 
-        const startProvince = await fetchProvinceName(response.location.startPoint.provinceCode);
-        const startDistrict = await fetchDistrictName(response.location.startPoint.districtCode);
-        setStartLocation(`${startDistrict}, ${startProvince}`);
+      const startProvince = await fetchProvinceName(response.location.startPoint.provinceCode);
+      const startDistrict = await fetchDistrictName(response.location.startPoint.districtCode);
+      setStartLocation(`${startDistrict}, ${startProvince}`);
 
-        const endProvince = await fetchProvinceName(response.location.endPoint.provinceCode);
-        const endDistrict = await fetchDistrictName(response.location.endPoint.districtCode);
-        setEndLocation(`${endDistrict}, ${endProvince}`);
-      } catch (error) {
-        message.error('Lỗi khi tải chi tiết đơn giao hàng');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchOrderDetails();
+      const endProvince = await fetchProvinceName(response.location.endPoint.provinceCode);
+      const endDistrict = await fetchDistrictName(response.location.endPoint.districtCode);
+      setEndLocation(`${endDistrict}, ${endProvince}`);
+    } catch (error) {
+      message.error('Lỗi khi tải chi tiết đơn giao hàng');
+    } finally {
+      setLoading(false);
+    }
   }, [orderId]);
+
+  useEffect(() => {
+    fetchOrderDetails();
+  }, [fetchOrderDetails]);
 
   const handleUpdateStatus = () => {
     setIsModalVisible(true);
     form.setFieldsValue({
       containerNumber: orderDetails.containerNumber,
       note: orderDetails.note,
+      endPoint: orderDetails.location.endPoint, // Set the current endPoint value
     });
   };
 
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-      await updateDeliveryOrder(orderId, values);
+      const updatedDetails = {
+        ...values,
+        location: {
+          ...orderDetails.location,
+          endPoint: values.endPoint, // Update the endPoint
+        },
+      };
+      await updateDeliveryOrder(orderId, updatedDetails);
       message.success('Cập nhật thông tin đơn hàng thành công');
-      setOrderDetails({ ...orderDetails, ...values });
+      setOrderDetails({ ...orderDetails, ...updatedDetails });
       setIsModalVisible(false);
+      fetchOrderDetails();
     } catch (error) {
       message.error('Lỗi khi cập nhật thông tin đơn hàng');
     }
@@ -135,6 +145,13 @@ const DeliveryOrderDetailPage = () => {
             rules={[{ required: false }]}
           >
             <Input.TextArea placeholder="Nhập ghi chú" rows={4} />
+          </Form.Item>
+          <Form.Item
+            label="Điểm đến"
+            name="endPoint"
+            rules={[{ required: true, message: 'Vui lòng chọn điểm đến' }]}
+          >
+            <LocationSelector />
           </Form.Item>
         </Form>
       </Modal>

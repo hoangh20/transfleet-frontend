@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { DatePicker, Row, Col, Menu, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import OrderTripCard from '../../components/card/OrderTripCard';
-import CombinedOrderWrapper from '../../components/card/CombinedOrderWrapper';
+import CombinedOrderCard from '../../components/card/CombinedOrderCard';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
-import { getPackingOrdersByDate, getDeliveryOrdersByDate, getOrderConnectionsByDeliveryDate } from '../../services/OrderService';
+import { 
+  getPackingOrdersByDate, 
+  getDeliveryOrdersByDate, 
+  getOrderConnectionsByDeliveryDate 
+} from '../../services/OrderService';
 import { getCustomerById } from '../../services/CustomerService';
 
 dayjs.extend(isBetween);
@@ -14,6 +18,7 @@ const { RangePicker } = DatePicker;
 
 const OrderTripListPage = () => {
   const [filteredTrips, setFilteredTrips] = useState([]);
+  const [combinedOrders, setCombinedOrders] = useState([]);
   const [selectedDateRange, setSelectedDateRange] = useState(() => {
     const savedDates = localStorage.getItem('selectedDateRange');
     return savedDates ? JSON.parse(savedDates).map(date => dayjs(date)) : [dayjs(), dayjs()];
@@ -30,7 +35,9 @@ const OrderTripListPage = () => {
   }, [selectedDateRange]);
 
   const handleViewDetail = (trip) => {
-    const path = trip.type === 'delivery' ? `/order/delivery-orders/${trip._id}` : `/order/packing-orders/${trip._id}`;
+    const path = trip.type === 'delivery'
+      ? `/order/delivery-orders/${trip._id}`
+      : `/order/packing-orders/${trip._id}`;
     navigate(path);
   };
 
@@ -42,11 +49,23 @@ const OrderTripListPage = () => {
     setSelectedMenuItem(e.key);
   };
 
+  // Hàm cập nhật trạng thái cho đơn lẻ
   const handleUpdateStatus = (orderId) => {
     setFilteredTrips((prevTrips) =>
       prevTrips.map((trip) =>
         trip._id === orderId ? { ...trip, status: trip.status + 1 } : trip
       )
+    );
+  };
+
+  // Hàm cập nhật trạng thái cho đơn ghép (combined)
+  const handleUpdateCombinedStatus = (updatedDelivery, updatedPacking) => {
+    setFilteredTrips((prevTrips) =>
+      prevTrips.map((trip) => {
+        if (trip._id === updatedDelivery._id) return updatedDelivery;
+        if (trip._id === updatedPacking._id) return updatedPacking;
+        return trip;
+      })
     );
   };
 
@@ -56,17 +75,35 @@ const OrderTripListPage = () => {
       let trips = [];
 
       if (selectedMenuItem === 'all' || selectedMenuItem === 'delivery') {
-        const deliveryOrders = await getDeliveryOrdersByDate(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'));
-        trips = trips.concat(deliveryOrders.filter(order => order.isCombinedTrip === 0 && order.hasVehicle !== 0).map(order => ({ ...order, type: 'delivery' })));
-            }
+        const deliveryOrders = await getDeliveryOrdersByDate(
+          startDate.format('YYYY-MM-DD'),
+          endDate.format('YYYY-MM-DD')
+        );
+        trips = trips.concat(
+          deliveryOrders
+            .filter(order => order.isCombinedTrip === 0 && order.hasVehicle !== 0)
+            .map(order => ({ ...order, type: 'delivery' }))
+        );
+      }
 
-            if (selectedMenuItem === 'all' || selectedMenuItem === 'packing') {
-        const packingOrders = await getPackingOrdersByDate(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'));
-        trips = trips.concat(packingOrders.filter(order => order.isCombinedTrip === 0 && order.hasVehicle !== 0).map(order => ({ ...order, type: 'packing' })));
-            }
+      if (selectedMenuItem === 'all' || selectedMenuItem === 'packing') {
+        const packingOrders = await getPackingOrdersByDate(
+          startDate.format('YYYY-MM-DD'),
+          endDate.format('YYYY-MM-DD')
+        );
+        trips = trips.concat(
+          packingOrders
+            .filter(order => order.isCombinedTrip === 0 && order.hasVehicle !== 0)
+            .map(order => ({ ...order, type: 'packing' }))
+        );
+      }
 
-            if (selectedMenuItem === 'all' || selectedMenuItem === 'combined') {
-        const combinedOrders = await getOrderConnectionsByDeliveryDate(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'));
+      if (selectedMenuItem === 'all' || selectedMenuItem === 'combined') {
+        const combinedOrders = await getOrderConnectionsByDeliveryDate(
+          startDate.format('YYYY-MM-DD'),
+          endDate.format('YYYY-MM-DD')
+        );
+        setCombinedOrders(combinedOrders); // Lưu trữ đơn ghép để sử dụng sau này
         combinedOrders.forEach(order => {
           if (order.deliveryOrderId.hasVehicle !== 0) {
             trips.push({ ...order.deliveryOrderId, type: 'delivery', combined: true });
@@ -75,13 +112,15 @@ const OrderTripListPage = () => {
             trips.push({ ...order.packingOrderId, type: 'packing', combined: true });
           }
         });
-            }
+      }
 
-      // Fetch customer names
-      const tripsWithCustomerNames = await Promise.all(trips.map(async (trip) => {
-        const customer = await getCustomerById(trip.customer);
-        return { ...trip, customerName: customer.shortName };
-      }));
+      // Gắn tên khách hàng cho từng đơn hàng
+      const tripsWithCustomerNames = await Promise.all(
+        trips.map(async (trip) => {
+          const customer = await getCustomerById(trip.customer);
+          return { ...trip, customerName: customer.shortName };
+        })
+      );
 
       setFilteredTrips(tripsWithCustomerNames);
     } catch (error) {
@@ -111,34 +150,33 @@ const OrderTripListPage = () => {
       </div>
       <Row gutter={[16, 16]}>
         {filteredTrips.map((trip, index, trips) => {
+          // Xử lý đơn ghép (combined) bằng cách nhóm 2 đơn liên tiếp lại
           if (trip.combined) {
-            if (index % 2 === 0) {
+            if (index % 2 === 0 && index + 1 < trips.length && trips[index + 1].combined) {
+              const combinedOrder = combinedOrders.find(order => 
+                order.deliveryOrderId._id === trip._id || 
+                order.packingOrderId._id === trips[index + 1]._id
+              );
               return (
                 <Col key={trip._id} xs={24} md={12}>
-                  <CombinedOrderWrapper>
-                    <OrderTripCard
-                      trip={trip}
-                      customerName={trip.customerName}
-                      type={trip.type}
-                      onViewDetail={() => handleViewDetail(trip)}
-                      onUpdateStatus={handleUpdateStatus} 
-
-                    />
-                    {index + 1 < trips.length && trips[index + 1].combined && (
-                      <OrderTripCard
-                        trip={trips[index + 1]}
-                        customerName={trips[index + 1].customerName}
-                        type={trips[index + 1].type}
-                        onViewDetail={() => handleViewDetail(trips[index + 1])}
-                        onUpdateStatus={handleUpdateStatus}
-
-                      />
-                    )}
-                  </CombinedOrderWrapper>
+                  <CombinedOrderCard
+                    combinedOrderId={combinedOrder?._id}
+                    deliveryTrip={trip}
+                    packingTrip={trips[index + 1]}
+                    onUpdateCombinedStatus={handleUpdateCombinedStatus}
+                    onViewDetailDelivery={(id) =>
+                      handleViewDetail({ ...trip, _id: id, type: 'delivery' })
+                    }
+                    onViewDetailPacking={(id) =>
+                      handleViewDetail({ ...trips[index + 1], _id: id, type: 'packing' })
+                    }
+                  />
                 </Col>
               );
             }
-          } else if (!trip.combined && (index === 0 || !trips[index - 1].combined)) {
+          }
+          // Đơn thường
+          else if (!trip.combined && (index === 0 || !trips[index - 1].combined)) {
             return (
               <Col key={trip._id} xs={24} md={12}>
                 <OrderTripCard
@@ -146,7 +184,7 @@ const OrderTripListPage = () => {
                   customerName={trip.customerName}
                   type={trip.type}
                   onViewDetail={() => handleViewDetail(trip)}
-                  onUpdateStatus={handleUpdateStatus} 
+                  onUpdateStatus={handleUpdateStatus}
                 />
               </Col>
             );

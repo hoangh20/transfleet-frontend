@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Button, Steps, message } from 'antd';
+import { Card, Row, Col, Button, Steps, message, Typography } from 'antd';
 import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
 import { 
   updateDeliveryOrderStatus, 
   updatePackingOrderStatus, 
-  exportPackingOrderToSheet 
+  exportOrderConnectionsToSheet,
+  getVehicleByOrderId, 
 } from '../../services/OrderService';
 
 const { Step } = Steps;
+const { Title, Text, Link } = Typography;
 
 const CombinedOrderCard = ({
+  combinedOrderId,
   deliveryTrip,
   packingTrip,
   onUpdateCombinedStatus,
@@ -18,6 +21,8 @@ const CombinedOrderCard = ({
 }) => {
   const [deliveryLocation, setDeliveryLocation] = useState({});
   const [packingLocation, setPackingLocation] = useState({});
+  const [deliveryVehicleDetails, setDeliveryVehicleDetails] = useState(null); 
+  const [packingVehicleDetails, setPackingVehicleDetails] = useState(null); 
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -40,8 +45,25 @@ const CombinedOrderCard = ({
         setPackingLocation({ startProvince, startDistrict, endProvince, endDistrict });
       }
     };
+
+    const fetchVehicleDetails = async () => {
+      try {
+        if (deliveryTrip.hasVehicle) {
+          const vehicle = await getVehicleByOrderId(deliveryTrip._id);
+          setDeliveryVehicleDetails(vehicle);
+        }
+        if (packingTrip.hasVehicle) {
+          const vehicle = await getVehicleByOrderId(packingTrip._id);
+          setPackingVehicleDetails(vehicle);
+        }
+      } catch (error) {
+        console.error('Error fetching vehicle details:', error);
+      }
+    };
+
     fetchLocations();
-  }, [deliveryTrip.location, packingTrip.location]);
+    fetchVehicleDetails();
+  }, [deliveryTrip, packingTrip]);
 
   const statusMap = {
     delivery: [
@@ -66,14 +88,16 @@ const CombinedOrderCard = ({
   const deliverySteps = statusMap.delivery;
   const packingSteps = statusMap.packing;
 
-  const currentDeliveryStep = deliveryTrip.status - 1 < deliverySteps.length ? deliveryTrip.status : 0;
-  const currentPackingStep = packingTrip.status - 1 < packingSteps.length ? packingTrip.status : 0;
+  const currentDeliveryStep = deliveryTrip.status - 1 < deliverySteps.length
+    ? deliveryTrip.status
+    : 0;
+  const currentPackingStep = packingTrip.status - 1 < packingSteps.length
+    ? packingTrip.status
+    : 0;
 
-  // Xác định nút cập nhật trạng thái
   let updateButtonLabel = 'Cập nhật trạng thái';
   let updateAction = async () => {
     try {
-      // Nếu đơn giao hàng chưa hoàn thành (status < 6) thì cập nhật đơn delivery
       if (deliveryTrip.status < 6) {
         await updateDeliveryOrderStatus(deliveryTrip._id);
         message.success('Cập nhật trạng thái đơn giao hàng thành công');
@@ -81,9 +105,7 @@ const CombinedOrderCard = ({
           { ...deliveryTrip, status: deliveryTrip.status + 1 },
           packingTrip
         );
-      }
-      // Nếu đơn delivery đã hoàn thành và đơn packing chưa hoàn thành (status < 7)
-      else if (deliveryTrip.status === 6 && packingTrip.status < 7) {
+      } else if (deliveryTrip.status === 6 && packingTrip.status < 7) {
         await updatePackingOrderStatus(packingTrip._id);
         message.success('Cập nhật trạng thái đơn đóng hàng thành công');
         onUpdateCombinedStatus(
@@ -96,78 +118,147 @@ const CombinedOrderCard = ({
     }
   };
 
-  // Nếu packing đạt status 7 (và đơn delivery đã hoàn thành) thì nút chuyển thành "Xuất ra file"
-  if (deliveryTrip.status === 6 && packingTrip.status === 7) {
+  if (deliveryTrip.status === 6 && packingTrip.status === 7 && packingTrip.writeToSheet === 0) {
     updateButtonLabel = 'Xuất ra file';
     updateAction = async () => {
       try {
-        await exportPackingOrderToSheet(packingTrip._id);
-        message.success('Đơn đóng hàng đã được xuất ra file thành công');
+        await exportOrderConnectionsToSheet(combinedOrderId);
+        message.success('Đơn ghép đã được xuất ra file thành công');
       } catch (error) {
         message.error('Lỗi khi xuất đơn hàng vào file.');
       }
     };
   }
 
+  // Style được tối giản để tiết kiệm diện tích
+  const containerStyle = {
+    border: '2px dashed #1890ff',
+    padding: 4,
+    position: 'relative',
+  };
+  const blockStyle = { marginBottom: 4 };
+  const labelStyle = { fontWeight: 'bold', marginRight: 2 };
+  const noteStyle = { color: '#8c8c8c' };
+  const stepsStyle = { marginTop: 4, fontSize: '10px' };
+  const topRightButtonStyle = {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+  };
+
   return (
-    <Card style={{ border: '2px dashed #1890ff', marginBottom: '16px' }}>
-      <Row gutter={16}>
-        <Col span={12}>
-          <h3>Đơn giao hàng</h3>
-          <p><strong>Khách hàng:</strong> {deliveryTrip.customerName}</p>
-          <p>
-            <strong>Điểm đi:</strong> {deliveryLocation.startProvince}, {deliveryLocation.startDistrict}
-          </p>
-          <p>
-            <strong>Điểm đến:</strong> {deliveryLocation.endProvince}, {deliveryLocation.endDistrict}
-          </p>
-          <p><strong>Loại cont:</strong> {deliveryTrip.moocType === 0 ? "20''" : "40''"}</p>
-          <p><strong>Số container:</strong> {deliveryTrip.containerNumber}</p>
-          {deliveryTrip.note && (
-            <p>
-              <strong>Ghi chú:</strong> <span style={{ color: '#8c8c8c' }}>{deliveryTrip.note}</span>
-            </p>
-          )}
-          <Steps current={currentDeliveryStep} size="small" style={{ fontSize: '12px' }}>
-            {deliverySteps.map((step, index) => (
-              <Step key={index} title={<span style={{ fontSize: '10px' }}>{step}</span>} />
-            ))}
-          </Steps>
-          <Button type="link" onClick={() => onViewDetailDelivery(deliveryTrip._id)}>
-            Xem chi tiết
-          </Button>
-        </Col>
-        <Col span={12}>
-          <h3>Đơn đóng hàng</h3>
-          <p><strong>Khách hàng:</strong> {packingTrip.customerName}</p>
-          <p>
-            <strong>Điểm đi:</strong> {packingLocation.startProvince}, {packingLocation.startDistrict}
-          </p>
-          <p>
-            <strong>Điểm đến:</strong> {packingLocation.endProvince}, {packingLocation.endDistrict}
-          </p>
-          <p><strong>Loại cont:</strong> {packingTrip.moocType === 0 ? "20''" : "40''"}</p>
-          <p><strong>Số container:</strong> {packingTrip.containerNumber}</p>
-          {packingTrip.note && (
-            <p>
-              <strong>Ghi chú:</strong> <span style={{ color: '#8c8c8c' }}>{packingTrip.note}</span>
-            </p>
-          )}
-          <Steps current={currentPackingStep} size="small" style={{ fontSize: '12px' }}>
-            {packingSteps.map((step, index) => (
-              <Step key={index} title={<span style={{ fontSize: '10px' }}>{step}</span>} />
-            ))}
-          </Steps>
-          <Button type="link" onClick={() => onViewDetailPacking(packingTrip._id)}>
-            Xem chi tiết
-          </Button>
-        </Col>
-      </Row>
-      <Row justify="end" style={{ marginTop: '16px' }}>
-        <Button type="primary" onClick={updateAction}>
+    <Card style={containerStyle} bodyStyle={{ padding: 4 }}>
+      {/* Nút cập nhật trạng thái ở góc trên bên phải */}
+      <div style={topRightButtonStyle}>
+        <Button type="link" onClick={updateAction} size="small">
           {updateButtonLabel}
         </Button>
-      </Row>
+      </div>
+      <div>
+        {/* Đơn giao hàng */}
+        <div style={blockStyle}>
+          <Title level={5} style={{ margin: 0 }}>
+            <Link onClick={() => onViewDetailDelivery(deliveryTrip._id)}>
+              Chuyến giao hàng: {deliveryTrip.customerName}
+            </Link>
+          </Title>
+          <Row gutter={[4, 2]}>
+            <Col span={12}>
+              <Text style={labelStyle}>Điểm đi:</Text>
+              <Text>
+                {deliveryLocation.startProvince}, {deliveryLocation.startDistrict}
+              </Text>
+            </Col>
+            <Col span={12}>
+              <Text style={labelStyle}>Điểm đến:</Text>
+              <Text>
+                {deliveryLocation.endProvince}, {deliveryLocation.endDistrict}
+              </Text>
+            </Col>
+            <Col span={8}>
+              <Text style={labelStyle}>Số container:</Text>
+              <Text>{deliveryTrip.containerNumber}</Text>
+            </Col>
+            <Col span={8}>
+              <Text style={labelStyle}>Loại cont:</Text>
+              <Text>{deliveryTrip.contType === 0 ? "20''" : "40''"}</Text>
+            </Col>
+            <Col span={8}>
+            {deliveryVehicleDetails && (
+              <Col span={24}>
+                <Text style={labelStyle}>Thông tin xe:</Text>
+                <Text>
+                  {deliveryVehicleDetails.headPlate || 'N/A'} - {deliveryVehicleDetails.moocType === 0 ? "20''" : "40''"}
+                </Text>
+              </Col>
+            )}
+            </Col>
+            {deliveryTrip.note && (
+              <Col span={24}>
+                <Text style={labelStyle}>Ghi chú:</Text>
+                <Text style={noteStyle}>{deliveryTrip.note}</Text>
+              </Col>
+            )}
+          </Row>
+          <Steps current={currentDeliveryStep} size="small" style={stepsStyle}>
+            {deliverySteps.map((step, index) => (
+              <Step key={index} title={<span style={{ fontSize: '10px', padding: '0 2px' }}>{step}</span>} />
+            ))}
+          </Steps>
+        </div>
+
+        {/* Đơn đóng hàng */}
+        <div style={blockStyle}>
+          <Title level={5} style={{ margin: 0 }}>
+            <Link onClick={() => onViewDetailPacking(packingTrip._id)}>
+              Chuyến đóng đóng: {packingTrip.customerName}
+            </Link>
+          </Title>
+          <Row gutter={[4, 2]}>
+            <Col span={12}>
+              <Text style={labelStyle}>Điểm đi:</Text>
+              <Text>
+                {packingLocation.startProvince}, {packingLocation.startDistrict}
+              </Text>
+            </Col>
+            <Col span={12}>
+              <Text style={labelStyle}>Điểm đến:</Text>
+              <Text>
+                {packingLocation.endProvince}, {packingLocation.endDistrict}
+              </Text>
+            </Col>
+            <Col span={8}>
+              <Text style={labelStyle}>Số container:</Text>
+              <Text>{packingTrip.containerNumber}</Text>
+            </Col>
+            <Col span={8}>
+              <Text style={labelStyle}>Loại cont:</Text>
+              <Text>{packingTrip.contType === 0 ? "20''" : "40''"}</Text>
+            </Col>
+            <Col span={8}>
+            {packingVehicleDetails && (
+              <Col span={24}>
+                <Text style={labelStyle}>Thông tin xe:</Text>
+                <Text>
+                  {packingVehicleDetails.headPlate || 'N/A'} - {packingVehicleDetails.moocType === 0 ? "20''" : "40''"}
+                </Text>
+              </Col>
+            )}
+            </Col>
+            {packingTrip.note && (
+              <Col span={24}>
+                <Text style={labelStyle}>Ghi chú:</Text>
+                <Text style={noteStyle}>{packingTrip.note}</Text>
+              </Col>
+            )}
+          </Row>
+          <Steps current={currentPackingStep} size="small" style={stepsStyle}>
+            {packingSteps.map((step, index) => (
+              <Step key={index} title={<span style={{ fontSize: '10px', padding: '0 2px' }}>{step}</span>} />
+            ))}
+          </Steps>
+        </div>
+      </div>
     </Card>
   );
 };
