@@ -119,7 +119,7 @@ const DeliveryOrderDetailPage = () => {
           <CostCard orderId={orderDetails._id} />
         </Col>
         <Col span={12}>
-          <DispatchVehicleCard orderId={orderDetails._id} delivery={true} vehicles={orderDetails.vehicles} />
+          <DispatchVehicleCard orderId={orderDetails._id} delivery={true} contType ={orderDetails.contType} vehicles={orderDetails.vehicles} />
         </Col>
       </Row>
 

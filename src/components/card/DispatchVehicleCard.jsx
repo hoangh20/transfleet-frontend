@@ -5,7 +5,7 @@ import { connectVehicleToDeliveryOrder, connectVehicleToPackingOrder } from '../
 import { getPartnerTransportCostsByTransportTrip } from '../../services/ExternalFleetCostService';
 import { getPartnerById } from '../../services/PartnerService';
 
-const DispatchVehicleCard = ({ orderId, delivery, transportTripId }) => {
+const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) => {
   const [vehicleType, setVehicleType] = useState(null);
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicles, setSelectedVehicles] = useState([]);
@@ -23,7 +23,10 @@ const DispatchVehicleCard = ({ orderId, delivery, transportTripId }) => {
         setLoading(true);
         try {
           const response = await getAllVehicles();
-          setVehicles(response.data);
+          const filteredVehicles = contType === 1 
+        ? response.data.filter((vehicle) => vehicle.moocType === 1) 
+        : response.data;
+          setVehicles(filteredVehicles);
         } catch (error) {
           message.error('Lỗi khi tải danh sách xe nội bộ');
         } finally {
@@ -73,7 +76,7 @@ const DispatchVehicleCard = ({ orderId, delivery, transportTripId }) => {
 
       fetchPartnerTransport();
     }
-  }, [vehicleType, transportTripId]);
+  }, [vehicleType, transportTripId, contType]);
 
   const handleVehicleSelect = (vehicleId) => {
     setSelectedVehicles((prevSelected) =>
