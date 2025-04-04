@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout } from 'antd';
+import { Layout, Modal, Input, message } from 'antd';
 import { BellOutlined, QuestionCircleOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -11,14 +11,16 @@ const { Header } = Layout;
 const AdminHeader = () => {
   const user = useSelector((state) => state.user);
   const [fuelPrice, setFuelPrice] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [newFuelPrice, setNewFuelPrice] = useState('');
 
   useEffect(() => {
     const fetchFuelPrice = async () => {
       try {
         const response = await SystemService.getFuelPrice();
         if (response.data?.region1) {
-          const fuelPrice = response.data.region1; 
-          setFuelPrice(fuelPrice); 
+          const fuelPrice = response.data.region1;
+          setFuelPrice(fuelPrice);
           localStorage.setItem('fuelPrice', fuelPrice);
         }
       } catch (error) {
@@ -29,9 +31,31 @@ const AdminHeader = () => {
     fetchFuelPrice();
   }, []);
 
+  const handleEditFuelPrice = () => {
+    setNewFuelPrice(fuelPrice); 
+    setIsModalVisible(true); 
+  };
+
+  const handleSaveFuelPrice = async () => {
+    try {
+      if (!newFuelPrice || isNaN(newFuelPrice)) {
+        message.error('Vui lòng nhập một giá trị hợp lệ');
+        return;
+      }
+      const updatedPrice = newFuelPrice.trim();
+      await SystemService.updateFuelRegion1({ region1: updatedPrice });
+      setFuelPrice(updatedPrice); 
+      localStorage.setItem('fuelPrice', updatedPrice); 
+      message.success('Cập nhật giá dầu thành công');
+      setIsModalVisible(false); 
+    } catch (error) {
+      message.error('Lỗi khi cập nhật giá dầu');
+    }
+  };
+
   return (
     <Header
-      className='header'
+      className="header"
       style={{
         backgroundColor: '#fff',
         padding: '0 20px',
@@ -43,7 +67,7 @@ const AdminHeader = () => {
     >
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <Link
-          to='/'
+          to="/"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -52,7 +76,7 @@ const AdminHeader = () => {
         >
           <img
             src={`${process.env.PUBLIC_URL}/logo.png`}
-            alt='Logo'
+            alt="Logo"
             style={{ height: '45px', marginRight: '10px' }}
           />
 
@@ -70,33 +94,37 @@ const AdminHeader = () => {
         </Link>
       </div>
       <div style={{ display: 'flex', alignItems: 'center' }}>
-      <FileExcelOutlined style={{ fontSize: '24px', color: '#003082', marginRight: '15px' }} />
+        <FileExcelOutlined style={{ fontSize: '24px', color: '#003082', marginRight: '15px' }} />
         <a
-          href='https://docs.google.com/spreadsheets/d/1guTkaEbCAXWMdNfjMSdMZA9b17r6CCv0nqBqirzds58/edit?usp=sharing'
-          target='_blank'
-          rel='noopener noreferrer'
+          href="https://docs.google.com/spreadsheets/d/1guTkaEbCAXWMdNfjMSdMZA9b17r6CCv0nqBqirzds58/edit?usp=sharing"
+          target="_blank"
+          rel="noopener noreferrer"
           style={{
-        display: 'flex',
-        alignItems: 'center',
-        textDecoration: 'none',
-        color: '#003082',
-        fontWeight: '500',
-        fontSize: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            textDecoration: 'none',
+            color: '#003082',
+            fontWeight: '500',
+            fontSize: '16px',
           }}
         >
           Truy cập trang Sheet
         </a>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-        {/* Thêm giá dầu vào đây */}
+        {/* Display fuel price with click-to-edit functionality */}
         {fuelPrice && (
-          <span style={{ 
-            fontSize: '16px',
-            color: '#003082',
-            fontWeight: '500',
-            marginRight: '20px'
-          }}>
-            Giá Dầu Hôm Nay : {fuelPrice} VNĐ
+          <span
+            style={{
+              fontSize: '16px',
+              color: '#003082',
+              fontWeight: '500',
+              marginRight: '20px',
+              cursor: 'pointer',
+            }}
+            onClick={handleEditFuelPrice} // Show modal on click
+          >
+            Giá Dầu Hôm Nay: {fuelPrice} VNĐ
           </span>
         )}
 
@@ -107,6 +135,23 @@ const AdminHeader = () => {
         </span>
         <UserDrop />
       </div>
+
+      {/* Modal for editing fuel price */}
+      <Modal
+        title="Chỉnh sửa giá dầu hôm nay"
+        visible={isModalVisible}
+        onOk={handleSaveFuelPrice}
+        onCancel={() => setIsModalVisible(false)}
+        okText="Lưu"
+        cancelText="Hủy"
+      >
+        <Input
+          value={newFuelPrice}
+          onChange={(e) => setNewFuelPrice(e.target.value)}
+          placeholder="Nhập giá dầu mới"
+          type="number"
+        />
+      </Modal>
     </Header>
   );
 };

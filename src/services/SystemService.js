@@ -43,6 +43,15 @@ const SystemService = {
       throw error.response ? error.response.data : new Error('Network Error');
     }
   },
+  async updateFuelRegion1(data) {
+    try {
+      const response = await axios.put(`${API_URL}/fuel-region1`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating fuel region 1:', error);
+      throw error.response ? error.response.data : new Error('Network Error');
+    }
+  }
 };
 
 export default SystemService;
