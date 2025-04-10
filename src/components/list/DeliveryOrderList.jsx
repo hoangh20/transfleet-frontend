@@ -142,7 +142,17 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
             <Space direction="vertical" size={4} style={{ width: '100%' }}>
               {/* Thời gian và lợi nhuận */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                  {order.deliveryDate ? 
+                    new Date(order.deliveryDate).toLocaleDateString('vi-VN', { 
+                      day: '2-digit',
+                      month: '2-digit',
+
+                    }) 
+                    : '--/-- '}
+                </Text>
                 <Text type="secondary" style={{ fontSize: 12 }}>
+                  <span style={{ fontWeight: 500 }}>Dự kiến: </span>
                   {order.estimatedTime ? 
                     new Date(order.estimatedTime).toLocaleDateString('vi-VN', { 
                       day: '2-digit',

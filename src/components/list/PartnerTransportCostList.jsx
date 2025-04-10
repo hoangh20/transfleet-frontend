@@ -16,7 +16,7 @@ const PartnerTransportCostList = ({ transportTripId, partnerTransportCosts, fetc
 
   useEffect(() => {
     fetchPartnerTransportCostsWithNames();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partnerTransportCosts]);
 
   useEffect(() => {
@@ -38,6 +38,7 @@ const PartnerTransportCostList = ({ transportTripId, partnerTransportCosts, fetc
           const partner = await getPartnerById(cost.partner);
           return {
             ...cost,
+            cost1: cost.cost1 || 'N/A', 
             partnerName: partner.name,
           };
         })
@@ -58,14 +59,20 @@ const PartnerTransportCostList = ({ transportTripId, partnerTransportCosts, fetc
 
   const handleEdit = (cost) => {
     setEditingCost(cost);
-    form.setFieldsValue({ cost: cost.cost });
+    form.setFieldsValue({
+      cost: cost.cost || '',
+      cost1: cost.cost1 || '',
+    });
     setIsEditModalVisible(true);
   };
 
   const handleUpdate = async () => {
     try {
       const values = await form.validateFields();
-      await updatePartnerTransportCost(editingCost._id, { cost: values.cost });
+      await updatePartnerTransportCost(editingCost._id, {
+        cost: values.cost,
+        cost1: values.cost1, 
+      });
       message.success('Cập nhật tuyến vận tải đối tác thành công');
       setIsEditModalVisible(false);
       fetchCostDetails();
@@ -91,15 +98,16 @@ const PartnerTransportCostList = ({ transportTripId, partnerTransportCosts, fetc
       key: 'partnerName',
     },
     {
-      title: 'Chi phí',
+      title: 'Chi phí cont 20',
       dataIndex: 'cost',
       key: 'cost',
+      render: (cost) => cost || 'N/A', 
     },
     {
-      title: 'Ngày tạo',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (text) => new Date(text).toLocaleString(),
+      title: 'Chi phí cont 40',
+      dataIndex: 'cost1',
+      key: 'cost1',
+      render: (cost1) => cost1 || 'N/A', 
     },
     {
       title: 'Ngày cập nhật',
@@ -173,8 +181,15 @@ const PartnerTransportCostList = ({ transportTripId, partnerTransportCosts, fetc
       >
         <Form form={form} layout="vertical">
           <Form.Item
-            label="Chi phí"
+            label="Chi phí cont 20"
             name="cost"
+            rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
+          >
+            <Input type="number" placeholder="Nhập giá" />
+          </Form.Item>
+          <Form.Item
+            label="Chi phí cont 40"
+            name="cost1"
             rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
           >
             <Input type="number" placeholder="Nhập giá" />

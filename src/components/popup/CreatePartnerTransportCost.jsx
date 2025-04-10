@@ -32,6 +32,7 @@ const CreatePartnerTransportCost = ({ visible, onCancel, onSuccess, transportTri
         transportTrip: transportTripId,
         partner: values.partner,
         cost: parseFloat(values.cost),
+        cost1: parseFloat(values.cost1), 
       };
 
       await createPartnerTransportCost(data);
@@ -85,8 +86,15 @@ const CreatePartnerTransportCost = ({ visible, onCancel, onSuccess, transportTri
           </Select>
         </Form.Item>
         <Form.Item
-          label="Giá"
+          label="Giá cont 20"
           name="cost"
+          rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
+        >
+          <Input type="number" placeholder="Nhập giá" />
+        </Form.Item>
+        <Form.Item
+          label="Giá cont 40"
+          name="cost1"
           rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
         >
           <Input type="number" placeholder="Nhập giá" />
