@@ -148,8 +148,6 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
                     new Date(order.packingDate).toLocaleDateString('vi-VN', { 
                       day: '2-digit',
                       month: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit'
                     }) 
                     : '--/--'}
                 </Text>
