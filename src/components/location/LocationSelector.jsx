@@ -99,6 +99,7 @@ const LocationSelector = ({ label, value = {}, onChange }) => {
             onChange={handleProvinceChange}
             value={selectedProvince}
             showSearch
+            getPopupContainer={(triggerNode) => triggerNode.parentNode} 
             filterOption={(input, option) =>
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }
@@ -118,6 +119,7 @@ const LocationSelector = ({ label, value = {}, onChange }) => {
             value={selectedDistrict}
             disabled={!selectedProvince}
             showSearch
+            getPopupContainer={(triggerNode) => triggerNode.parentNode} 
             filterOption={(input, option) =>
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }
@@ -137,6 +139,7 @@ const LocationSelector = ({ label, value = {}, onChange }) => {
             value={selectedWard}
             disabled={!selectedDistrict}
             showSearch
+            getPopupContainer={(triggerNode) => triggerNode.parentNode} 
             filterOption={(input, option) =>
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }
