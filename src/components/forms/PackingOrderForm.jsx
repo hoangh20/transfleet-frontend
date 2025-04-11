@@ -84,6 +84,7 @@ const PackingOrderForm = () => {
         await createPackingOrder(orderData);
       }
       form.resetFields();
+      
       setSelectedRouteId(null);
       message.success(`Tạo ${quantity} đơn đóng hàng thành công`);
     } catch (error) {
@@ -418,6 +419,7 @@ const PackingOrderForm = () => {
                   type="number"
                   min={1}
                   value={quantity}
+                  defaultValue={1}
                   onChange={(e) => setQuantity(Number(e.target.value))}
                   placeholder="Nhập số lượng đơn"
                 />

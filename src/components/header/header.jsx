@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Modal, Input, message } from 'antd';
-import { BellOutlined, QuestionCircleOutlined, FileExcelOutlined } from '@ant-design/icons';
+import { Layout, Modal, Input, message, Grid } from 'antd';
+import {
+  BellOutlined,
+  QuestionCircleOutlined,
+  FileExcelOutlined,
+} from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import UserDrop from '../drop/userDrop';
 import SystemService from '../../services/SystemService';
 
 const { Header } = Layout;
+const { useBreakpoint } = Grid;
 
 const AdminHeader = () => {
   const user = useSelector((state) => state.user);
@@ -14,14 +19,16 @@ const AdminHeader = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newFuelPrice, setNewFuelPrice] = useState('');
 
+  const screens = useBreakpoint();
+
   useEffect(() => {
     const fetchFuelPrice = async () => {
       try {
         const response = await SystemService.getFuelPrice();
         if (response.data?.region1) {
-          const fuelPrice = response.data.region1;
-          setFuelPrice(fuelPrice);
-          localStorage.setItem('fuelPrice', fuelPrice);
+          const price = response.data.region1;
+          setFuelPrice(price);
+          localStorage.setItem('fuelPrice', price);
         }
       } catch (error) {
         console.error('Error fetching fuel price:', error);
@@ -32,8 +39,8 @@ const AdminHeader = () => {
   }, []);
 
   const handleEditFuelPrice = () => {
-    setNewFuelPrice(fuelPrice); 
-    setIsModalVisible(true); 
+    setNewFuelPrice(fuelPrice);
+    setIsModalVisible(true);
   };
 
   const handleSaveFuelPrice = async () => {
@@ -44,10 +51,10 @@ const AdminHeader = () => {
       }
       const updatedPrice = newFuelPrice.trim();
       await SystemService.updateFuelRegion1({ region1: updatedPrice });
-      setFuelPrice(updatedPrice); 
-      localStorage.setItem('fuelPrice', updatedPrice); 
+      setFuelPrice(updatedPrice);
+      localStorage.setItem('fuelPrice', updatedPrice);
       message.success('Cập nhật giá dầu thành công');
-      setIsModalVisible(false); 
+      setIsModalVisible(false);
     } catch (error) {
       message.error('Lỗi khi cập nhật giá dầu');
     }
@@ -58,13 +65,14 @@ const AdminHeader = () => {
       className="header"
       style={{
         backgroundColor: '#fff',
-        padding: '0 20px',
+        padding: screens.xs ? '0 10px' : '0 20px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        height: '80px',
+        height: screens.xs ? '60px' : '80px',
       }}
     >
+      {/* Phần bên trái: Logo và tên thương hiệu */}
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <Link
           to="/"
@@ -77,12 +85,14 @@ const AdminHeader = () => {
           <img
             src={`${process.env.PUBLIC_URL}/logo.png`}
             alt="Logo"
-            style={{ height: '45px', marginRight: '10px' }}
+            style={{
+              height: screens.xs ? '35px' : '45px',
+              marginRight: '10px',
+            }}
           />
-
           <span
             style={{
-              fontSize: '28px',
+              fontSize: screens.xs ? '20px' : '28px',
               fontWeight: 'bold',
               background: 'linear-gradient(90deg, #003082, #38b6ff)',
               WebkitBackgroundClip: 'text',
@@ -93,50 +103,71 @@ const AdminHeader = () => {
           </span>
         </Link>
       </div>
+
+      {/* Phần giữa: Liên kết tới trang Sheet */}
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <FileExcelOutlined style={{ fontSize: '24px', color: '#003082', marginRight: '15px' }} />
-        <a
-          href="https://docs.google.com/spreadsheets/d/1guTkaEbCAXWMdNfjMSdMZA9b17r6CCv0nqBqirzds58/edit?usp=sharing"
-          target="_blank"
-          rel="noopener noreferrer"
+        <FileExcelOutlined
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            textDecoration: 'none',
+            fontSize: '24px',
             color: '#003082',
-            fontWeight: '500',
-            fontSize: '16px',
+            marginRight: screens.xl ? '15px' : '0',
           }}
-        >
-          Truy cập trang Sheet
-        </a>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-        {/* Display fuel price with click-to-edit functionality */}
-        {fuelPrice && (
-          <span
+        />
+        {screens.xl && (
+          <a
+            href="https://docs.google.com/spreadsheets/d/1guTkaEbCAXWMdNfjMSdMZA9b17r6CCv0nqBqirzds58/edit?usp=sharing"
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
-              fontSize: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              textDecoration: 'none',
               color: '#003082',
               fontWeight: '500',
-              marginRight: '20px',
+              fontSize: '16px',
+            }}
+          >
+            Truy cập trang Sheet
+          </a>
+        )}
+      </div>
+
+      {/* Phần bên phải: Thông báo, trợ giúp, giá dầu và thông tin user */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: screens.xs ? '5px' : '15px',
+        }}
+      >
+        {screens.xl && fuelPrice && (
+          <span
+            style={{
+              fontSize: screens.xs ? '14px' : '16px',
+              color: '#003082',
+              fontWeight: '500',
+              marginRight: screens.xs ? '5px' : '20px',
               cursor: 'pointer',
             }}
-            onClick={handleEditFuelPrice} // Show modal on click
+            onClick={handleEditFuelPrice}
           >
             Giá Dầu Hôm Nay: {fuelPrice} VNĐ
           </span>
         )}
-
-        <BellOutlined style={{ fontSize: '24px' }} />
-        <QuestionCircleOutlined style={{ fontSize: '24px' }} />
-        <span style={{ fontSize: '18px', marginRight: '10px' }}>
+        <BellOutlined style={{ fontSize: screens.xs ? '20px' : '24px' }} />
+        <QuestionCircleOutlined style={{ fontSize: screens.xs ? '20px' : '24px' }} />
+        <span
+          style={{
+            fontSize: screens.xs ? '14px' : '18px',
+            marginRight: screens.xs ? '5px' : '10px',
+          }}
+        >
           {user.name || 'User'}
         </span>
         <UserDrop />
       </div>
 
-      {/* Modal for editing fuel price */}
+      {/* Modal chỉnh sửa giá dầu */}
       <Modal
         title="Chỉnh sửa giá dầu hôm nay"
         visible={isModalVisible}

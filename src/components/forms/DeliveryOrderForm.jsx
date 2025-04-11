@@ -112,6 +112,10 @@ const DeliveryOrderForm = () => {
       await createDeliveryOrder(orderData);
       form.resetFields();
       setSelectedRouteId(null);
+      setSelectedRouteId(null);
+      setCustomers([]);
+      setRoutes([]);
+      setModalData({});
       message.success('Tạo đơn giao hàng thành công');
     } catch (error) {
       message.error('Lỗi khi tạo đơn giao hàng');

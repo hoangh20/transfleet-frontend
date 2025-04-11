@@ -3,7 +3,6 @@ import { Card, Radio, Checkbox, Button, message, List, Row, Col } from 'antd';
 import { getAllVehicles } from '../../services/VehicleService';
 import { connectVehicleToDeliveryOrder, connectVehicleToPackingOrder } from '../../services/OrderService';
 import { getPartnerTransportCostsByTransportTrip } from '../../services/ExternalFleetCostService';
-import { getPartnerById } from '../../services/PartnerService';
 
 const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) => {
   const [vehicleType, setVehicleType] = useState(null);
@@ -14,7 +13,7 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) =
 
   const handleVehicleTypeChange = (e) => {
     setVehicleType(e.target.value);
-    setSelectedVehicles([]); // Reset selected vehicles khi thay đổi loại xe
+    setSelectedVehicles([]); 
   };
 
   useEffect(() => {
@@ -24,8 +23,8 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) =
         try {
           const response = await getAllVehicles();
           const filteredVehicles = contType === 1 
-        ? response.data.filter((vehicle) => vehicle.moocType === 1) 
-        : response.data;
+            ? response.data.filter((vehicle) => vehicle.moocType === 1) 
+            : response.data;
           setVehicles(filteredVehicles);
         } catch (error) {
           message.error('Lỗi khi tải danh sách xe nội bộ');
@@ -40,32 +39,27 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) =
         setLoading(true);
         try {
           const response = await getPartnerTransportCostsByTransportTrip(transportTripId);
-          const partnerCosts = response?.data || [];
-      
+
+          let partnerCosts = [];
+          if (response ) {
+            partnerCosts = Array.isArray(response)
+              ? response
+              : [response];
+          }
+
           if (partnerCosts.length === 0) {
             message.info('Không có đối tác vận chuyển nào khả dụng cho chuyến này');
             setPartnerVehicles([]);
             return;
           }
-      
-          const partnerVehiclesWithNames = await Promise.all(
-            partnerCosts.map(async (partnerCosts) => {
-              if (!partnerCosts.partner) return null;
-      
-              try {
-                const partnerResponse = await getPartnerById(partnerCosts.partner);
-                return {
-                  ...partnerCosts,
-                  partnerName: partnerResponse?.data?.name || 'Không xác định',
-                };
-              } catch (err) {
-                console.error(`Lỗi khi tải đối tác ${partnerCosts.partner}:`, err);
-                return { ...partnerCosts, partnerName: 'Lỗi tải đối tác' };
-              }
-            })
-          );
-      
-          setPartnerVehicles(partnerVehiclesWithNames);
+
+          const partnerVehiclesWithDetails = partnerCosts.map((partnerCost) => ({
+            ...partnerCost,
+            partnerName: partnerCost.partner?.shortName || 'Không xác định',
+          }));
+
+          console.log('Mapped Partner Vehicles:', partnerVehiclesWithDetails); // Debug log
+          setPartnerVehicles(partnerVehiclesWithDetails);
         } catch (error) {
           console.error('Lỗi khi tải danh sách xe đối tác:', error);
           message.error('Không thể tải danh sách xe đối tác');
@@ -80,9 +74,7 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) =
 
   const handleVehicleSelect = (vehicleId) => {
     setSelectedVehicles((prevSelected) =>
-      prevSelected.includes(vehicleId)
-        ? prevSelected.filter((id) => id !== vehicleId)
-        : [...prevSelected, vehicleId]
+      prevSelected.includes(vehicleId) ? [] : [vehicleId]
     );
   };
 
@@ -93,7 +85,7 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) =
     }
 
     try {
-      const vehicleId = selectedVehicles[0]; // Hiện tại chỉ hỗ trợ chọn 1 xe
+      const vehicleId = selectedVehicles[0]; // Currently supports selecting only one vehicle
       if (delivery) {
         await connectVehicleToDeliveryOrder(orderId, vehicleId);
         message.success('Giao xe cho đơn giao hàng thành công');
@@ -101,7 +93,7 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) =
         await connectVehicleToPackingOrder(orderId, vehicleId);
         message.success('Giao xe cho đơn đóng hàng thành công');
       }
-      setSelectedVehicles([]); // Reset selected vehicles sau khi giao thành công
+      setSelectedVehicles([]); // Reset selected vehicles after successful dispatch
     } catch (error) {
       console.error('Lỗi khi giao xe:', error);
       message.error('Lỗi khi giao xe');
@@ -142,11 +134,7 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) =
       {vehicleType === 'partner' && (
         <>
           <p>Danh sách đội xe đối tác:</p>
-          {partnerVehicles.length === 0 ? (
-            <div style={{ padding: '16px', color: '#999' }}>
-              Không có đối tác vận chuyển nào khả dụng
-            </div>
-          ) : (
+          {partnerVehicles && partnerVehicles.length > 0 ? (
             <List
               bordered
               dataSource={partnerVehicles}
@@ -156,11 +144,15 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) =
                     onChange={() => handleVehicleSelect(vehicle._id)}
                     checked={selectedVehicles.includes(vehicle._id)}
                   >
-                    {vehicle.partnerName} - {vehicle.cost.toLocaleString()} VND
+                    {vehicle.partnerName} - {Number(vehicle.cost).toLocaleString()} VND
                   </Checkbox>
                 </List.Item>
               )}
             />
+          ) : (
+            <div style={{ padding: '16px', color: '#999' }}>
+              Không có đối tác vận chuyển nào khả dụng
+            </div>
           )}
         </>
       )}
