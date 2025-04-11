@@ -77,6 +77,7 @@ const PackingOrderForm = () => {
       ...values,
       packingDate: packingDate,
       externalFleetCostId: selectedRouteId,
+      moocType: values.contType,
     };
 
     try {
@@ -84,7 +85,7 @@ const PackingOrderForm = () => {
         await createPackingOrder(orderData);
       }
       form.resetFields();
-      
+
       setSelectedRouteId(null);
       message.success(`Tạo ${quantity} đơn đóng hàng thành công`);
     } catch (error) {

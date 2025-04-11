@@ -106,6 +106,7 @@ const DeliveryOrderForm = () => {
       deliveryDate: deliveryDate,
       externalFleetCostId: selectedRouteId,
       customer: values.customer,
+      moocType: values.contType,
     };
 
     try {

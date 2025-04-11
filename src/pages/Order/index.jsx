@@ -20,6 +20,8 @@ const OrderPage = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [emptyDistance, setEmptyDistance] = useState(null); 
   const [emptyDistanceInput, setEmptyDistanceInput] = useState(''); 
+  const [singleTicketInput, setSingleTicketInput] = useState(''); 
+  const [singleTicket40Input, setSingleTicket40Input] = useState(''); 
 
   useEffect(() => {
     localStorage.setItem('selectedDates', JSON.stringify(selectedDates));
@@ -70,7 +72,8 @@ const OrderPage = () => {
         setEmptyDistance(null);
       } else {
         setEmptyDistance(response.data.emptyDistance);
-        console.log('Khoảng cách rỗng:', response.data.emptyDistance);
+        setSingleTicketInput(response.data.singleTicket);
+        setSingleTicket40Input(response.data.singleTicket40);
       }
 
       setIsModalVisible(true);
@@ -80,8 +83,11 @@ const OrderPage = () => {
   };
 
   const handleCreateOrderConnection = async () => {
-    if (emptyDistance === null && !emptyDistanceInput) {
-      message.error('Vui lòng nhập khoảng cách rỗng trước khi ghép chuyến.');
+    if (
+      emptyDistance === null &&
+      (!emptyDistanceInput || !singleTicketInput || !singleTicket40Input)
+    ) {
+      message.error('Vui lòng nhập đầy đủ thông tin trước khi ghép chuyến.');
       return;
     }
 
@@ -92,23 +98,33 @@ const OrderPage = () => {
         const deliveryOrderId = selectedDeliveryOrders[0];
         const deliveryOrderDetails = await getDeliveryOrderDetails(deliveryOrderId);
         const newEmptyDistance = parseFloat(emptyDistanceInput);
+        const newSingleTicket = parseFloat(singleTicketInput);
+        const newSingleTicket40 = parseFloat(singleTicket40Input);
+
         await createEmptyDistance({
           deliveryRouteId: deliveryOrderDetails.externalFleetCostId,
           packingRouteId: packingOrderDetails.externalFleetCostId,
           emptyDistance: newEmptyDistance,
+          singleTicket: newSingleTicket,
+          singleTicket40: newSingleTicket40,
         });
         message.success('Khoảng cách rỗng mới đã được tạo thành công.');
       }
+
       const distanceToSend = emptyDistanceInput
-      ? parseFloat(emptyDistanceInput) // Use user input if provided
-      : emptyDistance;
+        ? parseFloat(emptyDistanceInput)
+        : emptyDistance;
+
       // eslint-disable-next-line no-unused-vars
       const response = await createOrderConnection(
         selectedDeliveryOrders[0], // deliveryOrderId
         selectedPackingOrders[0],  // packingOrderId
         connectionType,            // type
-        distanceToSend             // emptyDistance
+        distanceToSend,            // emptyDistance
+        parseFloat(singleTicketInput), // singleTicket
+        parseFloat(singleTicket40Input) // singleTicket40
       );
+
       message.success('Ghép chuyến thành công!');
       setIsModalVisible(false);
       setSelectedPackingOrders([]);
@@ -116,6 +132,8 @@ const OrderPage = () => {
       setConnectionType(null);
       setEmptyDistance(null);
       setEmptyDistanceInput('');
+      setSingleTicketInput('');
+      setSingleTicket40Input('');
       window.location.reload();
     } catch (error) {
       message.error('Lỗi khi ghép chuyến.');
@@ -191,21 +209,55 @@ const OrderPage = () => {
               <p style={{ color: 'red' }}>
                 Chưa có thông tin về khoảng cách rỗng giữa 2 tuyến, vui lòng nhập mới:
               </p>
+              <label>Khoảng cách rỗng (km):</label>
               <Input
                 type="number"
                 placeholder="Nhập khoảng cách rỗng (km)"
                 value={emptyDistanceInput}
                 onChange={(e) => setEmptyDistanceInput(e.target.value)}
+                style={{ marginBottom: 8 }}
+              />
+              <label>Vé kết hợp mooc 20'':</label>
+              <Input
+                type="number"
+                placeholder="Nhập vé kết hợp mooc 20''"
+                value={singleTicketInput}
+                onChange={(e) => setSingleTicketInput(e.target.value)}
+                style={{ marginBottom: 8 }}
+              />
+              <label>Vé kết hợp mooc 40'':</label>
+              <Input
+                type="number"
+                placeholder="Nhập vé kết hợp mooc 40''"
+                value={singleTicket40Input}
+                onChange={(e) => setSingleTicket40Input(e.target.value)}
               />
             </>
           ) : (
             <>
               <p>Khoảng cách rỗng giữa 2 tuyến:</p>
+              <label>Khoảng cách rỗng (km):</label>
               <Input
                 type="number"
                 placeholder="Chỉnh sửa khoảng cách rỗng (km) nếu cần"
                 value={emptyDistanceInput || emptyDistance}
                 onChange={(e) => setEmptyDistanceInput(e.target.value)}
+                style={{ marginBottom: 8 }}
+              />
+              <label>Vé kết hợp mooc 20'':</label>
+              <Input
+                type="number"
+                placeholder="Nhập vé kết hợp mooc 20''"
+                value={singleTicketInput}
+                onChange={(e) => setSingleTicketInput(e.target.value)}
+                style={{ marginBottom: 8 }}
+              />
+              <label>Vé kết hợp mooc 40'':</label>
+              <Input
+                type="number"
+                placeholder="Nhập vé kết hợp mooc 40''"
+                value={singleTicket40Input}
+                onChange={(e) => setSingleTicket40Input(e.target.value)}
               />
             </>
           )}
