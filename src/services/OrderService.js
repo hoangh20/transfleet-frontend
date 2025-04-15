@@ -243,3 +243,40 @@ export const getVehicleByOrderId = async (orderId) => {
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+
+export const assignPartnerToDeliveryOrder = async (orderId, partnerId) => {
+  try {
+    const response = await axios.post(`${API_URL}/orders/assign-partner-to-delivery-order`, {
+      orderId,
+      partnerId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error assigning partner to delivery order:', error.response?.data || error.message);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const assignPartnerToPackingOrder = async (orderId, partnerId) => {
+  try {
+    const response = await axios.post(`${API_URL}/orders/assign-partner-to-packing-order`, {
+      orderId,
+      partnerId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error assigning partner to packing order:', error.response?.data || error.message);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const getOrderPartnerConnectionByOrderId = async (orderId) => {
+  try {
+    const response = await axios.get(`${API_URL}/orders/order-partner-connection/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching order partner connection by order ID:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};

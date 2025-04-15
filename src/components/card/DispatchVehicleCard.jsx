@@ -3,17 +3,79 @@ import { Card, Radio, Checkbox, Button, message, List, Row, Col } from 'antd';
 import { getAllVehicles } from '../../services/VehicleService';
 import { connectVehicleToDeliveryOrder, connectVehicleToPackingOrder } from '../../services/OrderService';
 import { getPartnerTransportCostsByTransportTrip } from '../../services/ExternalFleetCostService';
+import { assignPartnerToDeliveryOrder, assignPartnerToPackingOrder } from '../../services/OrderService';
+import { getOrderPartnerConnectionByOrderId, getVehicleByOrderId } from '../../services/OrderService'; // Import new APIs
+import CreatePartnerTransportCost from '../popup/CreatePartnerTransportCost';
 
-const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) => {
+const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, hasVehicle }) => {
   const [vehicleType, setVehicleType] = useState(null);
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicles, setSelectedVehicles] = useState([]);
   const [partnerVehicles, setPartnerVehicles] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [assignedData, setAssignedData] = useState(null); // State to store assigned vehicle/partner data
 
   const handleVehicleTypeChange = (e) => {
     setVehicleType(e.target.value);
-    setSelectedVehicles([]); 
+    setSelectedVehicles([]);
+  };
+
+  const fetchAssignedData = async () => {
+    setLoading(true);
+    try {
+      if (hasVehicle === 1) {
+        // Fetch assigned vehicle for internal fleet
+        const response = await getVehicleByOrderId(orderId);
+        setAssignedData(response);
+      } else if (hasVehicle === 2) {
+        // Fetch assigned partner for external fleet
+        const response = await getOrderPartnerConnectionByOrderId(orderId);
+        setAssignedData(response);
+      } else {
+        setAssignedData(null);
+      }
+    } catch (error) {
+      console.error('Lỗi khi tải thông tin giao xe:', error);
+      message.error('Không thể tải thông tin giao xe');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAssignedData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasVehicle, orderId]);
+
+  const fetchPartnerVehicles = async () => {
+    setLoading(true);
+    try {
+      const response = await getPartnerTransportCostsByTransportTrip(transportTripId);
+
+      let partnerCosts = [];
+      if (response) {
+        partnerCosts = Array.isArray(response) ? response : [response];
+      }
+
+      if (partnerCosts.length === 0) {
+        message.info('Không có đối tác vận chuyển nào khả dụng cho chuyến này');
+        setPartnerVehicles([]);
+        return;
+      }
+
+      const partnerVehiclesWithDetails = partnerCosts.map((partnerCost) => ({
+        ...partnerCost,
+        partnerName: partnerCost.partner?.shortName || 'Không xác định',
+      }));
+
+      setPartnerVehicles(partnerVehiclesWithDetails);
+    } catch (error) {
+      console.error('Lỗi khi tải danh sách xe đối tác:', error);
+      message.error('Không thể tải danh sách xe đối tác');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -22,8 +84,8 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) =
         setLoading(true);
         try {
           const response = await getAllVehicles();
-          const filteredVehicles = contType === 1 
-            ? response.data.filter((vehicle) => vehicle.moocType === 1) 
+          const filteredVehicles = contType === 1
+            ? response.data.filter((vehicle) => vehicle.moocType === 1)
             : response.data;
           setVehicles(filteredVehicles);
         } catch (error) {
@@ -35,41 +97,9 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) =
 
       fetchVehicles();
     } else if (vehicleType === 'partner') {
-      const fetchPartnerTransport = async () => {
-        setLoading(true);
-        try {
-          const response = await getPartnerTransportCostsByTransportTrip(transportTripId);
-
-          let partnerCosts = [];
-          if (response ) {
-            partnerCosts = Array.isArray(response)
-              ? response
-              : [response];
-          }
-
-          if (partnerCosts.length === 0) {
-            message.info('Không có đối tác vận chuyển nào khả dụng cho chuyến này');
-            setPartnerVehicles([]);
-            return;
-          }
-
-          const partnerVehiclesWithDetails = partnerCosts.map((partnerCost) => ({
-            ...partnerCost,
-            partnerName: partnerCost.partner?.shortName || 'Không xác định',
-          }));
-
-          console.log('Mapped Partner Vehicles:', partnerVehiclesWithDetails); // Debug log
-          setPartnerVehicles(partnerVehiclesWithDetails);
-        } catch (error) {
-          console.error('Lỗi khi tải danh sách xe đối tác:', error);
-          message.error('Không thể tải danh sách xe đối tác');
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchPartnerTransport();
+      fetchPartnerVehicles();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vehicleType, transportTripId, contType]);
 
   const handleVehicleSelect = (vehicleId) => {
@@ -78,14 +108,8 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) =
     );
   };
 
-  const handleDispatch = async () => {
-    if (selectedVehicles.length === 0) {
-      message.warning('Vui lòng chọn ít nhất một xe để giao.');
-      return;
-    }
-
+  const handleInternalDispatch = async (vehicleId) => {
     try {
-      const vehicleId = selectedVehicles[0]; // Currently supports selecting only one vehicle
       if (delivery) {
         await connectVehicleToDeliveryOrder(orderId, vehicleId);
         message.success('Giao xe cho đơn giao hàng thành công');
@@ -93,23 +117,71 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) =
         await connectVehicleToPackingOrder(orderId, vehicleId);
         message.success('Giao xe cho đơn đóng hàng thành công');
       }
-      setSelectedVehicles([]); // Reset selected vehicles after successful dispatch
+      setSelectedVehicles([]);
+      fetchAssignedData(); // Refresh assigned data
     } catch (error) {
-      console.error('Lỗi khi giao xe:', error);
-      message.error('Lỗi khi giao xe');
+      message.error('Lỗi khi giao xe nội bộ');
     }
+  };
+
+  const handlePartnerDispatch = async (partnerId) => {
+    try {
+      if (delivery) {
+        await assignPartnerToDeliveryOrder(orderId, partnerId);
+        message.success('Giao đối tác cho đơn giao hàng thành công');
+      } else {
+        await assignPartnerToPackingOrder(orderId, partnerId);
+        message.success('Giao đối tác cho đơn đóng hàng thành công');
+      }
+      setSelectedVehicles([]);
+      fetchAssignedData(); // Refresh assigned data
+    } catch (error) {
+       message.error(error.message);
+    }
+  };
+
+  const handleDispatch = async () => {
+    if (selectedVehicles.length === 0) {
+      message.warning('Vui lòng chọn ít nhất một xe hoặc đối tác để giao.');
+      return;
+    }
+
+    const selectedId = selectedVehicles[0];
+
+    if (vehicleType === 'internal') {
+      await handleInternalDispatch(selectedId);
+    } else if (vehicleType === 'partner') {
+      await handlePartnerDispatch(selectedId);
+    }
+  };
+
+  const handleCreatePartnerSuccess = () => {
+    setIsModalVisible(false);
+    fetchPartnerVehicles();
   };
 
   return (
     <Card title="Giao xe" bordered={false} loading={loading}>
-      <Radio.Group
-        onChange={handleVehicleTypeChange}
-        value={vehicleType}
-        style={{ marginBottom: '16px' }}
-      >
-        <Radio.Button value="internal">Đội xe nội bộ</Radio.Button>
-        <Radio.Button value="partner">Đội xe đối tác</Radio.Button>
-      </Radio.Group>
+      {assignedData && (
+        <div style={{ marginBottom: '16px', color: '#1890ff' }}>
+          {hasVehicle === 1 ? (
+            <p>Xe đã được giao: {assignedData.headPlate} - {assignedData.moocType === 0 ? "20''" : "40''"}</p>
+          ) : hasVehicle === 2 ? (
+            <p>Đối tác đã được giao: {assignedData.partnerId?.shortName} - {Number(assignedData.partnerFee).toLocaleString()} VND</p>
+          ) : null}
+        </div>
+      )}
+
+      {(hasVehicle !== 1 && hasVehicle !== 2) && (
+        <Radio.Group
+          onChange={handleVehicleTypeChange}
+          value={vehicleType}
+          style={{ marginBottom: '16px' }}
+        >
+          <Radio.Button value="internal">Đội xe nội bộ</Radio.Button>
+          <Radio.Button value="partner">Đội xe đối tác</Radio.Button>
+        </Radio.Group>
+      )}
 
       {vehicleType === 'internal' && (
         <>
@@ -141,8 +213,8 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) =
               renderItem={(vehicle) => (
                 <List.Item key={vehicle._id}>
                   <Checkbox
-                    onChange={() => handleVehicleSelect(vehicle._id)}
-                    checked={selectedVehicles.includes(vehicle._id)}
+                    onChange={() => handleVehicleSelect(vehicle.partner._id)}
+                    checked={selectedVehicles.includes(vehicle.partner._id)}
                   >
                     {vehicle.partnerName} - {Number(vehicle.cost).toLocaleString()} VND
                   </Checkbox>
@@ -154,9 +226,16 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) =
               Không có đối tác vận chuyển nào khả dụng
             </div>
           )}
+          <Button
+            type="dashed"
+            style={{ marginTop: '16px' }}
+            onClick={() => setIsModalVisible(true)}
+          >
+            Thêm đối tác vận chuyển
+          </Button>
         </>
       )}
-
+      {(hasVehicle !== 1 && hasVehicle !== 2) && (
       <Row justify="end" style={{ marginTop: '16px' }}>
         <Col>
           <Button
@@ -168,6 +247,14 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId }) =
           </Button>
         </Col>
       </Row>
+      )}
+
+      <CreatePartnerTransportCost
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onSuccess={handleCreatePartnerSuccess}
+        transportTripId={transportTripId}
+      />
     </Card>
   );
 };

@@ -10,6 +10,7 @@ import {
   exportDeliveryOrderToSheet,
   exportPackingOrderToSheet,
   getVehicleByOrderId,
+  getOrderPartnerConnectionByOrderId, // Import the new API
 } from '../../services/OrderService';
 
 const { Step } = Steps;
@@ -41,17 +42,24 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
   }, [trip.location]);
 
   useEffect(() => {
-    const fetchVehicleDetails = async () => {
+    const fetchVehicleOrPartnerDetails = async () => {
       try {
-        const vehicle = await getVehicleByOrderId(trip._id); // Fetch vehicle details using the API
-        setVehicleDetails(vehicle);
+        if (trip.hasVehicle === 1) {
+          // Fetch vehicle details for internal fleet
+          const vehicle = await getVehicleByOrderId(trip._id);
+          setVehicleDetails(vehicle);
+        } else if (trip.hasVehicle === 2) {
+          // Fetch partner details for external fleet
+          const partnerConnection = await getOrderPartnerConnectionByOrderId(trip._id);
+          setVehicleDetails({ shortName: partnerConnection.partnerId.shortName });
+        }
       } catch (error) {
-        console.error('Error fetching vehicle details:', error);
+        console.error('Error fetching details:', error);
       }
     };
 
     if (trip.hasVehicle) {
-      fetchVehicleDetails();
+      fetchVehicleOrPartnerDetails();
     }
   }, [trip._id, trip.hasVehicle]);
 
@@ -138,7 +146,10 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
         <Col span={8}>
         {vehicleDetails && (
             <Col span={24}>
-              <strong>Thông tin xe:</strong> {vehicleDetails.headPlate || 'N/A'} - {vehicleDetails.moocType === 0 ? "20''" : "40''"}
+              <strong>Thông tin xe:</strong>{' '}
+              {trip.hasVehicle === 1
+                ? `${vehicleDetails.headPlate || 'N/A'} - ${vehicleDetails.moocType === 0 ? "20''" : "40''"}`
+                : vehicleDetails.shortName || 'Không xác định'}
             </Col>
         )}
         </Col>

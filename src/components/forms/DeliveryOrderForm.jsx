@@ -346,11 +346,11 @@ const DeliveryOrderForm = () => {
             
             <Col span={8}>
               <Form.Item
-                label='Trọng Lượng (kg)'
+                label='Trọng Lượng (Tấn)'
                 name='weight'
                 rules={[{ required: true, message: 'Vui lòng nhập trọng lượng' }]}
               >
-                <Input type='number' placeholder='Nhập trọng lượng (kg)' />
+                <Input type='number' placeholder='Nhập trọng lượng (tấn)' />
               </Form.Item>
             </Col>
             <Col span={8}>
