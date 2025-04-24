@@ -6,6 +6,7 @@ import {
   updatePackingOrderStatus, 
   exportOrderConnectionsToSheet,
   getVehicleByOrderId, 
+  getOrderPartnerConnectionByOrderId, // Import the new API
 } from '../../services/OrderService';
 
 const { Step } = Steps;
@@ -48,16 +49,22 @@ const CombinedOrderCard = ({
 
     const fetchVehicleDetails = async () => {
       try {
-        if (deliveryTrip.hasVehicle) {
+        if (deliveryTrip.hasVehicle === 1) {
           const vehicle = await getVehicleByOrderId(deliveryTrip._id);
           setDeliveryVehicleDetails(vehicle);
+        } else if (deliveryTrip.hasVehicle === 2) {
+          const partner = await getOrderPartnerConnectionByOrderId(deliveryTrip._id);
+          setDeliveryVehicleDetails({ shortName: partner.partnerId.shortName });
         }
-        if (packingTrip.hasVehicle) {
+        if (packingTrip.hasVehicle === 1) {
           const vehicle = await getVehicleByOrderId(packingTrip._id);
           setPackingVehicleDetails(vehicle);
+        } else if (packingTrip.hasVehicle === 2) {
+          const partner = await getOrderPartnerConnectionByOrderId(packingTrip._id);
+          setPackingVehicleDetails({ shortName: partner.partnerId.shortName });
         }
       } catch (error) {
-        console.error('Error fetching vehicle details:', error);
+        console.error('Error fetching vehicle or partner details:', error);
       }
     };
 
@@ -188,7 +195,9 @@ const CombinedOrderCard = ({
               <Col span={24}>
                 <Text style={labelStyle}>Thông tin xe:</Text>
                 <Text>
-                  {deliveryVehicleDetails.headPlate || 'N/A'} - {deliveryVehicleDetails.moocType === 0 ? "20''" : "40''"}
+                  {deliveryTrip.hasVehicle === 1
+                    ? `${deliveryVehicleDetails.headPlate || 'N/A'} - ${deliveryVehicleDetails.moocType === 0 ? "20''" : "40''"}`
+                    : deliveryVehicleDetails.shortName || 'Không xác định'}
                 </Text>
               </Col>
             )}
@@ -240,7 +249,9 @@ const CombinedOrderCard = ({
               <Col span={24}>
                 <Text style={labelStyle}>Thông tin xe:</Text>
                 <Text>
-                  {packingVehicleDetails.headPlate || 'N/A'} - {packingVehicleDetails.moocType === 0 ? "20''" : "40''"}
+                  {packingTrip.hasVehicle === 1
+                    ? `${packingVehicleDetails.headPlate || 'N/A'} - ${packingVehicleDetails.moocType === 0 ? "20''" : "40''"}`
+                    : packingVehicleDetails.shortName || 'Không xác định'}
                 </Text>
               </Col>
             )}

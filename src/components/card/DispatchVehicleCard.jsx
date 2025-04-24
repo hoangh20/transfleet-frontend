@@ -36,7 +36,6 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, has
         setAssignedData(null);
       }
     } catch (error) {
-      console.error('Lỗi khi tải thông tin giao xe:', error);
       message.error('Không thể tải thông tin giao xe');
     } finally {
       setLoading(false);
@@ -71,7 +70,6 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, has
 
       setPartnerVehicles(partnerVehiclesWithDetails);
     } catch (error) {
-      console.error('Lỗi khi tải danh sách xe đối tác:', error);
       message.error('Không thể tải danh sách xe đối tác');
     } finally {
       setLoading(false);
