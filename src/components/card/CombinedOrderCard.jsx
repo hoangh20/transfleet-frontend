@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Button, Steps, message, Typography } from 'antd';
+import { Card, Row, Col, Button, Steps, message, Typography, Popconfirm } from 'antd';
 import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
 import { 
   updateDeliveryOrderStatus, 
   updatePackingOrderStatus, 
   exportOrderConnectionsToSheet,
   getVehicleByOrderId, 
-  getOrderPartnerConnectionByOrderId, // Import the new API
+  getOrderPartnerConnectionByOrderId,
+  deleteOrderConnection // Import API
 } from '../../services/OrderService';
 import OrderStatusDetails from '../popup/OrderStatusDetails'; 
 
@@ -20,6 +21,7 @@ const CombinedOrderCard = ({
   onUpdateCombinedStatus,
   onViewDetailDelivery,
   onViewDetailPacking,
+  onDeleteCombinedOrder, // Callback để cập nhật danh sách sau khi xóa
 }) => {
   const [deliveryLocation, setDeliveryLocation] = useState({});
   const [packingLocation, setPackingLocation] = useState({});
@@ -75,6 +77,16 @@ const CombinedOrderCard = ({
     fetchLocations();
     fetchVehicleDetails();
   }, [deliveryTrip, packingTrip]);
+
+  const handleDelete = async () => {
+    try {
+      await deleteOrderConnection(combinedOrderId); // Gọi API xóa kết nối đơn hàng
+      message.success('Xóa kết nối đơn hàng thành công');
+      onDeleteCombinedOrder(combinedOrderId); // Gọi callback để cập nhật danh sách
+    } catch (error) {
+    }
+    window.location.reload(); 
+  };
 
   const statusMap = {
     delivery: [
@@ -173,6 +185,7 @@ const CombinedOrderCard = ({
           {updateButtonLabel}
         </Button>
       </div>
+
       <div>
         {/* Đơn giao hàng */}
         <div style={blockStyle}>
@@ -203,16 +216,16 @@ const CombinedOrderCard = ({
               <Text>{deliveryTrip.contType === 0 ? "20''" : "40''"}</Text>
             </Col>
             <Col span={8}>
-            {deliveryVehicleDetails && (
-              <Col span={24}>
-                <Text style={labelStyle}>Thông tin xe:</Text>
-                <Text>
-                  {deliveryTrip.hasVehicle === 1
-                    ? `${deliveryVehicleDetails.headPlate || 'N/A'} - ${deliveryVehicleDetails.moocType === 0 ? "20''" : "40''"}`
-                    : deliveryVehicleDetails.shortName || 'Không xác định'}
-                </Text>
-              </Col>
-            )}
+              {deliveryVehicleDetails && (
+                <Col span={24}>
+                  <Text style={labelStyle}>Thông tin xe:</Text>
+                  <Text>
+                    {deliveryTrip.hasVehicle === 1
+                      ? `${deliveryVehicleDetails.headPlate || 'N/A'} - ${deliveryVehicleDetails.moocType === 0 ? "20''" : "40''"}`
+                      : deliveryVehicleDetails.shortName || 'Không xác định'}
+                  </Text>
+                </Col>
+              )}
             </Col>
             {deliveryTrip.note && (
               <Col span={24}>
@@ -240,11 +253,29 @@ const CombinedOrderCard = ({
 
         {/* Đơn đóng hàng */}
         <div style={blockStyle}>
-          <Title level={5} style={{ margin: 0 }}>
-            <Link onClick={() => onViewDetailPacking(packingTrip._id)}>
-              Chuyến đóng hàng: {packingTrip.customerName}
-            </Link>
-          </Title>
+          <Row justify="space-between" align="middle">
+            <Col>
+              <Title level={5} style={{ margin: 0 }}>
+                <Link onClick={() => onViewDetailPacking(packingTrip._id)}>
+                  Chuyến đóng hàng: {packingTrip.customerName}
+                </Link>
+              </Title>
+            </Col>
+            {deliveryTrip.status !== 6 && (
+              <Col>
+                <Popconfirm
+                  title="Bạn có chắc chắn muốn xóa kết nối đơn hàng này không?"
+                  onConfirm={handleDelete} // Gọi hàm xóa khi xác nhận
+                  okText="Có"
+                  cancelText="Không"
+                >
+                  <Button type="text" danger>
+                    Xóa kết nối
+                  </Button>
+                </Popconfirm>
+              </Col>
+            )}
+          </Row>
           <Row gutter={[4, 2]}>
             <Col span={12}>
               <Text style={labelStyle}>Điểm đi:</Text>
@@ -267,16 +298,16 @@ const CombinedOrderCard = ({
               <Text>{packingTrip.contType === 0 ? "20''" : "40''"}</Text>
             </Col>
             <Col span={8}>
-            {packingVehicleDetails && (
-              <Col span={24}>
-                <Text style={labelStyle}>Thông tin xe:</Text>
-                <Text>
-                  {packingTrip.hasVehicle === 1
-                    ? `${packingVehicleDetails.headPlate || 'N/A'} - ${packingVehicleDetails.moocType === 0 ? "20''" : "40''"}`
-                    : packingVehicleDetails.shortName || 'Không xác định'}
-                </Text>
-              </Col>
-            )}
+              {packingVehicleDetails && (
+                <Col span={24}>
+                  <Text style={labelStyle}>Thông tin xe:</Text>
+                  <Text>
+                    {packingTrip.hasVehicle === 1
+                      ? `${packingVehicleDetails.headPlate || 'N/A'} - ${packingVehicleDetails.moocType === 0 ? "20''" : "40''"}`
+                      : packingVehicleDetails.shortName || 'Không xác định'}
+                  </Text>
+                </Col>
+              )}
             </Col>
             {packingTrip.note && (
               <Col span={24}>

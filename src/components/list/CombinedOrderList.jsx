@@ -77,7 +77,7 @@ const CombinedOrderList = ({ startDate, endDate }) => {
         );
 
         // Filter out orders where deliveryOrder.hasVehicle === 1
-        const filteredOrders = ordersWithDetails.filter(order => order.deliveryOrder.hasVehicle !== 1);
+        const filteredOrders = ordersWithDetails.filter(order => order.deliveryOrder.hasVehicle === 0);
 
         setOrders(filteredOrders);
       } catch (error) {
