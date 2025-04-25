@@ -8,6 +8,7 @@ import {
   getVehicleByOrderId, 
   getOrderPartnerConnectionByOrderId, // Import the new API
 } from '../../services/OrderService';
+import OrderStatusDetails from '../popup/OrderStatusDetails'; 
 
 const { Step } = Steps;
 const { Title, Text, Link } = Typography;
@@ -24,6 +25,9 @@ const CombinedOrderCard = ({
   const [packingLocation, setPackingLocation] = useState({});
   const [deliveryVehicleDetails, setDeliveryVehicleDetails] = useState(null); 
   const [packingVehicleDetails, setPackingVehicleDetails] = useState(null); 
+  const [statusModalVisible, setStatusModalVisible] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -105,15 +109,17 @@ const CombinedOrderCard = ({
   let updateButtonLabel = 'Cập nhật trạng thái';
   let updateAction = async () => {
     try {
+      const userId = JSON.parse(localStorage.getItem('user'))?.id; // Lấy userId từ localStorage
+
       if (deliveryTrip.status < 6) {
-        await updateDeliveryOrderStatus(deliveryTrip._id);
+        await updateDeliveryOrderStatus(deliveryTrip._id, userId, deliveryTrip.status + 1); // Gửi userId và status
         message.success('Cập nhật trạng thái đơn giao hàng thành công');
         onUpdateCombinedStatus(
           { ...deliveryTrip, status: deliveryTrip.status + 1 },
           packingTrip
         );
       } else if (deliveryTrip.status === 6 && packingTrip.status < 7) {
-        await updatePackingOrderStatus(packingTrip._id);
+        await updatePackingOrderStatus(packingTrip._id, userId, packingTrip.status + 1); // Gửi userId và status
         message.success('Cập nhật trạng thái đơn đóng hàng thành công');
         onUpdateCombinedStatus(
           deliveryTrip,
@@ -136,6 +142,12 @@ const CombinedOrderCard = ({
       }
     };
   }
+
+  const handleStatusClick = (orderId, status) => {
+    setSelectedOrderId(orderId);
+    setSelectedStatus(status);
+    setStatusModalVisible(true);
+  };
 
   // Style được tối giản để tiết kiệm diện tích
   const containerStyle = {
@@ -211,7 +223,17 @@ const CombinedOrderCard = ({
           </Row>
           <Steps current={currentDeliveryStep} size="small" style={stepsStyle}>
             {deliverySteps.map((step, index) => (
-              <Step key={index} title={<span style={{ fontSize: '10px', padding: '0 2px' }}>{step}</span>} />
+              <Step
+                key={index}
+                title={
+                  <span
+                    style={{ fontSize: '10px', padding: '0 2px', cursor: 'pointer' }}
+                    onClick={() => handleStatusClick(deliveryTrip._id, index + 1)}
+                  >
+                    {step}
+                  </span>
+                }
+              />
             ))}
           </Steps>
         </div>
@@ -220,7 +242,7 @@ const CombinedOrderCard = ({
         <div style={blockStyle}>
           <Title level={5} style={{ margin: 0 }}>
             <Link onClick={() => onViewDetailPacking(packingTrip._id)}>
-              Chuyến đóng đóng: {packingTrip.customerName}
+              Chuyến đóng hàng: {packingTrip.customerName}
             </Link>
           </Title>
           <Row gutter={[4, 2]}>
@@ -265,11 +287,31 @@ const CombinedOrderCard = ({
           </Row>
           <Steps current={currentPackingStep} size="small" style={stepsStyle}>
             {packingSteps.map((step, index) => (
-              <Step key={index} title={<span style={{ fontSize: '10px', padding: '0 2px' }}>{step}</span>} />
+              <Step
+                key={index}
+                title={
+                  <span
+                    style={{ fontSize: '10px', padding: '0 2px', cursor: 'pointer' }}
+                    onClick={() => handleStatusClick(packingTrip._id, index + 1)}
+                  >
+                    {step}
+                  </span>
+                }
+              />
             ))}
           </Steps>
         </div>
       </div>
+
+      {/* Modal hiển thị chi tiết trạng thái */}
+      {selectedStatus && (
+        <OrderStatusDetails
+          orderId={selectedOrderId}
+          status={selectedStatus}
+          visible={statusModalVisible}
+          onClose={() => setStatusModalVisible(false)}
+        />
+      )}
     </Card>
   );
 };

@@ -10,8 +10,9 @@ import {
   exportDeliveryOrderToSheet,
   exportPackingOrderToSheet,
   getVehicleByOrderId,
-  getOrderPartnerConnectionByOrderId, // Import the new API
+  getOrderPartnerConnectionByOrderId,
 } from '../../services/OrderService';
+import OrderStatusDetails from '../popup/OrderStatusDetails'; 
 
 const { Step } = Steps;
 const { Link } = Typography;
@@ -21,7 +22,9 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
   const [startDistrict, setStartDistrict] = useState('');
   const [endProvince, setEndProvince] = useState('');
   const [endDistrict, setEndDistrict] = useState('');
-  const [vehicleDetails, setVehicleDetails] = useState(null); // State to store vehicle details
+  const [vehicleDetails, setVehicleDetails] = useState(null);
+  const [statusModalVisible, setStatusModalVisible] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState(null);
 
   useEffect(() => {
     if (!trip.location) return;
@@ -45,11 +48,9 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
     const fetchVehicleOrPartnerDetails = async () => {
       try {
         if (trip.hasVehicle === 1) {
-          // Fetch vehicle details for internal fleet
           const vehicle = await getVehicleByOrderId(trip._id);
           setVehicleDetails(vehicle);
         } else if (trip.hasVehicle === 2) {
-          // Fetch partner details for external fleet
           const partnerConnection = await getOrderPartnerConnectionByOrderId(trip._id);
           setVehicleDetails({ shortName: partnerConnection.partnerId.shortName });
         }
@@ -71,6 +72,11 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
   const steps = statusMap[type] || [];
   const currentStep = trip.status - 1 < steps.length ? trip.status : 0;
 
+  const handleStatusClick = (status) => {
+    setSelectedStatus(status);
+    setStatusModalVisible(true);
+  };
+
   const handleExportOrder = async (orderId) => {
     try {
       if (type === 'delivery' && trip.status === 6) {
@@ -89,11 +95,13 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
 
   const handleUpdateStatusInternal = async (orderId) => {
     try {
+      const userId = JSON.parse(localStorage.getItem('user'))?.id; // Lấy userId từ localStorage
+
       if (type === 'delivery') {
-        await updateDeliveryOrderStatus(orderId);
+        await updateDeliveryOrderStatus(orderId, userId, trip.status + 1); // Gửi userId và status
         message.success('Cập nhật trạng thái đơn giao hàng thành công');
       } else if (type === 'packing') {
-        await updatePackingOrderStatus(orderId);
+        await updatePackingOrderStatus(orderId, userId, trip.status + 1); // Gửi userId và status
         message.success('Cập nhật trạng thái đơn đóng hàng thành công');
       }
       onUpdateStatus(orderId);
@@ -129,46 +137,66 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
   );
 
   return (
-    <Card key={trip._id} style={{ margin: 0, padding: 4 }} bodyStyle={{ padding: 4 }} title={titleContent} extra={extraContent}>
-      <Row gutter={[4, 4]} justify="space-between">
-        <Col span={12}>
-          <strong>Điểm đi:</strong> {`${startProvince}, ${startDistrict}`}
-        </Col>
-        <Col span={12}>
-          <strong>Điểm đến:</strong> {`${endProvince}, ${endDistrict}`}
-        </Col>
-        <Col span={8}>
-          <strong>Loại cont:</strong> {trip.contType === 0 ? "20''" : "40''"}
-        </Col>
-        <Col span={8}>
-          <strong>Số container:</strong> {trip.containerNumber}
-        </Col>
-        <Col span={8}>
-        {vehicleDetails && (
-            <Col span={24}>
-              <strong>Thông tin xe:</strong>{' '}
-              {trip.hasVehicle === 1
-                ? `${vehicleDetails.headPlate || 'N/A'} - ${vehicleDetails.moocType === 0 ? "20''" : "40''"}`
-                : vehicleDetails.shortName || 'Không xác định'}
-            </Col>
-        )}
-        </Col>
-        {trip.note && (
-          <Col span={24}>
-            <strong>Ghi chú:</strong> <span style={{ color: '#8c8c8c' }}>{trip.note}</span>
+    <>
+      <Card key={trip._id} style={{ margin: 0, padding: 4 }} bodyStyle={{ padding: 4 }} title={titleContent} extra={extraContent}>
+        <Row gutter={[4, 4]} justify="space-between">
+          <Col span={12}>
+            <strong>Điểm đi:</strong> {`${startProvince}, ${startDistrict}`}
           </Col>
-        )}
-      </Row>
-      <Row style={{ marginTop: 4 }}>
-        <Col span={24}>
-          <Steps current={currentStep} size="small" style={{ width: '100%', fontSize: '10px' }}>
-            {steps.map((step, index) => (
-              <Step key={index} title={<span style={{ fontSize: '10px', padding: '0 2px' }}>{step}</span>} />
-            ))}
-          </Steps>
-        </Col>
-      </Row>
-    </Card>
+          <Col span={12}>
+            <strong>Điểm đến:</strong> {`${endProvince}, ${endDistrict}`}
+          </Col>
+          <Col span={8}>
+            <strong>Loại cont:</strong> {trip.contType === 0 ? "20''" : "40''"}
+          </Col>
+          <Col span={8}>
+            <strong>Số container:</strong> {trip.containerNumber}
+          </Col>
+          <Col span={8}>
+            {vehicleDetails && (
+              <Col span={24}>
+                <strong>Thông tin xe:</strong>{' '}
+                {trip.hasVehicle === 1
+                  ? `${vehicleDetails.headPlate || 'N/A'} - ${vehicleDetails.moocType === 0 ? "20''" : "40''"}`
+                  : vehicleDetails.shortName || 'Không xác định'}
+              </Col>
+            )}
+          </Col>
+          {trip.note && (
+            <Col span={24}>
+              <strong>Ghi chú:</strong> <span style={{ color: '#8c8c8c' }}>{trip.note}</span>
+            </Col>
+          )}
+        </Row>
+        <Row style={{ marginTop: 4 }}>
+          <Col span={24}>
+            <Steps current={currentStep} size="small" style={{ width: '100%', fontSize: '10px' }}>
+              {steps.map((step, index) => (
+                <Step
+                  key={index}
+                  title={
+                    <span
+                      style={{ fontSize: '10px', padding: '0 2px', cursor: 'pointer' }}
+                      onClick={() => handleStatusClick(index + 1)}
+                    >
+                      {step}
+                    </span>
+                  }
+                />
+              ))}
+            </Steps>
+          </Col>
+        </Row>
+      </Card>
+      {selectedStatus && (
+        <OrderStatusDetails
+          orderId={trip._id}
+          status={selectedStatus}
+          visible={statusModalVisible}
+          onClose={() => setStatusModalVisible(false)}
+        />
+      )}
+    </>
   );
 };
 

@@ -165,9 +165,12 @@ export const connectVehicleToPackingOrder = async (orderId, vehicleId) => {
   }
 };
 
-export const updateDeliveryOrderStatus = async (orderId, status) => {
+export const updateDeliveryOrderStatus = async (orderId, userId, status) => {
   try {
-    const response = await axios.put(`${API_URL}/orders/update-status-delivery/${orderId}`);
+    const response = await axios.put(`${API_URL}/orders/update-status-delivery/${orderId}`, {
+      userId,
+      status,
+    });
     return response.data;
   } catch (error) {
     console.error('Error updating delivery order status:', error);
@@ -175,9 +178,12 @@ export const updateDeliveryOrderStatus = async (orderId, status) => {
   }
 };
 
-export const updatePackingOrderStatus = async (orderId, status) => {
+export const updatePackingOrderStatus = async (orderId, userId, status) => {
   try {
-    const response = await axios.put(`${API_URL}/orders/update-status-packing/${orderId}`);
+    const response = await axios.put(`${API_URL}/orders/update-status-packing/${orderId}`, {
+      userId,
+      status,
+    });
     return response.data;
   } catch (error) {
     console.error('Error updating packing order status:', error);
@@ -219,7 +225,6 @@ export const exportPackingOrderToSheet = async (orderId) => {
     const response = await axios.post(`${API_URL}/orders/packing-orders/write-to-sheet/${orderId}`);
     return response.data;
   } catch (error) {
-    console.error('Error exporting packing order to sheet:', error);
     throw error.response ? error.response.data : new Error('Network Error');
   }
 }
@@ -229,7 +234,6 @@ export const exportOrderConnectionsToSheet = async (connectionId) => {
     const response = await axios.post(`${API_URL}/orders/order-connections/write-to-sheet/${connectionId}`);
     return response.data;
   } catch (error) {
-    console.error('Error exporting order connections to sheet:', error);
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
@@ -239,7 +243,6 @@ export const getVehicleByOrderId = async (orderId) => {
     const response = await axios.get(`${API_URL}/orders/vehicles/${orderId}`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching vehicle by order ID:', error);
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
@@ -253,7 +256,6 @@ export const assignPartnerToDeliveryOrder = async (orderId, partnerId) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error assigning partner to delivery order:', error.response?.data || error.message);
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
@@ -266,7 +268,6 @@ export const assignPartnerToPackingOrder = async (orderId, partnerId) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error assigning partner to packing order:', error.response?.data || error.message);
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
@@ -276,7 +277,17 @@ export const getOrderPartnerConnectionByOrderId = async (orderId) => {
     const response = await axios.get(`${API_URL}/orders/order-partner-connection/${orderId}`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching order partner connection by order ID:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const getOrderStatusUpdateByOrderIdAndStatus = async (orderId, status) => {
+  try {
+    const response = await axios.get(`${API_URL}/orders/order-status-updates`, {
+      params: { orderId, status },
+    });
+    return response.data;
+  } catch (error) {
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
