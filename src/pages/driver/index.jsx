@@ -21,7 +21,7 @@ const DriverListPage = () => {
 
   const handleSuccess = () => {
     setIsModalVisible(false);
-    fetchDrivers(); // Gọi lại API để cập nhật danh sách
+    fetchDrivers(); 
   };
   useEffect(() => {
     fetchDrivers();

@@ -67,7 +67,6 @@ const ListVehicle = ({ vehicle, onDelete }) => {
         } else {
           setDriver(null);
         }
-        console.log('Driver API Response:', result);
       } catch (error) {
         console.error('Error fetching driver by vehicle ID:', error);
         setDriver(null);

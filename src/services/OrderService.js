@@ -291,3 +291,13 @@ export const getOrderStatusUpdateByOrderIdAndStatus = async (orderId, status) =>
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+export const getActiveOrders = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/orders/active-orders`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching active orders:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};

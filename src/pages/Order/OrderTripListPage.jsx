@@ -10,6 +10,7 @@ import {
   getPackingOrdersByDate,
   getDeliveryOrdersByDate,
   getOrderConnectionsByDeliveryDate,
+  getActiveOrders,
 } from '../../services/OrderService';
 import { getCustomerById } from '../../services/CustomerService';
 
@@ -24,7 +25,7 @@ const OrderTripListPage = () => {
     const saved = localStorage.getItem('selectedDateRange');
     if (saved) {
       const arr = JSON.parse(saved);
-      return arr.map(d => dayjs(d));
+      return arr.map((d) => dayjs(d));
     }
     return [dayjs(), dayjs()];
   });
@@ -32,13 +33,13 @@ const OrderTripListPage = () => {
 
   useEffect(() => {
     filterTrips();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDateRange, selectedMenuItem]);
 
   useEffect(() => {
     localStorage.setItem(
       'selectedDateRange',
-      JSON.stringify(selectedDateRange.map(d => d.toISOString()))
+      JSON.stringify(selectedDateRange.map((d) => d.toISOString()))
     );
   }, [selectedDateRange]);
 
@@ -50,28 +51,61 @@ const OrderTripListPage = () => {
     }
   };
 
-  const handleMenuClick = e => {
+  const handleMenuClick = async (e) => {
     setSelectedMenuItem(e.key);
+
+    if (e.key === 'active') {
+      try {
+        const response = await getActiveOrders();
+        const { deliveryOrders, packingOrders, combinedOrders } = response.data;
+
+        // Attach customer names to orders
+        const attachName = async (order) => {
+          const cust = await getCustomerById(order.customer);
+          return { ...order, customerName: cust.shortName };
+        };
+
+        const deliveryWithName = await Promise.all(
+          deliveryOrders.map((order) => attachName(order))
+        );
+        const packingWithName = await Promise.all(
+          packingOrders.map((order) => attachName(order))
+        );
+        const combinedWithName = await Promise.all(
+          combinedOrders.map(async (conn) => ({
+            ...conn,
+            deliveryOrderId: await attachName(conn.deliveryOrderId),
+            packingOrderId: await attachName(conn.packingOrderId),
+          }))
+        );
+
+        setSingleTrips([...deliveryWithName, ...packingWithName]);
+        setCombinedTrips(combinedWithName);
+      } catch (error) {
+        message.error('Lỗi khi tải danh sách chuyến đang vận chuyển.');
+      }
+    }
   };
 
-  const handleViewDetail = trip => {
-    const path = trip.type === 'delivery'
-      ? `/order/delivery-orders/${trip._id}`
-      : `/order/packing-orders/${trip._id}`;
+  const handleViewDetail = (trip) => {
+    const path =
+      trip.type === 'delivery'
+        ? `/order/delivery-orders/${trip._id}`
+        : `/order/packing-orders/${trip._id}`;
     navigate(path);
   };
 
   // Cập nhật trạng thái đơn lẻ
-  const handleUpdateStatus = orderId => {
-    setSingleTrips(prev =>
-      prev.map(t => (t._id === orderId ? { ...t, status: t.status + 1 } : t))
+  const handleUpdateStatus = (orderId) => {
+    setSingleTrips((prev) =>
+      prev.map((t) => (t._id === orderId ? { ...t, status: t.status + 1 } : t))
     );
   };
 
   // Cập nhật trạng thái đơn ghép
   const handleUpdateCombinedStatus = (updatedDelivery, updatedPacking) => {
-    setCombinedTrips(prev =>
-      prev.map(conn => {
+    setCombinedTrips((prev) =>
+      prev.map((conn) => {
         if (conn.deliveryOrderId._id === updatedDelivery._id) {
           return { ...conn, deliveryOrderId: updatedDelivery };
         }
@@ -96,16 +130,16 @@ const OrderTripListPage = () => {
         const deliveries = (await getDeliveryOrdersByDate(from, to)) || [];
         singles = singles.concat(
           deliveries
-            .filter(o => o.isCombinedTrip === 0 && o.hasVehicle !== 0)
-            .map(o => ({ ...o, type: 'delivery' }))
+            .filter((o) => o.isCombinedTrip === 0 && o.hasVehicle !== 0)
+            .map((o) => ({ ...o, type: 'delivery' }))
         );
       }
       if (['all', 'packing'].includes(selectedMenuItem)) {
         const packings = (await getPackingOrdersByDate(from, to)) || [];
         singles = singles.concat(
           packings
-            .filter(o => o.isCombinedTrip === 0 && o.hasVehicle !== 0)
-            .map(o => ({ ...o, type: 'packing' }))
+            .filter((o) => o.isCombinedTrip === 0 && o.hasVehicle !== 0)
+            .map((o) => ({ ...o, type: 'packing' }))
         );
       }
 
@@ -114,20 +148,20 @@ const OrderTripListPage = () => {
       if (['all', 'combined'].includes(selectedMenuItem)) {
         const connections = (await getOrderConnectionsByDeliveryDate(from, to)) || [];
         combined = connections.filter(
-          c => c.deliveryOrderId.hasVehicle !== 0 || c.packingOrderId.hasVehicle !== 0
+          (c) => c.deliveryOrderId.hasVehicle !== 0 || c.packingOrderId.hasVehicle !== 0
         );
       }
 
       // 3) Gắn tên khách
-      const attachName = async order => {
+      const attachName = async (order) => {
         const cust = await getCustomerById(order.customer);
         return { ...order, customerName: cust.shortName };
       };
       const singlesWithName = await Promise.all(
-        (singles || []).map(async o => await attachName(o))
+        (singles || []).map(async (o) => await attachName(o))
       );
       const combinedWithName = await Promise.all(
-        (combined || []).map(async conn => ({
+        (combined || []).map(async (conn) => ({
           ...conn,
           deliveryOrderId: await attachName(conn.deliveryOrderId),
           packingOrderId: await attachName(conn.packingOrderId),
@@ -142,13 +176,15 @@ const OrderTripListPage = () => {
   };
 
   // Lọc để render theo tab
-  const singleToShow = singleTrips.filter(t => {
+  const singleToShow = singleTrips.filter((t) => {
     if (selectedMenuItem === 'all') return true;
+    if (selectedMenuItem === 'active') return true; // Hiển thị tất cả đơn lẻ trong tab active
     return t.type === selectedMenuItem;
   });
-  const combinedToShow = ['all', 'combined'].includes(selectedMenuItem)
-    ? combinedTrips
-    : [];
+  const combinedToShow =
+    ['all', 'combined', 'active'].includes(selectedMenuItem) // Hiển thị đơn ghép trong tab active
+      ? combinedTrips
+      : [];
 
   return (
     <div style={{ padding: 16, overflowX: 'auto' }}>
@@ -168,11 +204,12 @@ const OrderTripListPage = () => {
           <Menu.Item key="delivery">Chuyến giao hàng</Menu.Item>
           <Menu.Item key="packing">Chuyến đóng hàng</Menu.Item>
           <Menu.Item key="combined">Chuyến ghép</Menu.Item>
+          <Menu.Item key="active">Chuyến đang vận chuyển</Menu.Item> {/* New Menu Item */}
         </Menu>
       </div>
       <Row gutter={[16, 16]}>
         {/* Đơn lẻ */}
-        {singleToShow.map(trip => (
+        {singleToShow.map((trip) => (
           <Col key={trip._id} xs={24} md={12}>
             <OrderTripCard
               trip={trip}
@@ -185,17 +222,17 @@ const OrderTripListPage = () => {
         ))}
 
         {/* Đơn ghép */}
-        {combinedToShow.map(conn => (
+        {combinedToShow.map((conn) => (
           <Col key={conn._id} xs={24} md={12}>
             <CombinedOrderCard
               combinedOrderId={conn._id}
               deliveryTrip={conn.deliveryOrderId}
               packingTrip={conn.packingOrderId}
               onUpdateCombinedStatus={handleUpdateCombinedStatus}
-              onViewDetailDelivery={id =>
+              onViewDetailDelivery={(id) =>
                 handleViewDetail({ ...conn.deliveryOrderId, _id: id, type: 'delivery' })
               }
-              onViewDetailPacking={id =>
+              onViewDetailPacking={(id) =>
                 handleViewDetail({ ...conn.packingOrderId, _id: id, type: 'packing' })
               }
             />
