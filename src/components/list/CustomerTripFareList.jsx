@@ -103,8 +103,6 @@ const CustomerTripFareList = ({ externalFleetCostId, fetchCostDetails }) => {
       customer: record.customer._id,
       tripFare0: record.tripFare0 || 0,
       tripFare1: record.tripFare1 || 0,
-      combinedTripFare0: record.combinedTripFare0 || 0,
-      combinedTripFare1: record.combinedTripFare1 || 0,
     });
   };
 
@@ -131,19 +129,9 @@ const CustomerTripFareList = ({ externalFleetCostId, fetchCostDetails }) => {
       key: 'tripFare0',
     },
     {
-      title: 'Cước chuyến kết hợp 20"',
-      dataIndex: 'combinedTripFare0',
-      key: 'combinedTripFare0',
-    },
-    {
       title: 'Cước chuyến 40"',
       dataIndex: 'tripFare1',
       key: 'tripFare1',
-    },
-    {
-      title: 'Cước chuyến kết hợp 40"',
-      dataIndex: 'combinedTripFare1',
-      key: 'combinedTripFare1',
     },
     {
       title: 'Hành động',
@@ -230,29 +218,12 @@ const CustomerTripFareList = ({ externalFleetCostId, fetchCostDetails }) => {
             <Input type="number" placeholder="Nhập cước chuyến 20''" />
           </Form.Item>
           <Form.Item
-            label="Cước chuyến kết hợp 20''"
-            name="combinedTripFare0"
-            rules={[{ required: false, message: 'Vui lòng nhập cước chuyến kết hợp 20"' }]}
-          >
-            <Input type="number" placeholder="Nhập cước chuyến kết hợp 20''" />
-          </Form.Item>
-          <Form.Item
             label="Cước chuyến 40''"
             name="tripFare1"
             rules={[{ required: true, message: 'Vui lòng nhập cước chuyến 40"' }]}
           >
             <Input type="number" placeholder="Nhập cước chuyến 40''" />
           </Form.Item>
-          <Form.Item
-            label="Cước chuyến kết hợp 40''"
-            name="combinedTripFare1"
-            rules={[{ required: false, message: 'Vui lòng nhập cước chuyến kết hợp 40"' }]}  
-          >
-            <Input type="number" placeholder="Nhập cước chuyến kết hợp 40''" />
-          </Form.Item>
-          <p style={{ color: 'gray', fontSize: '12px' }}>
-            * Nếu không có 2 loại cước chuyến, vui lòng nhập cả 2 cước chuyến giống nhau.
-          </p>
         </Form>
       </Modal>
       <Modal
@@ -290,29 +261,12 @@ const CustomerTripFareList = ({ externalFleetCostId, fetchCostDetails }) => {
             <Input type="number" placeholder="Nhập cước chuyến 20''" />
           </Form.Item>
           <Form.Item
-            label="Cước chuyến kết hợp 20''"
-            name="combinedTripFare0"
-            rules={[{ required: true, message: 'Vui lòng nhập cước chuyến kết hợp 20"' }]}
-          >
-            <Input type="number" placeholder="Nhập cước chuyến kết hợp 20''" />
-          </Form.Item>
-          <Form.Item
             label="Cước chuyến 40''"
             name="tripFare1"
             rules={[{ required: true, message: 'Vui lòng nhập cước chuyến 40"' }]}
           >
             <Input type="number" placeholder="Nhập cước chuyến 40''" />
           </Form.Item>
-          <Form.Item
-            label="Cước chuyến kết hợp 40''"
-            name="combinedTripFare1"
-            rules={[{ required: true, message: 'Vui lòng nhập cước chuyến kết hợp 40"' }]}  
-          >
-            <Input type="number" placeholder="Nhập cước chuyến kết hợp 40''" />
-          </Form.Item>
-          <p style={{ color: 'gray', fontSize: '12px' }}>
-            * Nếu không có 2 loại cước chuyến, vui lòng nhập cả 2 cước chuyến giống nhau.
-          </p>
         </Form>
       </Modal>
     </Card>

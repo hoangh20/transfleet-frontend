@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, message, Typography, Tooltip, Button, Popconfirm, Space, Tag } from 'antd';
 import { Link } from 'react-router-dom';
 import { DeleteOutlined, EnvironmentOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { getDeliveryOrdersByDate, getCostByOrderId, deleteDeliveryOrder } from '../../services/OrderService';
+import { getDeliveryOrdersByDate, getCostByOrderId, deleteDeliveryOrder, getVehicleByOrderId, getOrderPartnerConnectionByOrderId } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
 import { getCustomerById } from '../../services/CustomerService';
 
@@ -20,7 +20,7 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
       try {
         const fuelPrice = parseFloat(localStorage.getItem('fuelPrice')) || 0;
         const deliveryOrders = await getDeliveryOrdersByDate(startDate, endDate);
-        const filteredOrders = deliveryOrders.filter(order => order.isCombinedTrip === 0 && order.hasVehicle === 0);
+        const filteredOrders = deliveryOrders.filter(order => order.isCombinedTrip === 0 && order.status !== 6);
         const ordersWithDetails = await Promise.all(filteredOrders.map(async (order) => {
           const startProvince = await fetchProvinceName(order.location.startPoint.provinceCode);
           const startDistrict = await fetchDistrictName(order.location.startPoint.districtCode);
@@ -31,7 +31,7 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
           const tripFare = cost ? cost.tripFare : 0;
 
           // Tính fuelCost
-          const fuelCost = cost ? fuelPrice * cost.fuel*1000 : 0;
+          const fuelCost = cost ? fuelPrice * cost.fuel * 1000 : 0;
 
           const estimatedProfit = cost ? tripFare - (
             fuelCost +
@@ -47,18 +47,35 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
             cost.repairCost
           ) : 0;
 
+          // Lấy thông tin xe hoặc đối tác
+          let vehicleDetails = null;
+          if (order.hasVehicle === 1) {
+            const vehicle = await getVehicleByOrderId(order._id);
+            vehicleDetails = {
+              type: 'internal',
+              details: `${vehicle.headPlate || 'N/A'} - ${vehicle.moocType === 0 ? "20''" : "40''"}`,
+            };
+          } else if (order.hasVehicle === 2) {
+            const partnerConnection = await getOrderPartnerConnectionByOrderId(order._id);
+            vehicleDetails = {
+              type: 'partner',
+              details: `${partnerConnection.partnerId.shortName || 'Không xác định'} - ${Number(partnerConnection.partnerFee).toLocaleString()} VND`,
+            };
+          }
+
           return {
             ...order,
             cost,
             tripFare,
-            fuelCost, 
+            fuelCost,
             estimatedProfit,
             startLocation: `${startProvince}, ${startDistrict}`,
             endLocation: `${endProvince}, ${endDistrict}`,
             shortName: customer.shortName,
             contType: order.contType === 0 ? "20''" : "40''",
             moocType: order.moocType === 0 ? "20''" : "40''",
-            containerNumber: order.containerNumber 
+            containerNumber: order.containerNumber,
+            vehicleDetails, // Thêm thông tin xe hoặc đối tác
           };
         }));
         setOrders(ordersWithDetails);
@@ -142,12 +159,11 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
             <Space direction="vertical" size={4} style={{ width: '100%' }}>
               {/* Thời gian và lợi nhuận */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text type="secondary" style={{ fontSize: 12 }}>
+                <Text type="secondary" style={{ fontSize: 12 }}>
                   {order.deliveryDate ? 
                     new Date(order.deliveryDate).toLocaleDateString('vi-VN', { 
                       day: '2-digit',
                       month: '2-digit',
-
                     }) 
                     : '--/-- '}
                 </Text>
@@ -206,14 +222,24 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
                     <span style={{ fontWeight: 500 }}>Đi: </span>
                     {order.startLocation}
                   </Text>
-                  </div>
-                  <div style={{ flex: 1 }}>
+                </div>
+                <div style={{ flex: 1 }}>
                   <Text style={{ fontSize: 12, whiteSpace: 'normal' }}>
                     <span style={{ fontWeight: 500 }}>Đến: </span>
                     {order.endLocation}
                   </Text>
                 </div>
               </div>
+
+              {/* Thông tin xe hoặc đối tác */}
+              {order.vehicleDetails && (
+                <div style={{ fontSize: 12, color: '#1890ff' }}>
+                  <Text strong>
+                    {order.vehicleDetails.type === 'internal' ? 'Xe nội bộ: ' : 'Đối tác: '}
+                  </Text>
+                  <Text>{order.vehicleDetails.details}</Text>
+                </div>
+              )}
 
               {/* Thông tin phụ */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>

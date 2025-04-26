@@ -257,7 +257,7 @@ const PackingDetailCostPage = () => {
             </Card>
       <div style={{ display: 'flex', gap: '24px', marginTop: '24px' }}>
         <Card
-          title='Chi phí đội xe nội bộ (Mooc 20")'
+          title='Chi phí đội xe cước (Mooc 20")'
           bordered={false}
           style={{ flex: 1 }}
           extra={
@@ -329,7 +329,7 @@ const PackingDetailCostPage = () => {
           </Form>
         </Card>
         <Card
-          title='Chi phí đội xe nội bộ (Mooc 40")'
+          title='Chi phí đội xe và cước (Mooc 40")'
           bordered={false}
           style={{ flex: 1 }}
           extra={

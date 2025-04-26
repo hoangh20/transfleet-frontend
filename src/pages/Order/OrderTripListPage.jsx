@@ -42,8 +42,12 @@ const OrderTripListPage = () => {
     );
   }, [selectedDateRange]);
 
-  const handleDateChange = dates => {
-    setSelectedDateRange(dates);
+  const handleDateChange = (dates) => {
+    if (!dates) {
+      setSelectedDateRange([dayjs(), dayjs()]); // Đặt giá trị mặc định nếu xóa ngày
+    } else {
+      setSelectedDateRange(dates);
+    }
   };
 
   const handleMenuClick = e => {
@@ -89,7 +93,7 @@ const OrderTripListPage = () => {
       // 1) Đơn lẻ
       let singles = [];
       if (['all', 'delivery'].includes(selectedMenuItem)) {
-        const deliveries = await getDeliveryOrdersByDate(from, to);
+        const deliveries = (await getDeliveryOrdersByDate(from, to)) || [];
         singles = singles.concat(
           deliveries
             .filter(o => o.isCombinedTrip === 0 && o.hasVehicle !== 0)
@@ -97,7 +101,7 @@ const OrderTripListPage = () => {
         );
       }
       if (['all', 'packing'].includes(selectedMenuItem)) {
-        const packings = await getPackingOrdersByDate(from, to);
+        const packings = (await getPackingOrdersByDate(from, to)) || [];
         singles = singles.concat(
           packings
             .filter(o => o.isCombinedTrip === 0 && o.hasVehicle !== 0)
@@ -108,7 +112,7 @@ const OrderTripListPage = () => {
       // 2) Đơn ghép
       let combined = [];
       if (['all', 'combined'].includes(selectedMenuItem)) {
-        const connections = await getOrderConnectionsByDeliveryDate(from, to);
+        const connections = (await getOrderConnectionsByDeliveryDate(from, to)) || [];
         combined = connections.filter(
           c => c.deliveryOrderId.hasVehicle !== 0 || c.packingOrderId.hasVehicle !== 0
         );
@@ -120,10 +124,10 @@ const OrderTripListPage = () => {
         return { ...order, customerName: cust.shortName };
       };
       const singlesWithName = await Promise.all(
-        singles.map(async o => await attachName(o))
+        (singles || []).map(async o => await attachName(o))
       );
       const combinedWithName = await Promise.all(
-        combined.map(async conn => ({
+        (combined || []).map(async conn => ({
           ...conn,
           deliveryOrderId: await attachName(conn.deliveryOrderId),
           packingOrderId: await attachName(conn.packingOrderId),
