@@ -6,7 +6,6 @@ import LocationFilter from '../../components/location/LocationFilter';
 import { getAllExternalFleetCosts, deleteExternalFleetCost } from '../../services/ExternalFleetCostService';
 import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 
-
 const PartnerCostPage = () => {
   const navigate = useNavigate();
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -18,25 +17,29 @@ const PartnerCostPage = () => {
     startWardCode: '',
     endProvinceCode: '',
     endDistrictCode: '',
-    endWardCode: ''
+    endWardCode: '',
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  // eslint-disable-next-line no-unused-vars
   const [totalItems, setTotalItems] = useState(0);
 
   useEffect(() => {
     fetchExternalFleetCosts();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, [filters, currentPage, pageSize]);
 
   const fetchExternalFleetCosts = async () => {
     setLoading(true);
     try {
-      const response = await getAllExternalFleetCosts(filters);
-      if (response && response.externalFleetCosts) {
+      const response = await getAllExternalFleetCosts({
+        ...filters,
+        page: currentPage,
+        limit: pageSize,
+      });
+
+      if (response && response.data) {
         const updatedCosts = await Promise.all(
-          response.externalFleetCosts.map(async (cost) => {
+          response.data.map(async (cost) => {
             const startProvince = await fetchProvinceName(cost.startPoint.provinceCode);
             const startDistrict = await fetchDistrictName(cost.startPoint.districtCode);
             const startWard = cost.startPoint.wardCode
@@ -63,8 +66,10 @@ const PartnerCostPage = () => {
           })
         );
         setExternalFleetCosts(updatedCosts);
+        setTotalItems(response.total);
       } else {
         setExternalFleetCosts([]);
+        setTotalItems(0);
         message.error('Dữ liệu không hợp lệ');
       }
     } catch (error) {
@@ -77,16 +82,17 @@ const PartnerCostPage = () => {
   const handleFilterChange = (newFilters) => {
     setFilters((prevFilters) => ({
       ...prevFilters,
-      ...newFilters
+      ...newFilters,
     }));
+    setCurrentPage(1); 
   };
 
   const handleDelete = async (id, e) => {
-    e.stopPropagation(); // Stop event propagation to prevent row click
+    e.stopPropagation(); 
     try {
       await deleteExternalFleetCost(id);
       message.success('Xóa tuyến vận chuyển thành công');
-      fetchExternalFleetCosts(); // Reload the list after deletion
+      fetchExternalFleetCosts(); 
     } catch (error) {
       message.error('Không thể xóa tuyến vận chuyển');
     }
@@ -95,7 +101,7 @@ const PartnerCostPage = () => {
   const handleSubmit = (data) => {
     console.log('Submitted data:', data);
     setIsModalVisible(false);
-    fetchExternalFleetCosts(); // Reload the list after creation
+    fetchExternalFleetCosts(); 
   };
 
   const columns = [
@@ -118,7 +124,7 @@ const PartnerCostPage = () => {
       render: (type) => (type === 0 ? 'Giao hàng nhập' : 'Đóng hàng'),
     },
     {
-      title: 'Số lượng đối tác ',
+      title: 'Số lượng đối tác',
       dataIndex: 'partnerTransportCostCount',
       key: 'partnerTransportCostCount',
       render: (count) => count || '0',
@@ -149,7 +155,7 @@ const PartnerCostPage = () => {
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col span={24}>
           <Button type="primary" onClick={() => setIsModalVisible(true)}>
-            Tạo mới tuyến vận tải 
+            Tạo mới tuyến vận tải
           </Button>
         </Col>
       </Row>
@@ -173,9 +179,14 @@ const PartnerCostPage = () => {
               current: currentPage,
               pageSize: pageSize,
               total: totalItems,
-              onChange: (page, pageSize) => {
+              showSizeChanger: true, 
+              pageSizeOptions: ['10', '20', '50', '100'],
+              onShowSizeChange: (current, size) => {
+                setPageSize(size); 
+                setCurrentPage(1); 
+              },
+              onChange: (page) => {
                 setCurrentPage(page);
-                setPageSize(pageSize);
               },
               showTotal: (total) => `Tổng ${total} tuyến vận tải`,
             }}

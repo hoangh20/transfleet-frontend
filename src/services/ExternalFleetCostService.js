@@ -14,7 +14,8 @@ export const createExternalFleetCost = async (data) => {
 export const getAllExternalFleetCosts = async (query = {}) => {
   try {
     const response = await axios.get(`${API_URL}/external-fleet-cost/get-all`, { params: query });
-    return response.data;
+    const { data, total, page, limit } = response.data; 
+    return { data, total, page, limit }; 
   } catch (error) {
     throw error.response ? error.response.data : new Error('Network Error');
   }

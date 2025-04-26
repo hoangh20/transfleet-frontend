@@ -80,9 +80,9 @@ const CombinedOrderCard = ({
 
   const handleDelete = async () => {
     try {
-      await deleteOrderConnection(combinedOrderId); // Gọi API xóa kết nối đơn hàng
+      await deleteOrderConnection(combinedOrderId); 
       message.success('Xóa kết nối đơn hàng thành công');
-      onDeleteCombinedOrder(combinedOrderId); // Gọi callback để cập nhật danh sách
+      onDeleteCombinedOrder(combinedOrderId); 
     } catch (error) {
     }
     window.location.reload(); 
