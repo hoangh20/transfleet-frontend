@@ -22,6 +22,8 @@ import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../servi
 import { Link } from 'react-router-dom';
 import CreateExternalFleetCost from '../location/CreateExternalFleetCost';
 import AddCustomerTripFareModal from '../popup/AddCustomerTripFareModal'; 
+import AddSalesPersonModal from '../popup/AddSalesPersonModal'; 
+import SystemService from '../../services/SystemService'; // Import APIs
 
 const { Option } = Select;
 
@@ -33,9 +35,11 @@ const DeliveryOrderForm = () => {
   const [routes, setRoutes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedRouteId, setSelectedRouteId] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false); // State for CreateExternalFleetCost modal
-  const [isAddCustomerModalVisible, setIsAddCustomerModalVisible] = useState(false); // State for AddCustomerTripFareModal
+  const [isModalVisible, setIsModalVisible] = useState(false); 
+  const [isAddCustomerModalVisible, setIsAddCustomerModalVisible] = useState(false); 
   const [modalData, setModalData] = useState({});
+  const [isAddSalesPersonModalVisible, setIsAddSalesPersonModalVisible] = useState(false);
+  const [salesPersonList, setSalesPersonList] = useState([]);
 
   useEffect(() => {
     fetchAllCustomers();
@@ -89,6 +93,14 @@ const DeliveryOrderForm = () => {
       fetchCustomersByRoute(selectedRouteId); // Reload the customer list
     } catch (error) {
       message.error('Lỗi khi thêm khách hàng mới.');
+    }
+  };
+  const handleAddSalesPerson = async (newSalesPerson) => {
+    try {
+      await fetchSalesPersons(); // Cập nhật danh sách sau khi thêm
+      message.success('Thêm nhân viên kinh doanh thành công!');
+    } catch (error) {
+      message.error('Lỗi khi thêm nhân viên kinh doanh.');
     }
   };
 
@@ -225,6 +237,26 @@ const DeliveryOrderForm = () => {
     },
   };
 
+  const fetchSalesPersons = async () => {
+    try {
+      const response = await SystemService.getSalePersons();
+      if (response.status === 'OK' && Array.isArray(response.data)) {
+        const formattedData = response.data.map((name) => ({ name }));
+        setSalesPersonList(formattedData);
+      } else {
+        setSalesPersonList([]);
+      }
+    } catch (error) {
+      message.error('Lỗi khi tải danh sách nhân viên kinh doanh.');
+      setSalesPersonList([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchSalesPersons();
+  }, []);
+
+
   return (
     <>
       <Card title='Thông Tin Địa Điểm' bordered={false} style={{ marginBottom: 16 }}>
@@ -344,7 +376,7 @@ const DeliveryOrderForm = () => {
           </Row>
           <Row gutter={16}>
             
-            <Col span={8}>
+            <Col span={4}>
               <Form.Item
                 label='Trọng Lượng (Tấn)'
                 name='weight'
@@ -353,7 +385,7 @@ const DeliveryOrderForm = () => {
                 <Input type='number' placeholder='Nhập trọng lượng (tấn)' />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col span={6}>
               <Form.Item
                 label='Thời Gian Hoàn Thành Dự Kiến'
                 name='estimatedTime'
@@ -362,10 +394,41 @@ const DeliveryOrderForm = () => {
                 <DatePicker showTime placeholder='Chọn thời gian dự kiến' />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col span={6}>
               <Form.Item label='Ghi Chú' name='note'>
                 <Input placeholder='Nhập ghi chú' />
               </Form.Item>
+            </Col>
+            <Col span={4}>
+              <Form.Item
+                label="Nhân Viên Kinh Doanh"
+                name="salesPerson"
+                rules={[{ required: true, message: 'Vui lòng chọn nhân viên kinh doanh' }]}
+              >
+                <Select
+                  showSearch
+                  placeholder="Chọn nhân viên kinh doanh"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().includes(input.toLowerCase())
+                  }
+                >
+                  {salesPersonList.map((person) => (
+                    <Option key={person.name} value={person.name}>
+                      {person.name}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={1}>
+              <Button
+                type="primary"
+                onClick={() => setIsAddSalesPersonModalVisible(true)}
+                style={{ marginTop: '32px' }}
+              >
+                Thêm Nhân Viên
+              </Button>
             </Col>
           </Row>
           <Row gutter={16}>
@@ -455,6 +518,11 @@ const DeliveryOrderForm = () => {
         onSubmit={handleAddCustomerSubmit}
         form={createForm}
         customers={allCustomers}
+      />
+      <AddSalesPersonModal
+        visible={isAddSalesPersonModalVisible}
+        onCancel={() => setIsAddSalesPersonModalVisible(false)}
+        onSubmit={handleAddSalesPerson}
       />
     </>
   );

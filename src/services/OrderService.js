@@ -301,3 +301,17 @@ export const getActiveOrders = async () => {
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+export const updateOrderPartnerConnection = async (orderId, isCombinedTrip, updateData) => {
+  try {
+    const response = await axios.put(`${API_URL}/orders/update-order-partner-connection`, {
+      orderId,
+      isCombinedTrip,
+      updateData,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating order partner connection:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};

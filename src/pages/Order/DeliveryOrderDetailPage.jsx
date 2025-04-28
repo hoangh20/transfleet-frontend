@@ -30,8 +30,6 @@ const DeliveryOrderDetailPage = () => {
     try {
       const response = await getDeliveryOrderDetails(orderId);
       setOrderDetails(response);
-
-      // Fetch start location details
       const startProvince = await fetchProvinceName(response.location.startPoint.provinceCode);
       const startDistrict = await fetchDistrictName(response.location.startPoint.districtCode);
       const startWard = response.location.startPoint.wardCode
@@ -41,8 +39,6 @@ const DeliveryOrderDetailPage = () => {
       setStartLocation(
         `${startLocationText ? startLocationText + ', ' : ''}${startWard ? startWard + ', ' : ''}${startDistrict}, ${startProvince}`
       );
-
-      // Fetch end location details
       const endProvince = await fetchProvinceName(response.location.endPoint.provinceCode);
       const endDistrict = await fetchDistrictName(response.location.endPoint.districtCode);
       const endWard = response.location.endPoint.wardCode
@@ -68,8 +64,8 @@ const DeliveryOrderDetailPage = () => {
     form.setFieldsValue({
       containerNumber: orderDetails.containerNumber,
       note: orderDetails.note,
-      endPoint: orderDetails.location.endPoint, // Set the current endPoint value
-      locationText: orderDetails.location.endPoint.locationText || '', // Set locationText
+      endPoint: orderDetails.location.endPoint, 
+      locationText: orderDetails.location.endPoint.locationText || '', 
     });
   };
 
@@ -82,7 +78,7 @@ const DeliveryOrderDetailPage = () => {
           ...orderDetails.location,
           endPoint: {
             ...values.endPoint,
-            locationText: values.locationText, // Update locationText
+            locationText: values.locationText, 
           },
         },
       };
@@ -144,6 +140,7 @@ const DeliveryOrderDetailPage = () => {
             vehicles={orderDetails.vehicles}
             transportTripId={orderDetails.externalFleetCostId}
             hasVehicle={orderDetails.hasVehicle} 
+            isCombinedTrip={orderDetails.isCombinedTrip}
             />
         </Col>
       </Row>

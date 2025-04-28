@@ -131,6 +131,7 @@ const PackingOrderDetailPage = () => {
             vehicles={orderDetails.vehicles}
             transportTripId={orderDetails.externalFleetCostId}
             hasVehicle={orderDetails.hasVehicle} 
+            isCombinedTrip={orderDetails.isCombinedTrip}
           />
         </Col>
       </Row>

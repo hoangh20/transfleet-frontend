@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Radio, Checkbox, Button, message, List, Row, Col } from 'antd';
+import { Card, Radio, Checkbox, Button, message, List, Row, Col, Modal, Form, Input } from 'antd'; // Import thêm Modal, Form, Input
 import { getAllVehicles } from '../../services/VehicleService';
 import { connectVehicleToDeliveryOrder, connectVehicleToPackingOrder } from '../../services/OrderService';
 import { getPartnerTransportCostsByTransportTrip } from '../../services/ExternalFleetCostService';
 import { assignPartnerToDeliveryOrder, assignPartnerToPackingOrder } from '../../services/OrderService';
-import { getOrderPartnerConnectionByOrderId, getVehicleByOrderId } from '../../services/OrderService'; // Import new APIs
+import { getOrderPartnerConnectionByOrderId, getVehicleByOrderId, updateOrderPartnerConnection } from '../../services/OrderService'; // Import API updateOrderPartnerConnection
 import CreatePartnerTransportCost from '../popup/CreatePartnerTransportCost';
 
-const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, hasVehicle }) => {
+const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, hasVehicle, isCombinedTrip }) => {
   const [vehicleType, setVehicleType] = useState(null);
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicles, setSelectedVehicles] = useState([]);
   const [partnerVehicles, setPartnerVehicles] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [assignedData, setAssignedData] = useState(null); // State to store assigned vehicle/partner data
+  const [assignedData, setAssignedData] = useState(null);
+  const [updateForm] = Form.useForm(); 
+  const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false); 
+  const [isCreatePartnerModalVisible, setIsCreatePartnerModalVisible] = useState(false);
 
   const handleVehicleTypeChange = (e) => {
     setVehicleType(e.target.value);
@@ -25,11 +27,9 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, has
     setLoading(true);
     try {
       if (hasVehicle === 1) {
-        // Fetch assigned vehicle for internal fleet
         const response = await getVehicleByOrderId(orderId);
         setAssignedData(response);
       } else if (hasVehicle === 2) {
-        // Fetch assigned partner for external fleet
         const response = await getOrderPartnerConnectionByOrderId(orderId);
         setAssignedData(response);
       } else {
@@ -56,18 +56,15 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, has
       if (response) {
         partnerCosts = Array.isArray(response) ? response : [response];
       }
-
       if (partnerCosts.length === 0) {
         message.info('Không có đối tác vận chuyển nào khả dụng cho chuyến này');
         setPartnerVehicles([]);
         return;
       }
-
       const partnerVehiclesWithDetails = partnerCosts.map((partnerCost) => ({
         ...partnerCost,
         partnerName: partnerCost.partner?.shortName || 'Không xác định',
       }));
-
       setPartnerVehicles(partnerVehiclesWithDetails);
     } catch (error) {
       message.error('Không thể tải danh sách xe đối tác');
@@ -105,7 +102,6 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, has
       prevSelected.includes(vehicleId) ? [] : [vehicleId]
     );
   };
-
   const handleInternalDispatch = async (vehicleId) => {
     try {
       if (delivery) {
@@ -116,7 +112,7 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, has
         message.success('Giao xe cho đơn đóng hàng thành công');
       }
       setSelectedVehicles([]);
-      fetchAssignedData(); // Refresh assigned data
+      fetchAssignedData(); 
     } catch (error) {
       message.error('Lỗi khi giao xe nội bộ');
     }
@@ -132,7 +128,8 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, has
         message.success('Giao đối tác cho đơn đóng hàng thành công');
       }
       setSelectedVehicles([]);
-      fetchAssignedData(); // Refresh assigned data
+      fetchAssignedData(); 
+      window.location.reload();
     } catch (error) {
        message.error(error.message);
     }
@@ -154,8 +151,27 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, has
   };
 
   const handleCreatePartnerSuccess = () => {
-    setIsModalVisible(false);
+    setIsCreatePartnerModalVisible(false);
     fetchPartnerVehicles();
+  };
+
+  const handleUpdatePartnerConnection = async () => {
+    try {
+      const values = await updateForm.validateFields();
+      const updateData = {
+        partnerFee: Number(values.partnerFee),
+        headPlate: values.headPlate,
+        driverName: values.driverName,
+        driverPhone: values.driverPhone,
+        driverCitizenID: values.driverCitizenID,
+      };
+      await updateOrderPartnerConnection(orderId, isCombinedTrip, updateData);
+      message.success('Cập nhật thông tin đối tác thành công');
+      setIsUpdateModalVisible(false);
+      fetchAssignedData(); // Refresh data
+    } catch (error) {
+      message.error('Lỗi khi cập nhật thông tin đối tác');
+    }
   };
 
   return (
@@ -169,6 +185,83 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, has
           ) : null}
         </div>
       )}
+
+      {hasVehicle === 2 && assignedData && (
+        <div style={{ marginBottom: '16px' }}>
+          <p>Đối tác đã được giao:</p>
+          <List bordered>
+            <List.Item>
+              <strong>Phí đối tác:</strong> {Number(assignedData.partnerFee).toLocaleString()} VND
+            </List.Item>
+            <List.Item>
+              <strong>Biển số xe:</strong> {assignedData.headPlate || 'Chưa có'}
+            </List.Item>
+            <List.Item>
+              <strong>Tên tài xế:</strong> {assignedData.driverName || 'Chưa có'}
+            </List.Item>
+            <List.Item>
+              <strong>Số điện thoại tài xế:</strong> {assignedData.driverPhone || 'Chưa có'}
+            </List.Item>
+            <List.Item>
+              <strong>CMND/CCCD tài xế:</strong> {assignedData.driverCitizenID || 'Chưa có'}
+            </List.Item>
+          </List>
+          <Button
+            type="primary"
+            style={{ marginTop: '16px' }}
+            onClick={() => setIsUpdateModalVisible(true)}
+          >
+            Cập nhật thông tin
+          </Button>
+        </div>
+      )}
+
+      <Modal
+        title="Cập nhật thông tin đối tác"
+        visible={isUpdateModalVisible}
+        onCancel={() => setIsUpdateModalVisible(false)}
+        onOk={handleUpdatePartnerConnection}
+        okText="Lưu"
+        cancelText="Hủy"
+      >
+        <Form form={updateForm} layout="vertical" initialValues={assignedData}>
+          <Form.Item
+            label="Phí đối tác"
+            name="partnerFee"
+            rules={[{ required: true, message: 'Vui lòng nhập phí đối tác' }]}
+          >
+            <Input type="number" placeholder="Nhập phí đối tác" />
+          </Form.Item>
+          <Form.Item
+            label="Biển số xe"
+            name="headPlate"
+            rules={[{ required: false }]}
+          >
+            <Input placeholder="Nhập biển số xe" />
+          </Form.Item>
+          <Form.Item
+            label="Tên tài xế"
+            name="driverName"
+            rules={[{ required: false }]}
+          >
+            <Input placeholder="Nhập tên tài xế" />
+          </Form.Item>
+          <Form.Item
+            label="Số điện thoại tài xế"
+            name="driverPhone"
+            rules={[{ required: false }]}
+          >
+            <Input placeholder="Nhập số điện thoại tài xế" />
+          </Form.Item>
+          <Form.Item
+            label="CMND/CCCD tài xế"
+            name="driverCitizenID"
+            rules={[{ required: false }]}
+          >
+            <Input placeholder="Nhập CMND/CCCD tài xế" />
+          </Form.Item>
+        </Form>
+      </Modal>
 
       {(hasVehicle !== 1 && hasVehicle !== 2) && (
         <Radio.Group
@@ -227,29 +320,28 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, has
           <Button
             type="dashed"
             style={{ marginTop: '16px' }}
-            onClick={() => setIsModalVisible(true)}
+            onClick={() => setIsCreatePartnerModalVisible(true)}
           >
             Thêm đối tác vận chuyển
           </Button>
         </>
       )}
       {(hasVehicle !== 1 && hasVehicle !== 2) && (
-      <Row justify="end" style={{ marginTop: '16px' }}>
-        <Col>
-          <Button
-            type="primary"
-            onClick={handleDispatch}
-            disabled={selectedVehicles.length === 0}
-          >
-            Giao xe
-          </Button>
-        </Col>
-      </Row>
+        <Row justify="end" style={{ marginTop: '16px' }}>
+          <Col>
+            <Button
+              type="primary"
+              onClick={handleDispatch}
+              disabled={selectedVehicles.length === 0}
+            >
+              Giao xe
+            </Button>
+          </Col>
+        </Row>
       )}
-
       <CreatePartnerTransportCost
-        visible={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
+        visible={isCreatePartnerModalVisible}
+        onCancel={() => setIsCreatePartnerModalVisible(false)}
         onSuccess={handleCreatePartnerSuccess}
         transportTripId={transportTripId}
       />

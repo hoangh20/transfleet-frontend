@@ -23,6 +23,8 @@ import {
   fetchWardName,
 } from '../../services/LocationService';
 import CreateExternalFleetCost from '../location/CreateExternalFleetCost'; 
+import AddSalesPersonModal from '../popup/AddSalesPersonModal';
+import SystemService from '../../services/SystemService';
 
 const { Option } = Select;
 
@@ -34,10 +36,13 @@ const PackingOrderForm = () => {
   const [selectedRouteId, setSelectedRouteId] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false); 
   const [modalData, setModalData] = useState({}); 
-  const [quantity, setQuantity] = useState(1); // State for quantity selection
+  const [quantity, setQuantity] = useState(1); 
+  const [salesPersonList, setSalesPersonList] = useState([]); 
+  const [isAddSalesPersonModalVisible, setIsAddSalesPersonModalVisible] = useState(false);
 
   useEffect(() => {
-    fetchCustomers(); // Fetch all customers when the component mounts
+    fetchCustomers(); 
+    fetchSalesPersons();
   }, []);
 
   const fetchCustomers = async () => {
@@ -61,6 +66,30 @@ const PackingOrderForm = () => {
       message.error('Lỗi khi tải danh sách khách hàng.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSalesPersons = async () => {
+    try {
+      const response = await SystemService.getSalePersons();
+      if (response.status === 'OK' && Array.isArray(response.data)) {
+        const formattedData = response.data.map((name) => ({ name }));
+        setSalesPersonList(formattedData);
+      } else {
+        setSalesPersonList([]);
+      }
+    } catch (error) {
+      message.error('Lỗi khi tải danh sách nhân viên kinh doanh.');
+      setSalesPersonList([]);
+    }
+  };
+
+  const handleAddSalesPerson = async (newSalesPerson) => {
+    try {
+      await fetchSalesPersons(); 
+      message.success('Thêm nhân viên kinh doanh thành công!');
+    } catch (error) {
+      message.error('Lỗi khi thêm nhân viên kinh doanh.');
     }
   };
 
@@ -375,6 +404,37 @@ const PackingOrderForm = () => {
                 <Input placeholder='Nhập ghi chú' />
               </Form.Item>
             </Col>
+            <Col span={4}>
+              <Form.Item
+                label="Nhân Viên Kinh Doanh"
+                name="salesPerson"
+                rules={[{ required: true, message: 'Vui lòng chọn nhân viên kinh doanh' }]}
+              >
+                <Select
+                  showSearch
+                  placeholder="Chọn nhân viên kinh doanh"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().includes(input.toLowerCase())
+                  }
+                >
+                  {salesPersonList.map((person) => (
+                    <Option key={person.name} value={person.name}>
+                      {person.name}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={1}>
+              <Button
+                type="primary"
+                onClick={() => setIsAddSalesPersonModalVisible(true)}
+                style={{ marginTop: '32px' }}
+              >
+                Thêm Nhân Viên
+              </Button>
+            </Col>
           </Row>
           <Row gutter={16}>
             <Col span={24}>
@@ -442,6 +502,11 @@ const PackingOrderForm = () => {
           setIsModalVisible(false);
         }}
         initialData={modalData}
+      />
+      <AddSalesPersonModal
+        visible={isAddSalesPersonModalVisible}
+        onCancel={() => setIsAddSalesPersonModalVisible(false)}
+        onSubmit={handleAddSalesPerson}
       />
     </>
   );
