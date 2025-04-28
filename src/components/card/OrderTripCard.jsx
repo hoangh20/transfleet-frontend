@@ -3,6 +3,7 @@ import { Card, Row, Col, Button, Steps, message, Typography } from 'antd';
 import {
   fetchProvinceName,
   fetchDistrictName,
+  fetchWardName,
 } from '../../services/LocationService';
 import {
   updateDeliveryOrderStatus,
@@ -12,7 +13,7 @@ import {
   getVehicleByOrderId,
   getOrderPartnerConnectionByOrderId,
 } from '../../services/OrderService';
-import OrderStatusDetails from '../popup/OrderStatusDetails'; 
+import OrderStatusDetails from '../popup/OrderStatusDetails';
 
 const { Step } = Steps;
 const { Link } = Typography;
@@ -20,8 +21,12 @@ const { Link } = Typography;
 const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus }) => {
   const [startProvince, setStartProvince] = useState('');
   const [startDistrict, setStartDistrict] = useState('');
+  const [startWard, setStartWard] = useState('');
+  const [startLocationText, setStartLocationText] = useState('');
   const [endProvince, setEndProvince] = useState('');
   const [endDistrict, setEndDistrict] = useState('');
+  const [endWard, setEndWard] = useState('');
+  const [endLocationText, setEndLocationText] = useState('');
   const [vehicleDetails, setVehicleDetails] = useState(null);
   const [statusModalVisible, setStatusModalVisible] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(null);
@@ -29,16 +34,35 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
   useEffect(() => {
     if (!trip.location) return;
     const fetchLocationNames = async () => {
-      const [startProvinceName, startDistrictName, endProvinceName, endDistrictName] = await Promise.all([
+      const [
+        startProvinceName,
+        startDistrictName,
+        startWardName,
+        endProvinceName,
+        endDistrictName,
+        endWardName,
+      ] = await Promise.all([
         fetchProvinceName(trip.location.startPoint.provinceCode),
         fetchDistrictName(trip.location.startPoint.districtCode),
+        trip.location.startPoint.wardCode
+          ? fetchWardName(trip.location.startPoint.wardCode)
+          : null,
         fetchProvinceName(trip.location.endPoint.provinceCode),
         fetchDistrictName(trip.location.endPoint.districtCode),
+        trip.location.endPoint.wardCode
+          ? fetchWardName(trip.location.endPoint.wardCode)
+          : null,
       ]);
+
       setStartProvince(startProvinceName);
       setStartDistrict(startDistrictName);
+      setStartWard(startWardName || '');
+      setStartLocationText(trip.location.startPoint.locationText || '');
+
       setEndProvince(endProvinceName);
       setEndDistrict(endDistrictName);
+      setEndWard(endWardName || '');
+      setEndLocationText(trip.location.endPoint.locationText || '');
     };
 
     fetchLocationNames();
@@ -141,10 +165,12 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
       <Card key={trip._id} style={{ margin: 0, padding: 4 }} bodyStyle={{ padding: 4 }} title={titleContent} extra={extraContent}>
         <Row gutter={[4, 4]} justify="space-between">
           <Col span={12}>
-            <strong>Điểm đi:</strong> {`${startProvince}, ${startDistrict}`}
+            <strong>Điểm đi:</strong>{' '}
+            {`${startLocationText ? startLocationText + ', ' : ''}${startWard ? startWard + ', ' : ''}${startDistrict}, ${startProvince}`}
           </Col>
           <Col span={12}>
-            <strong>Điểm đến:</strong> {`${endProvince}, ${endDistrict}`}
+            <strong>Điểm đến:</strong>{' '}
+            {`${endLocationText ? endLocationText + ', ' : ''}${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`}
           </Col>
           <Col span={8}>
             <strong>Loại cont:</strong> {trip.contType === 0 ? "20''" : "40''"}

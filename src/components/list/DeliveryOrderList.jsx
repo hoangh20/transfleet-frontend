@@ -1,15 +1,15 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { Card, message, Typography, Tooltip, Button, Popconfirm, Space, Tag } from 'antd';
 import { Link } from 'react-router-dom';
 import { DeleteOutlined, EnvironmentOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { getDeliveryOrdersByDate, getCostByOrderId, deleteDeliveryOrder, getVehicleByOrderId, getOrderPartnerConnectionByOrderId } from '../../services/OrderService';
-import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
+import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 import { getCustomerById } from '../../services/CustomerService';
 
 const { Title, Text } = Typography;
 
 const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
-  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -24,8 +24,18 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
         const ordersWithDetails = await Promise.all(filteredOrders.map(async (order) => {
           const startProvince = await fetchProvinceName(order.location.startPoint.provinceCode);
           const startDistrict = await fetchDistrictName(order.location.startPoint.districtCode);
+          const startWard = order.location.startPoint.wardCode
+            ? await fetchWardName(order.location.startPoint.wardCode)
+            : null;
+          const startLocationText = order.location.startPoint.locationText || '';
+
           const endProvince = await fetchProvinceName(order.location.endPoint.provinceCode);
           const endDistrict = await fetchDistrictName(order.location.endPoint.districtCode);
+          const endWard = order.location.endPoint.wardCode
+            ? await fetchWardName(order.location.endPoint.wardCode)
+            : null;
+          const endLocationText = order.location.endPoint.locationText || '';
+
           const customer = await getCustomerById(order.customer);
           const cost = await getCostByOrderId(order._id);
           const tripFare = cost ? cost.tripFare : 0;
@@ -69,8 +79,8 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
             tripFare,
             fuelCost,
             estimatedProfit,
-            startLocation: `${startProvince}, ${startDistrict}`,
-            endLocation: `${endProvince}, ${endDistrict}`,
+            startLocation: `${startLocationText ? startLocationText + ', ' : ''}${startWard ? startWard + ', ' : ''}${startDistrict}, ${startProvince}`,
+            endLocation: `${endLocationText ? endLocationText + ', ' : ''}${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`,
             shortName: customer.shortName,
             contType: order.contType === 0 ? "20''" : "40''",
             moocType: order.moocType === 0 ? "20''" : "40''",

@@ -7,7 +7,7 @@ import {
   getCostByOrderId,
   deleteOrderConnection
 } from '../../services/OrderService';
-import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
+import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 import { getCustomerById } from '../../services/CustomerService';
 
 const { Title, Text } = Typography;
@@ -25,9 +25,18 @@ const CombinedOrderList = ({ startDate, endDate }) => {
           combinedOrders.map(async (orderConnection) => {
             const enrichOrder = async (order) => {
               const startProvince = await fetchProvinceName(order.location.startPoint.provinceCode);
-              const startDistrict = await fetchDistrictName(order.location.startPoint.districtCode);
-              const endProvince = await fetchProvinceName(order.location.endPoint.provinceCode);
-              const endDistrict = await fetchDistrictName(order.location.endPoint.districtCode);
+                        const startDistrict = await fetchDistrictName(order.location.startPoint.districtCode);
+                        const startWard = order.location.startPoint.wardCode
+                          ? await fetchWardName(order.location.startPoint.wardCode)
+                          : null;
+                        const startLocationText = order.location.startPoint.locationText || '';
+              
+                        const endProvince = await fetchProvinceName(order.location.endPoint.provinceCode);
+                        const endDistrict = await fetchDistrictName(order.location.endPoint.districtCode);
+                        const endWard = order.location.endPoint.wardCode
+                          ? await fetchWardName(order.location.endPoint.wardCode)
+                          : null;
+                        const endLocationText = order.location.endPoint.locationText || '';
               const customer = await getCustomerById(order.customer);
               const cost = await getCostByOrderId(order._id);
               const tripFare = cost ? cost.tripFare : 0;
@@ -59,8 +68,8 @@ const CombinedOrderList = ({ startDate, endDate }) => {
                 tripFare,
                 fuelCost, // Thêm fuelCost vào đối tượng
                 estimatedProfit,
-                startLocation: `${startProvince}, ${startDistrict}`,
-                endLocation: `${endProvince}, ${endDistrict}`,
+                startLocation: `${startLocationText ? startLocationText + ', ' : ''}${startWard ? startWard + ', ' : ''}${startDistrict}, ${startProvince}`,
+                endLocation: `${endLocationText ? endLocationText + ', ' : ''}${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`,
                 customerName: customer.shortName,
                 moocType: order.moocType === 0 ? "20''" : "40''",
                 containerNumber: order.containerNumber || 'Không có',

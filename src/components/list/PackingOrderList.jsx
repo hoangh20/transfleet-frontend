@@ -3,7 +3,7 @@ import { Card, message, Typography, Tooltip, Button, Popconfirm, Space, Tag } fr
 import { Link } from 'react-router-dom';
 import { DeleteOutlined, EnvironmentOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { getPackingOrdersByDate, getCostByOrderId, deletePackingOrder } from '../../services/OrderService';
-import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
+import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 import { getCustomerById } from '../../services/CustomerService';
 
 const { Title, Text } = Typography;
@@ -23,9 +23,19 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
         const filteredOrders = packingOrders.filter(order => order.isCombinedTrip === 0 && order.hasVehicle === 0);
         const ordersWithDetails = await Promise.all(filteredOrders.map(async (order) => {
           const startProvince = await fetchProvinceName(order.location.startPoint.provinceCode);
-          const startDistrict = await fetchDistrictName(order.location.startPoint.districtCode);
-          const endProvince = await fetchProvinceName(order.location.endPoint.provinceCode);
-          const endDistrict = await fetchDistrictName(order.location.endPoint.districtCode);
+                    const startDistrict = await fetchDistrictName(order.location.startPoint.districtCode);
+                    const startWard = order.location.startPoint.wardCode
+                      ? await fetchWardName(order.location.startPoint.wardCode)
+                      : null;
+                    const startLocationText = order.location.startPoint.locationText || '';
+          
+                    const endProvince = await fetchProvinceName(order.location.endPoint.provinceCode);
+                    const endDistrict = await fetchDistrictName(order.location.endPoint.districtCode);
+                    const endWard = order.location.endPoint.wardCode
+                      ? await fetchWardName(order.location.endPoint.wardCode)
+                      : null;
+                    const endLocationText = order.location.endPoint.locationText || '';
+          
           const customer = await getCustomerById(order.customer);
           const cost = await getCostByOrderId(order._id);
           const tripFare = cost ? cost.tripFare : 0;
@@ -51,8 +61,8 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
             tripFare,
             fuelCost,
             estimatedProfit,
-            startLocation: `${startProvince}, ${startDistrict}`,
-            endLocation: `${endProvince}, ${endDistrict}`,
+            startLocation: `${startLocationText ? startLocationText + ', ' : ''}${startWard ? startWard + ', ' : ''}${startDistrict}, ${startProvince}`,
+            endLocation: `${endLocationText ? endLocationText + ', ' : ''}${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`,
             shortName: customer.shortName,
             contType: order.contType === 0 ? "20''" : "40''",
             moocType: order.moocType === 0 ? "20''" : "40''",
@@ -109,7 +119,7 @@ const PackingOrderList = ({ startDate, endDate, onSelectChange }) => {
               <Link to={`/order/packing-orders/${order._id}`} style={{ display: 'block' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text strong style={{ fontSize: 14 }}>📦 {order.shortName}</Text>
-                  <Tag color={order.closeCombination === "gắp vỏ" ? "blue" : "blue"}>{order.closeCombination}</Tag>
+                  <Tag color={order.closeCombination === "gắp vỏ" ? "blue" : "green"}>{order.closeCombination}</Tag>
                   <Tag color={order.contType === "20''" ? "blue" : "purple"}>{order.contType}</Tag>
                 </div>
               </Link>

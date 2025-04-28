@@ -45,7 +45,7 @@ const OrderTripListPage = () => {
 
   const handleDateChange = (dates) => {
     if (!dates) {
-      setSelectedDateRange([dayjs(), dayjs()]); // Đặt giá trị mặc định nếu xóa ngày
+      setSelectedDateRange([dayjs(), dayjs()]); 
     } else {
       setSelectedDateRange(dates);
     }
@@ -59,7 +59,6 @@ const OrderTripListPage = () => {
         const response = await getActiveOrders();
         const { deliveryOrders, packingOrders, combinedOrders } = response.data;
 
-        // Attach customer names to orders
         const attachName = async (order) => {
           const cust = await getCustomerById(order.customer);
           return { ...order, customerName: cust.shortName };
@@ -95,14 +94,12 @@ const OrderTripListPage = () => {
     navigate(path);
   };
 
-  // Cập nhật trạng thái đơn lẻ
   const handleUpdateStatus = (orderId) => {
     setSingleTrips((prev) =>
       prev.map((t) => (t._id === orderId ? { ...t, status: t.status + 1 } : t))
     );
   };
 
-  // Cập nhật trạng thái đơn ghép
   const handleUpdateCombinedStatus = (updatedDelivery, updatedPacking) => {
     setCombinedTrips((prev) =>
       prev.map((conn) => {
@@ -117,14 +114,12 @@ const OrderTripListPage = () => {
     );
   };
 
-  // Lấy dữ liệu và gắn tên khách
   const filterTrips = async () => {
     try {
       const [start, end] = selectedDateRange;
       const from = start.format('YYYY-MM-DD');
       const to = end.format('YYYY-MM-DD');
 
-      // 1) Đơn lẻ
       let singles = [];
       if (['all', 'delivery'].includes(selectedMenuItem)) {
         const deliveries = (await getDeliveryOrdersByDate(from, to)) || [];
@@ -143,7 +138,6 @@ const OrderTripListPage = () => {
         );
       }
 
-      // 2) Đơn ghép
       let combined = [];
       if (['all', 'combined'].includes(selectedMenuItem)) {
         const connections = (await getOrderConnectionsByDeliveryDate(from, to)) || [];
@@ -152,7 +146,6 @@ const OrderTripListPage = () => {
         );
       }
 
-      // 3) Gắn tên khách
       const attachName = async (order) => {
         const cust = await getCustomerById(order.customer);
         return { ...order, customerName: cust.shortName };
@@ -175,14 +168,13 @@ const OrderTripListPage = () => {
     }
   };
 
-  // Lọc để render theo tab
   const singleToShow = singleTrips.filter((t) => {
     if (selectedMenuItem === 'all') return true;
-    if (selectedMenuItem === 'active') return true; // Hiển thị tất cả đơn lẻ trong tab active
+    if (selectedMenuItem === 'active') return true; 
     return t.type === selectedMenuItem;
   });
   const combinedToShow =
-    ['all', 'combined', 'active'].includes(selectedMenuItem) // Hiển thị đơn ghép trong tab active
+    ['all', 'combined', 'active'].includes(selectedMenuItem) 
       ? combinedTrips
       : [];
 

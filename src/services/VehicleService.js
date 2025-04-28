@@ -83,4 +83,15 @@ export const unlinkDriverFromVehicle = async (driverId, vehicleId) => {
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
-
+export const getVehicleLocations = async () => {
+  try {
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/vehicle/locations`);
+    return response;
+  } catch (error) {
+    throw new Error(
+      error.response
+        ? error.response.data.message
+        : 'Error fetching vehicle locations',
+    );
+  }
+};

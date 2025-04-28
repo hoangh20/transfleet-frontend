@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Row, Col, Button, Steps, message, Typography, Popconfirm } from 'antd';
-import { fetchProvinceName, fetchDistrictName } from '../../services/LocationService';
+import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 import { 
   updateDeliveryOrderStatus, 
   updatePackingOrderStatus, 
@@ -34,22 +34,74 @@ const CombinedOrderCard = ({
   useEffect(() => {
     const fetchLocations = async () => {
       if (deliveryTrip.location) {
-        const [startProvince, startDistrict, endProvince, endDistrict] = await Promise.all([
+        const [
+          startProvince,
+          startDistrict,
+          startWard,
+          startLocationText,
+          endProvince,
+          endDistrict,
+          endWard,
+          endLocationText,
+        ] = await Promise.all([
           fetchProvinceName(deliveryTrip.location.startPoint.provinceCode),
           fetchDistrictName(deliveryTrip.location.startPoint.districtCode),
+          deliveryTrip.location.startPoint.wardCode
+            ? fetchWardName(deliveryTrip.location.startPoint.wardCode)
+            : null,
+          deliveryTrip.location.startPoint.locationText || '',
           fetchProvinceName(deliveryTrip.location.endPoint.provinceCode),
           fetchDistrictName(deliveryTrip.location.endPoint.districtCode),
+          deliveryTrip.location.endPoint.wardCode
+            ? fetchWardName(deliveryTrip.location.endPoint.wardCode)
+            : null,
+          deliveryTrip.location.endPoint.locationText || '',
         ]);
-        setDeliveryLocation({ startProvince, startDistrict, endProvince, endDistrict });
+        setDeliveryLocation({
+          startProvince,
+          startDistrict,
+          startWard,
+          startLocationText,
+          endProvince,
+          endDistrict,
+          endWard,
+          endLocationText,
+        });
       }
       if (packingTrip.location) {
-        const [startProvince, startDistrict, endProvince, endDistrict] = await Promise.all([
+        const [
+          startProvince,
+          startDistrict,
+          startWard,
+          startLocationText,
+          endProvince,
+          endDistrict,
+          endWard,
+          endLocationText,
+        ] = await Promise.all([
           fetchProvinceName(packingTrip.location.startPoint.provinceCode),
           fetchDistrictName(packingTrip.location.startPoint.districtCode),
+          packingTrip.location.startPoint.wardCode
+            ? fetchWardName(packingTrip.location.startPoint.wardCode)
+            : null,
+          packingTrip.location.startPoint.locationText || '',
           fetchProvinceName(packingTrip.location.endPoint.provinceCode),
           fetchDistrictName(packingTrip.location.endPoint.districtCode),
+          packingTrip.location.endPoint.wardCode
+            ? fetchWardName(packingTrip.location.endPoint.wardCode)
+            : null,
+          packingTrip.location.endPoint.locationText || '',
         ]);
-        setPackingLocation({ startProvince, startDistrict, endProvince, endDistrict });
+        setPackingLocation({
+          startProvince,
+          startDistrict,
+          startWard,
+          startLocationText,
+          endProvince,
+          endDistrict,
+          endWard,
+          endLocationText,
+        });
       }
     };
 
@@ -84,8 +136,8 @@ const CombinedOrderCard = ({
       message.success('Xóa kết nối đơn hàng thành công');
       onDeleteCombinedOrder(combinedOrderId); 
     } catch (error) {
+      message.error('Lỗi khi xóa kết nối đơn hàng.');
     }
-    window.location.reload(); 
   };
 
   const statusMap = {
@@ -198,13 +250,13 @@ const CombinedOrderCard = ({
             <Col span={12}>
               <Text style={labelStyle}>Điểm đi:</Text>
               <Text>
-                {deliveryLocation.startProvince}, {deliveryLocation.startDistrict}
+                {`${deliveryLocation.startLocationText ? deliveryLocation.startLocationText + ', ' : ''}${deliveryLocation.startWard ? deliveryLocation.startWard + ', ' : ''}${deliveryLocation.startDistrict}, ${deliveryLocation.startProvince}`}
               </Text>
             </Col>
             <Col span={12}>
               <Text style={labelStyle}>Điểm đến:</Text>
               <Text>
-                {deliveryLocation.endProvince}, {deliveryLocation.endDistrict}
+                {`${deliveryLocation.endLocationText ? deliveryLocation.endLocationText + ', ' : ''}${deliveryLocation.endWard ? deliveryLocation.endWard + ', ' : ''}${deliveryLocation.endDistrict}, ${deliveryLocation.endProvince}`}
               </Text>
             </Col>
             <Col span={8}>
@@ -280,13 +332,13 @@ const CombinedOrderCard = ({
             <Col span={12}>
               <Text style={labelStyle}>Điểm đi:</Text>
               <Text>
-                {packingLocation.startProvince}, {packingLocation.startDistrict}
+                {`${packingLocation.startLocationText ? packingLocation.startLocationText + ', ' : ''}${packingLocation.startWard ? packingLocation.startWard + ', ' : ''}${packingLocation.startDistrict}, ${packingLocation.startProvince}`}
               </Text>
             </Col>
             <Col span={12}>
               <Text style={labelStyle}>Điểm đến:</Text>
               <Text>
-                {packingLocation.endProvince}, {packingLocation.endDistrict}
+                {`${packingLocation.endLocationText ? packingLocation.endLocationText + ', ' : ''}${packingLocation.endWard ? packingLocation.endWard + ', ' : ''}${packingLocation.endDistrict}, ${packingLocation.endProvince}`}
               </Text>
             </Col>
             <Col span={8}>

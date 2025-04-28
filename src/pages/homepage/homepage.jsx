@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Row, Col, Card, Statistic, Select, Button, Progress, List, Avatar, Table, Tag, Spin, message } from 'antd';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { Layout, Row, Col, Card, Statistic, Select, Button, Progress, List, Avatar, Table, Tag, Spin, message, Modal } from 'antd';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
-import axios from 'axios';
 import 'leaflet/dist/leaflet.css';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
+import {getVehicleLocations } from '../../services/VehicleService';
 const { Content } = Layout;
 const { Option } = Select;
 
 // Tùy chỉnh icon cho các marker
 const vehicleIcon = new L.Icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854878.png', // URL icon xe
-  iconSize: [32, 32],
+  iconUrl: '/icons8-semi-truck-side-view-100.png', // URL icon xe
+  iconSize: [40, 40],
   iconAnchor: [16, 32],
   popupAnchor: [0, -32],
 });
@@ -20,25 +19,33 @@ const vehicleIcon = new L.Icon({
 const HomePage = () => {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
 
   useEffect(() => {
     const fetchVehicles = async () => {
       try {
-        const response = await axios.post('https://dvbk.vn/Home/get_AllTIBase', {
-          UserID: 27668
-        });
-        setVehicles(response.data);
+        const response = await getVehicleLocations();
+        if (response.data && response.data.status === 'OK' && Array.isArray(response.data.data)) {
+          setVehicles(response.data.data);
+        } else {
+          setVehicles([]);
+          message.error('Dữ liệu xe không hợp lệ.');
+        }
       } catch (error) {
         message.error('Không thể tải dữ liệu xe.');
       } finally {
         setLoading(false);
       }
     };
-
     fetchVehicles();
+    const interval = setInterval(fetchVehicles, 5000);
+    return () => clearInterval(interval);
   }, []);
-
-  // Dữ liệu mẫu
+  const handlePreview = (imageUrl) => {
+    setPreviewImage(imageUrl);
+    setPreviewVisible(true);
+  };
   const stats = [
     { title: 'Tổng doanh thu', value: 58920, prefix: '₫', change: 12.3 },
     { title: 'Tổng chi phí', value: 24350, prefix: '₫', change: -8.2 },
@@ -125,9 +132,13 @@ const HomePage = () => {
                   position={[vehicle.Lt, vehicle.Ln]}
                   icon={vehicleIcon}
                 >
+                  {/* Tooltip hiển thị biển số xe */}
+                  <Tooltip direction="bottom" offset={[0, -5]} opacity={1} permanent>
+                    <span>{vehicle.NumberPlate || 'Không xác định'}</span>
+                  </Tooltip>
                   <Popup>
                     <div>
-                      <strong>Biển số:</strong> {vehicle.NumberPlate} <br />
+                      <strong>Biển số:</strong> {vehicle.NumberPlate || 'Không xác định'} <br />
                       <strong>Tài xế:</strong> {vehicle.DriverName || 'Không xác định'} <br />
                       <strong>Tốc độ:</strong> {vehicle.Speed} km/h <br />
                       <strong>Địa chỉ:</strong> {vehicle.Address || 'Không xác định'} <br />
@@ -135,6 +146,7 @@ const HomePage = () => {
                         src={vehicle.ImageLink}
                         alt="Hình ảnh xe"
                         style={{ width: '100px', height: 'auto', marginTop: '8px' }}
+                        onClick={() => handlePreview(vehicle.ImageLink)}
                       />
                     </div>
                   </Popup>
@@ -143,6 +155,18 @@ const HomePage = () => {
             </MapContainer>
           )}
         </Card>
+         {/* Modal preview ảnh */}
+         <Modal
+          visible={previewVisible}
+          footer={null}
+          onCancel={() => setPreviewVisible(false)}
+        >
+          <img
+            alt="Preview"
+            style={{ width: '100%' }}
+            src={previewImage}
+          />
+        </Modal>
 
         {/* Chỉ số chính */}
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
@@ -188,7 +212,7 @@ const HomePage = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip />
+                  <RechartsTooltip />
                   <Legend />
                   <Bar dataKey="revenue" fill="#8884d8" name="Doanh thu" />
                   <Bar dataKey="expense" fill="#82ca9d" name="Chi phí" />
