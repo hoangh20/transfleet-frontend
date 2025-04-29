@@ -73,8 +73,7 @@ const PackingOrderForm = () => {
     try {
       const response = await SystemService.getSalePersons();
       if (response.status === 'OK' && Array.isArray(response.data)) {
-        const formattedData = response.data.map((name) => ({ name }));
-        setSalesPersonList(formattedData);
+        setSalesPersonList(response.data); 
       } else {
         setSalesPersonList([]);
       }
@@ -397,6 +396,13 @@ const PackingOrderForm = () => {
                 rules={[{ required: false, message: 'Vui lòng nhập thời gian dự kiến' }]}
               >
                 <DatePicker showTime placeholder='Chọn thời gian dự kiến' />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={6}>
+              <Form.Item label='Chủ vỏ' name='owner'>
+                <Input placeholder='Nhập chủ vỏ' />
               </Form.Item>
             </Col>
             <Col span={6}>

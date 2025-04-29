@@ -68,6 +68,7 @@ const PackingOrderDetailPage = () => {
     form.setFieldsValue({
       containerNumber: orderDetails.containerNumber,
       note: orderDetails.note,
+      owner: orderDetails.owner,
     });
   };
 
@@ -151,6 +152,13 @@ const PackingOrderDetailPage = () => {
             rules={[{ required: false, message: 'Vui lòng nhập số container' }]}
           >
             <Input placeholder="Nhập số container" />
+          </Form.Item>
+          <Form.Item
+            label="Chủ vỏ"
+            name="owner"
+            rules={[{ required: false, message: 'Vui lòng nhập chủ vỏ' }]}
+          >
+            <Input placeholder="Nhập chủ vỏ" />
           </Form.Item>
           <Form.Item
             label="Ghi chú"

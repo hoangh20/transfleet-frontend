@@ -90,14 +90,14 @@ const DeliveryOrderForm = () => {
       });
       message.success('Thêm khách hàng mới thành công!');
       setIsAddCustomerModalVisible(false);
-      fetchCustomersByRoute(selectedRouteId); // Reload the customer list
+      fetchCustomersByRoute(selectedRouteId); 
     } catch (error) {
       message.error('Lỗi khi thêm khách hàng mới.');
     }
   };
   const handleAddSalesPerson = async (newSalesPerson) => {
     try {
-      await fetchSalesPersons(); // Cập nhật danh sách sau khi thêm
+      await fetchSalesPersons(); 
       message.success('Thêm nhân viên kinh doanh thành công!');
     } catch (error) {
       message.error('Lỗi khi thêm nhân viên kinh doanh.');
@@ -241,8 +241,7 @@ const DeliveryOrderForm = () => {
     try {
       const response = await SystemService.getSalePersons();
       if (response.status === 'OK' && Array.isArray(response.data)) {
-        const formattedData = response.data.map((name) => ({ name }));
-        setSalesPersonList(formattedData);
+        setSalesPersonList(response.data); // Lưu toàn bộ dữ liệu trả về
       } else {
         setSalesPersonList([]);
       }
