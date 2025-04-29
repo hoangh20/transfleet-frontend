@@ -143,21 +143,25 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
 
   // Extra: chỉ chứa nút cập nhật trạng thái hoặc xuất file
   const extraContent = (
-    <Button
-      type="link"
-      onClick={() =>
-        (type === 'delivery' && trip.status === 6 && trip.writeToSheet === 0) ||
+    trip.writeToSheet === 1 ? (
+      <span style={{ color: 'green', fontWeight: 'bold' }}>Đã hoàn thành</span>
+    ) : (
+      <Button
+        type="link"
+        onClick={() =>
+          (type === 'delivery' && trip.status === 6 && trip.writeToSheet === 0) ||
+          (type === 'packing' && trip.status === 7 && trip.writeToSheet === 0)
+            ? handleExportOrder(trip._id)
+            : handleUpdateStatusInternal(trip._id)
+        }
+        size="small"
+      >
+        {(type === 'delivery' && trip.status === 6 && trip.writeToSheet === 0) ||
         (type === 'packing' && trip.status === 7 && trip.writeToSheet === 0)
-          ? handleExportOrder(trip._id)
-          : handleUpdateStatusInternal(trip._id)
-      }
-      size="small"
-    >
-      {(type === 'delivery' && trip.status === 6 && trip.writeToSheet === 0) ||
-      (type === 'packing' && trip.status === 7 && trip.writeToSheet === 0)
-        ? 'Xuất vào file'
-        : 'Cập nhật trạng thái'}
-    </Button>
+          ? 'Xuất vào file'
+          : 'Cập nhật trạng thái'}
+      </Button>
+    )
   );
 
   return (

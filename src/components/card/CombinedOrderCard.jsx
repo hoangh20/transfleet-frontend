@@ -195,16 +195,21 @@ const CombinedOrderCard = ({
     }
   };
 
-  if (deliveryTrip.status === 6 && packingTrip.status === 7 && packingTrip.writeToSheet === 0) {
-    updateButtonLabel = 'Xuất ra file';
-    updateAction = async () => {
-      try {
-        await exportOrderConnectionsToSheet(combinedOrderId);
-        message.success('Đơn ghép đã được xuất ra file thành công');
-      } catch (error) {
-        message.error('Lỗi khi xuất đơn hàng vào file.');
-      }
-    };
+  if (deliveryTrip.status === 6 && packingTrip.status === 7) {
+    if (packingTrip.writeToSheet === 1) {
+      updateButtonLabel = 'Đã hoàn thành';
+      updateAction = null; // Không cần hành động khi đã hoàn thành
+    } else if (packingTrip.writeToSheet === 0) {
+      updateButtonLabel = 'Xuất ra file';
+      updateAction = async () => {
+        try {
+          await exportOrderConnectionsToSheet(combinedOrderId);
+          message.success('Đơn ghép đã được xuất ra file thành công');
+        } catch (error) {
+          message.error('Lỗi khi xuất đơn hàng vào file.');
+        }
+      };
+    }
   }
 
   const handleStatusClick = (orderId, status, type) => {
@@ -233,9 +238,13 @@ const CombinedOrderCard = ({
     <Card style={containerStyle} bodyStyle={{ padding: 4 }}>
       {/* Nút cập nhật trạng thái ở góc trên bên phải */}
       <div style={topRightButtonStyle}>
-        <Button type="link" onClick={updateAction} size="small">
-          {updateButtonLabel}
-        </Button>
+        {updateAction ? (
+          <Button type="link" onClick={updateAction} size="small">
+            {updateButtonLabel}
+          </Button>
+        ) : (
+          <span style={{ color: 'green', fontWeight: 'bold' }}>{updateButtonLabel}</span>
+        )}
       </div>
 
       <div>
