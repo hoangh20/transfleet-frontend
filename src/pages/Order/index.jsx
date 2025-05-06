@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, DatePicker, Button, Modal, Radio, message, Input } from 'antd';
+import { Row, Col, DatePicker, Button, Modal, Radio, message, Input, Table, Spin, List } from 'antd';
 import dayjs from 'dayjs';
 import PackingOrderList from '../../components/list/PackingOrderList';
 import DeliveryOrderList from '../../components/list/DeliveryOrderList';
 import CombinedOrderList from '../../components/list/CombinedOrderList';
-import { createOrderConnection, getPackingOrderDetails, getDeliveryOrderDetails,} from '../../services/OrderService';
-import { getEmptyDistance,createEmptyDistance } from '../../services/ExternalFleetCostService'; // Import the API
+import {
+  createOrderConnection,
+  getPackingOrderDetails,
+  getDeliveryOrderDetails,
+  suggestCombinations,
+  suggestCombinationsForDelivery,
+} from '../../services/OrderService';
+import { getEmptyDistance, createEmptyDistance } from '../../services/ExternalFleetCostService';
 
 const { RangePicker } = DatePicker;
 
@@ -18,10 +24,13 @@ const OrderPage = () => {
   const [selectedDeliveryOrders, setSelectedDeliveryOrders] = useState([]);
   const [connectionType, setConnectionType] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [emptyDistance, setEmptyDistance] = useState(null); 
-  const [emptyDistanceInput, setEmptyDistanceInput] = useState(''); 
-  const [singleTicketInput, setSingleTicketInput] = useState(''); 
-  const [singleTicket40Input, setSingleTicket40Input] = useState(''); 
+  const [emptyDistance, setEmptyDistance] = useState(null);
+  const [emptyDistanceInput, setEmptyDistanceInput] = useState('');
+  const [singleTicketInput, setSingleTicketInput] = useState('');
+  const [singleTicket40Input, setSingleTicket40Input] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [notFoundAddresses, setNotFoundAddresses] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('selectedDates', JSON.stringify(selectedDates));
@@ -43,6 +52,78 @@ const OrderPage = () => {
     setSelectedDeliveryOrders(selectedRowKeys);
   };
 
+
+  const fetchSuggestionsForDelivery = async () => {
+    if (selectedDeliveryOrders.length === 0) {
+      try {
+        setLoadingSuggestions(true);
+        const startDay = selectedDates[0].format('YYYY-MM-DD');
+        const endDay = selectedDates[1].format('YYYY-MM-DD');
+        const response = await suggestCombinations(startDay, endDay);
+        setSuggestions(response.suggestions || []);
+        setNotFoundAddresses(response.notFoundAddresses || []);
+        message.success('Gợi ý kết nối đã được tải thành công.');
+      } catch (error) {
+        message.error('Lỗi khi tải gợi ý kết nối.');
+      } finally {
+        setLoadingSuggestions(false);
+      }
+    } else {
+      const deliveryOrderId = selectedDeliveryOrders[0];
+      const startDay = selectedDates[0].format('YYYY-MM-DD');
+      const endDay = selectedDates[1].format('YYYY-MM-DD');
+
+      try {
+        setLoadingSuggestions(true);
+        const response = await suggestCombinationsForDelivery(deliveryOrderId, startDay, endDay);
+        setSuggestions(response.suggestions || []);
+        setNotFoundAddresses(response.notFoundAddresses || []);
+        message.success('Gợi ý ghép đơn cho đơn giao hàng đã được tải thành công.');
+      } catch (error) {
+        message.error('Lỗi khi tải gợi ý ghép đơn cho đơn giao hàng.');
+      } finally {
+        setLoadingSuggestions(false);
+      }
+    }
+  };
+
+  const handleSelectSuggestion = (suggestion) => {
+    setSelectedDeliveryOrders([suggestion.deliveryOrderId]);
+    setSelectedPackingOrders([suggestion.packingOrderId]);
+    handleDeliveryOrderSelectChange([suggestion.deliveryOrderId]);
+    handlePackingOrderSelectChange([suggestion.packingOrderId]);
+    setSuggestions([]);
+    message.success('Đã chọn đơn hàng từ gợi ý.');
+  };
+
+  const suggestionColumns = [
+    {
+      title: 'Đơn Giao Hàng',
+      dataIndex: 'deliveryAddress',
+      key: 'deliveryAddress',
+    },
+    {
+      title: 'Đơn Đóng Hàng',
+      dataIndex: 'packingAddress',
+      key: 'packingAddress',
+    },
+    {
+      title: 'Khoảng Cách (km)',
+      dataIndex: 'distance',
+      key: 'distance',
+      render: (distance) => distance.toFixed(2),
+    },
+    {
+      title: 'Hành Động',
+      key: 'action',
+      render: (_, record) => (
+        <Button type="link" onClick={() => handleSelectSuggestion(record)}>
+          Chọn
+        </Button>
+      ),
+    },
+  ];
+
   const handleGetSelectedOrders = async () => {
     if (selectedPackingOrders.length === 0 || selectedDeliveryOrders.length === 0) {
       message.error('Vui lòng chọn cả đơn đóng hàng và đơn giao hàng.');
@@ -62,10 +143,10 @@ const OrderPage = () => {
       const deliveryRouteId = deliveryOrderDetails.externalFleetCostId;
       const packingRouteId = packingOrderDetails.externalFleetCostId;
 
-    if (!deliveryRouteId || !packingRouteId) {
-      message.error('Không thể lấy thông tin tuyến vận tải. Vui lòng kiểm tra lại.');
-      return;
-    }
+      if (!deliveryRouteId || !packingRouteId) {
+        message.error('Không thể lấy thông tin tuyến vận tải. Vui lòng kiểm tra lại.');
+        return;
+      }
       const response = await getEmptyDistance({ deliveryRouteId, packingRouteId });
 
       if (!response || response.data === null) {
@@ -115,14 +196,13 @@ const OrderPage = () => {
         ? parseFloat(emptyDistanceInput)
         : emptyDistance;
 
-      // eslint-disable-next-line no-unused-vars
-      const response = await createOrderConnection(
-        selectedDeliveryOrders[0], // deliveryOrderId
-        selectedPackingOrders[0],  // packingOrderId
-        connectionType,            // type
-        distanceToSend,            // emptyDistance
-        parseFloat(singleTicketInput), // singleTicket
-        parseFloat(singleTicket40Input) // singleTicket40
+      await createOrderConnection(
+        selectedDeliveryOrders[0],
+        selectedPackingOrders[0],
+        connectionType,
+        distanceToSend,
+        parseFloat(singleTicketInput),
+        parseFloat(singleTicket40Input)
       );
 
       message.success('Ghép chuyến thành công!');
@@ -149,19 +229,20 @@ const OrderPage = () => {
           onChange={handleDateChange}
           style={{ marginBottom: 16 }}
         />
-        <Button
-          type="primary"
-          onClick={handleGetSelectedOrders}
-          style={{ marginBottom: 16 }}
-        >
+        <Button type="primary" onClick={handleGetSelectedOrders} style={{ marginBottom: 16 }}>
           Ghép Đơn Hàng Đã Chọn
         </Button>
+        <Button type="default" onClick={fetchSuggestionsForDelivery} style={{ marginBottom: 16 }}>
+          Gợi Ý Kết Nối
+        </Button>
       </div>
+
       <Row gutter={16}>
         <Col xs={24} md={11}>
           <DeliveryOrderList
             startDate={selectedDates[0].format('YYYY-MM-DD')}
             endDate={selectedDates[1].format('YYYY-MM-DD')}
+            selectedRowKeys={selectedDeliveryOrders}
             onSelectChange={handleDeliveryOrderSelectChange}
           />
         </Col>
@@ -174,7 +255,7 @@ const OrderPage = () => {
             marginTop: 16,
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
           }}
         />
 
@@ -182,10 +263,43 @@ const OrderPage = () => {
           <PackingOrderList
             startDate={selectedDates[0].format('YYYY-MM-DD')}
             endDate={selectedDates[1].format('YYYY-MM-DD')}
+            selectedRowKeys={selectedPackingOrders}
             onSelectChange={handlePackingOrderSelectChange}
           />
         </Col>
       </Row>
+
+      <Modal
+        title="Danh Sách Gợi Ý Ghép Đơn"
+        visible={suggestions.length > 0 || loadingSuggestions}
+        onCancel={() => setSuggestions([])}
+        footer={null}
+        width={800} // Tăng độ rộng modal
+      >
+        {loadingSuggestions ? (
+          <Spin tip="Đang tải gợi ý..." />
+        ) : (
+          <>
+            <Table
+              columns={suggestionColumns}
+              dataSource={suggestions}
+              rowKey={(record) => `${record.deliveryOrderId}-${record.packingOrderId}`}
+              pagination={false}
+            />
+            {notFoundAddresses.length > 0 && (
+              <div style={{ marginTop: 16 }}>
+                <h3>Các Điểm Không Tồn Tại:</h3>
+                <List
+                  size="small"
+                  bordered
+                  dataSource={notFoundAddresses}
+                  renderItem={(item) => <List.Item>{item}</List.Item>}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </Modal>
 
       <Modal
         title="Xác Nhận Ghép Chuyến"

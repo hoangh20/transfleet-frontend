@@ -315,3 +315,27 @@ export const updateOrderPartnerConnection = async (orderId, isCombinedTrip, upda
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+export const suggestCombinations = async (startDay, endDay) => {
+  try {
+    const response = await axios.get(`${API_URL}/orders/suggest-combinations`, {
+      params: { startDay, endDay },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error suggesting combinations:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const suggestCombinationsForDelivery = async (deliveryOrderId, startDay, endDay) => {
+  try {
+    const response = await axios.get(`${API_URL}/orders/suggest-combinations-for-delivery`, {
+      params: { deliveryOrderId, startDay, endDay },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error suggesting combinations for delivery:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};

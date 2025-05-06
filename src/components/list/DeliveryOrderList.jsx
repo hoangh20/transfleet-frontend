@@ -9,10 +9,9 @@ import { getCustomerById } from '../../services/CustomerService';
 
 const { Title, Text } = Typography;
 
-const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
+const DeliveryOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange }) => {
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState([]);
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -100,14 +99,9 @@ const DeliveryOrderList = ({ startDate, endDate, onSelectChange }) => {
   }, [startDate, endDate]);
 
   const onSelectChangeHandler = (orderId) => {
-    let newSelectedRowKeys;
-    if (selectedRowKeys.includes(orderId)) {
-      newSelectedRowKeys = [];
-    } else {
-      newSelectedRowKeys = [orderId];
-    }
-    setSelectedRowKeys(newSelectedRowKeys);
-    onSelectChange(newSelectedRowKeys);
+    const isSelected = selectedRowKeys.includes(orderId);
+    const newKeys = isSelected ? [] : [orderId];
+    onSelectChange(newKeys); // Đẩy thay đổi lên parent
   };
 
   const handleDelete = async (orderId) => {
