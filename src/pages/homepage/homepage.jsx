@@ -1,20 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Row, Col, Card, Statistic, Select, Button, Progress, List, Avatar, Table, Tag, Spin, message, Modal } from 'antd';
-import { MapContainer, TileLayer, Marker, Popup, Tooltip } from 'react-leaflet';
-import L from 'leaflet';
+import { Layout, Row, Col, Card, Statistic, Select, Button, Progress, List, Avatar, Table, Tag, message, Modal } from 'antd';
 import 'leaflet/dist/leaflet.css';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 import {getVehicleLocations } from '../../services/VehicleService';
+import VehicleMap from '../../components/card/VehicleMap';
 const { Content } = Layout;
 const { Option } = Select;
-
-// Tùy chỉnh icon cho các marker
-const vehicleIcon = new L.Icon({
-  iconUrl: '/icons8-semi-truck-side-view-100.png', // URL icon xe
-  iconSize: [40, 40],
-  iconAnchor: [16, 32],
-  popupAnchor: [0, -32],
-});
 
 const HomePage = () => {
   const [vehicles, setVehicles] = useState([]);
@@ -118,42 +109,11 @@ const HomePage = () => {
           }
           style={{ marginBottom: 24 }}
         >
-          {loading ? (
-            <Spin tip="Đang tải bản đồ..." />
-          ) : (
-            <MapContainer center={[21.028511, 105.804817]} zoom={10} style={{ height: '500px', width: '100%' }}>
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
-              {vehicles.map((vehicle, index) => (
-                <Marker
-                  key={index}
-                  position={[vehicle.Lt, vehicle.Ln]}
-                  icon={vehicleIcon}
-                >
-                  {/* Tooltip hiển thị biển số xe */}
-                  <Tooltip direction="bottom" offset={[0, -5]} opacity={1} permanent>
-                    <span>{vehicle.NumberPlate || 'Không xác định'}</span>
-                  </Tooltip>
-                  <Popup>
-                    <div>
-                      <strong>Biển số:</strong> {vehicle.NumberPlate || 'Không xác định'} <br />
-                      <strong>Tài xế:</strong> {vehicle.DriverName || 'Không xác định'} <br />
-                      <strong>Tốc độ:</strong> {vehicle.Speed} km/h <br />
-                      <strong>Địa chỉ:</strong> {vehicle.Address || 'Không xác định'} <br />
-                      <img
-                        src={vehicle.ImageLink}
-                        alt="Hình ảnh xe"
-                        style={{ width: '100px', height: 'auto', marginTop: '8px' }}
-                        onClick={() => handlePreview(vehicle.ImageLink)}
-                      />
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
-          )}
+          <VehicleMap
+            vehicles={vehicles}
+            loading={loading}
+            onPreview={handlePreview}
+          />
         </Card>
          {/* Modal preview ảnh */}
          <Modal
