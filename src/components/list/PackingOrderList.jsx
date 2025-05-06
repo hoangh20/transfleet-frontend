@@ -112,7 +112,7 @@ const PackingOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange 
               <Link to={`/order/packing-orders/${order._id}`} style={{ display: 'block' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text strong style={{ fontSize: 14 }}>📦 {order.shortName}</Text>
-                  <Tag color={order.closeCombination === "gắp vỏ" ? "blue" : "green"}>{order.closeCombination}</Tag>
+                  <Tag color={order.closeCombination === "Gắp vỏ" ? "blue" : "green"}>{order.closeCombination}</Tag>
                   <Tag color={order.contType === "20''" ? "blue" : "purple"}>{order.contType}</Tag>
                 </div>
               </Link>

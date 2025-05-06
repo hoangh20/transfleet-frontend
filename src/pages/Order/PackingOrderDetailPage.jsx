@@ -5,6 +5,7 @@ import { getPackingOrderDetails, updatePackingOrder } from '../../services/Order
 import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 import CostCard from '../../components/card/CostCard';
 import DispatchVehicleCard from '../../components/card/DispatchVehicleCard';
+import LocationSelector from '../../components/location/LocationSelector';
 
 const PackingOrderDetailPage = () => {
   const { orderId } = useParams();
@@ -69,15 +70,27 @@ const PackingOrderDetailPage = () => {
       containerNumber: orderDetails.containerNumber,
       note: orderDetails.note,
       owner: orderDetails.owner,
+      startPoint: orderDetails.location.startPoint, 
+      locationText: orderDetails.location.startPoint.locationText || '', 
     });
   };
 
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-      await updatePackingOrder(orderId, values);
+      const updatedDetails = {
+        ...values,
+        location: {
+          ...orderDetails.location,
+          startPoint: {
+            ...values.startPoint,
+            locationText: values.locationText, 
+          },
+        },
+      };
+      await updatePackingOrder(orderId, updatedDetails);
       message.success('Cập nhật thông tin đơn hàng thành công');
-      setOrderDetails({ ...orderDetails, ...values });
+      setOrderDetails({ ...orderDetails, ...updatedDetails });
       setIsModalVisible(false);
     } catch (error) {
       message.error('Lỗi khi cập nhật thông tin đơn hàng');
@@ -159,6 +172,20 @@ const PackingOrderDetailPage = () => {
             rules={[{ required: false, message: 'Vui lòng nhập chủ vỏ' }]}
           >
             <Input placeholder="Nhập chủ vỏ" />
+          </Form.Item>
+          <Form.Item
+            label="Điểm đi"
+            name="startPoint"
+            rules={[{ required: true, message: 'Vui lòng chọn điểm đi' }]}
+          >
+            <LocationSelector />
+          </Form.Item>
+          <Form.Item
+            label="Địa chỉ chi tiết"
+            name="locationText"
+            rules={[{ required: false, message: 'Vui lòng nhập địa chỉ chi tiết' }]}
+          >
+            <Input placeholder="Nhập địa chỉ" />
           </Form.Item>
           <Form.Item
             label="Ghi chú"
