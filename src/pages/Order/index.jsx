@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, DatePicker, Button, Modal, Radio, message, Input, Table, Spin, List } from 'antd';
+import { Row, Col, DatePicker, Button, Modal, Radio, message, Input } from 'antd';
 import dayjs from 'dayjs';
 import PackingOrderList from '../../components/list/PackingOrderList';
 import DeliveryOrderList from '../../components/list/DeliveryOrderList';
 import CombinedOrderList from '../../components/list/CombinedOrderList';
+import SuggestionModal from '../../components/popup/SuggestionModal';
 import {
   createOrderConnection,
   getPackingOrderDetails,
@@ -88,41 +89,14 @@ const OrderPage = () => {
   };
 
   const handleSelectSuggestion = (suggestion) => {
-    setSelectedDeliveryOrders([suggestion.deliveryOrderId]);
-    setSelectedPackingOrders([suggestion.packingOrderId]);
-    handleDeliveryOrderSelectChange([suggestion.deliveryOrderId]);
-    handlePackingOrderSelectChange([suggestion.packingOrderId]);
+    setSelectedDeliveryOrders([suggestion.deliveryOrder._id]);
+    setSelectedPackingOrders([suggestion.packingOrder._id]);
+    handleDeliveryOrderSelectChange([suggestion.deliveryOrder._id]);
+    handlePackingOrderSelectChange([suggestion.packingOrder._id]);
     setSuggestions([]);
     message.success('Đã chọn đơn hàng từ gợi ý.');
   };
 
-  const suggestionColumns = [
-    {
-      title: 'Đơn Giao Hàng',
-      dataIndex: 'deliveryAddress',
-      key: 'deliveryAddress',
-    },
-    {
-      title: 'Đơn Đóng Hàng',
-      dataIndex: 'packingAddress',
-      key: 'packingAddress',
-    },
-    {
-      title: 'Khoảng Cách (km)',
-      dataIndex: 'distance',
-      key: 'distance',
-      render: (distance) => distance.toFixed(2),
-    },
-    {
-      title: 'Hành Động',
-      key: 'action',
-      render: (_, record) => (
-        <Button type="link" onClick={() => handleSelectSuggestion(record)}>
-          Chọn
-        </Button>
-      ),
-    },
-  ];
 
   const handleGetSelectedOrders = async () => {
     if (selectedPackingOrders.length === 0 || selectedDeliveryOrders.length === 0) {
@@ -270,38 +244,6 @@ const OrderPage = () => {
       </Row>
 
       <Modal
-        title="Danh Sách Gợi Ý Ghép Đơn"
-        visible={suggestions.length > 0 || loadingSuggestions}
-        onCancel={() => setSuggestions([])}
-        footer={null}
-        width={800} // Tăng độ rộng modal
-      >
-        {loadingSuggestions ? (
-          <Spin tip="Đang tải gợi ý..." />
-        ) : (
-          <>
-            <Table
-              columns={suggestionColumns}
-              dataSource={suggestions}
-              rowKey={(record) => `${record.deliveryOrderId}-${record.packingOrderId}`}
-              pagination={false}
-            />
-            {notFoundAddresses.length > 0 && (
-              <div style={{ marginTop: 16 }}>
-                <h3>Các Điểm Không Tồn Tại:</h3>
-                <List
-                  size="small"
-                  bordered
-                  dataSource={notFoundAddresses}
-                  renderItem={(item) => <List.Item>{item}</List.Item>}
-                />
-              </div>
-            )}
-          </>
-        )}
-      </Modal>
-
-      <Modal
         title="Xác Nhận Ghép Chuyến"
         visible={isModalVisible}
         onOk={handleCreateOrderConnection}
@@ -316,6 +258,8 @@ const OrderPage = () => {
           <Radio value={1}>Cùng ngày khác điểm</Radio>
           <Radio value={2}>Khác ngày</Radio>
         </Radio.Group>
+
+        <div style={{ marginTop: 16 }}></div>
 
         <div style={{ marginTop: 16 }}>
           {emptyDistance === null ? (
@@ -357,6 +301,7 @@ const OrderPage = () => {
                 value={emptyDistanceInput || emptyDistance}
                 onChange={(e) => setEmptyDistanceInput(e.target.value)}
                 style={{ marginBottom: 8 }}
+                readOnly 
               />
               <label>Vé kết hợp mooc 20'':</label>
               <Input
@@ -365,6 +310,7 @@ const OrderPage = () => {
                 value={singleTicketInput}
                 onChange={(e) => setSingleTicketInput(e.target.value)}
                 style={{ marginBottom: 8 }}
+                readOnly 
               />
               <label>Vé kết hợp mooc 40'':</label>
               <Input
@@ -372,6 +318,7 @@ const OrderPage = () => {
                 placeholder="Nhập vé kết hợp mooc 40''"
                 value={singleTicket40Input}
                 onChange={(e) => setSingleTicket40Input(e.target.value)}
+                readOnly
               />
             </>
           )}
@@ -382,6 +329,14 @@ const OrderPage = () => {
         startDate={selectedDates[0].format('YYYY-MM-DD')}
         endDate={selectedDates[1].format('YYYY-MM-DD')}
         onSelectChange={handleDeliveryOrderSelectChange}
+      />
+      <SuggestionModal
+        visible={suggestions.length > 0 || loadingSuggestions}
+        loading={loadingSuggestions}
+        suggestions={suggestions}
+        notFoundAddresses={notFoundAddresses}
+        onCancel={() => setSuggestions([])}
+        onSelectSuggestion={handleSelectSuggestion}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, Row, Col, Spin, message, Button, Modal, Form, Input } from 'antd';
+import { Card, Row, Col, Spin, message, Button, Modal, Form, Input, Select } from 'antd';
 import { getPackingOrderDetails, updatePackingOrder } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 import CostCard from '../../components/card/CostCard';
@@ -70,6 +70,7 @@ const PackingOrderDetailPage = () => {
       containerNumber: orderDetails.containerNumber,
       note: orderDetails.note,
       owner: orderDetails.owner,
+      closeCombination: orderDetails.closeCombination,
       startPoint: orderDetails.location.startPoint, 
       locationText: orderDetails.location.startPoint.locationText || '', 
     });
@@ -165,6 +166,16 @@ const PackingOrderDetailPage = () => {
             rules={[{ required: false, message: 'Vui lòng nhập số container' }]}
           >
             <Input placeholder="Nhập số container" />
+          </Form.Item>
+          <Form.Item
+            label="Loại đóng hàng"
+            name="closeCombination"
+            rules={[{ required: true, message: 'Vui lòng chọn loại đóng hàng' }]}
+          >
+            <Select placeholder="Chọn loại đóng hàng">
+              <Select.Option value={0}>Gắp vỏ</Select.Option>
+              <Select.Option value={1}>Kết hợp</Select.Option>
+            </Select>
           </Form.Item>
           <Form.Item
             label="Chủ vỏ"
