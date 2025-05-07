@@ -128,7 +128,7 @@ const CombinedOrderList = ({ startDate, endDate }) => {
         <Link to={`/order/${type}-orders/${order._id}`} style={{ display: 'block' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text strong style={{ fontSize: 14 }}>
-              {type === 'delivery' ? '🚚 Đơn giao hàng' : '📦 Đơn đóng hàng'}
+              {type === 'delivery' ? '🚚 ' : '📦 '} {order.customerName}
             </Text>
             <Tag color={order.moocType === "20''" ? "blue" : "purple"}>{order.moocType}</Tag>
           </div>
@@ -189,11 +189,6 @@ const CombinedOrderList = ({ startDate, endDate }) => {
             </Tooltip>
           )}
         </div>
-
-        {/* Tên khách hàng */}
-        <Text style={{ fontSize: 12, fontWeight: 500 }}>
-          Khách hàng: {order.customerName}
-        </Text>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '4px 0' }}>
             <EnvironmentOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
             <div style={{ flex: 1 }}>
@@ -215,7 +210,7 @@ const CombinedOrderList = ({ startDate, endDate }) => {
 
           {/* Thông tin phụ */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
-          <Text>Cont: {order.containerNumber || '--'}</Text>
+          <Text>Cont: {order.containerNumber || '--'} - {order.owner}</Text>
           {order.note && (
             <Tooltip title={order.note}>
               <InfoCircleOutlined style={{ color: '#8c8c8c' }} />
@@ -235,7 +230,15 @@ const CombinedOrderList = ({ startDate, endDate }) => {
         gap: '12px'
       }}>
         {orders.map((order) => {
-          const totalEstimatedProfit = (order.deliveryOrder.estimatedProfit || 0) + (order.packingOrder.estimatedProfit || 0);
+          const totalEstimatedProfit = 
+            (order.deliveryOrder.estimatedProfit || 0) +
+            (order.packingOrder.estimatedProfit || 0) +
+            (order.deliveryOrder.cost?.registrationFee || 0) +
+            (order.deliveryOrder.cost?.insurance || 0) +
+            (order.deliveryOrder.cost?.technicalTeamSalary || 0) +
+            (order.deliveryOrder.cost?.bankLoanInterest || 0) +
+            (order.deliveryOrder.cost?.repairCost || 0) +
+            (order.deliveryOrder.cost?.monthlyTicket || 0) ;
           return (
             <Card
               key={order._id}

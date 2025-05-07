@@ -216,6 +216,9 @@ const PackingOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange 
               {/* Thông tin phụ */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
                 <Text>Cont: {order.containerNumber || '--'}</Text>
+                {order.owner && (
+                  <Text>Chủ vỏ: {order.owner}</Text>
+                )}
                 {order.note && (
                   <Tooltip title={order.note}>
                     <InfoCircleOutlined style={{ color: '#8c8c8c' }} />

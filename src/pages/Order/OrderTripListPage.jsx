@@ -100,17 +100,11 @@ const OrderTripListPage = () => {
     );
   };
 
-  const handleUpdateCombinedStatus = (updatedDelivery, updatedPacking) => {
+  const handleUpdateCombinedStatus = (combinedOrderId, updatedStatus) => {
     setCombinedTrips((prev) =>
-      prev.map((conn) => {
-        if (conn.deliveryOrderId._id === updatedDelivery._id) {
-          return { ...conn, deliveryOrderId: updatedDelivery };
-        }
-        if (conn.packingOrderId._id === updatedPacking._id) {
-          return { ...conn, packingOrderId: updatedPacking };
-        }
-        return conn;
-      })
+      prev.map((conn) =>
+        conn._id === combinedOrderId ? { ...conn, status: updatedStatus } : conn
+      )
     );
   };
 
@@ -217,6 +211,7 @@ const OrderTripListPage = () => {
         {combinedToShow.map((conn) => (
           <Col key={conn._id} xs={24} md={12}>
             <CombinedOrderCard
+              combinedStatus={conn.status}
               combinedOrderId={conn._id}
               deliveryTrip={conn.deliveryOrderId}
               packingTrip={conn.packingOrderId}

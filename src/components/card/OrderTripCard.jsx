@@ -89,12 +89,12 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
   }, [trip._id, trip.hasVehicle]);
 
   const statusMap = {
-    delivery: ['Đã giao xe', 'Đang giao hàng', 'Đã giao hàng', 'Đang hạ vỏ', 'Đã hạ vỏ', 'Hoàn thành'],
-    packing: ['Đã giao xe', 'Đang lên kho', 'Chờ đóng hàng', 'Đã đóng hàng', 'Đang về cảng', 'Đã hạ cảng', 'Hoàn thành'],
+    delivery: [ 'Đang giao hàng', 'Đã giao hàng', 'Đang hạ vỏ', 'Đã hạ vỏ', 'Hoàn thành'],
+    packing: [ 'Đang lên kho', 'Chờ đóng hàng', 'Đã đóng hàng', 'Đang về cảng', 'Đã hạ cảng', 'Hoàn thành'],
   };
 
   const steps = statusMap[type] || [];
-  const currentStep = trip.status - 1 < steps.length ? trip.status : 0;
+  const currentStep = trip.status - 1 <= steps.length ? trip.status - 1 : 0;
 
   const handleStatusClick = (status) => {
     setSelectedStatus(status);
@@ -119,13 +119,13 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
 
   const handleUpdateStatusInternal = async (orderId) => {
     try {
-      const userId = JSON.parse(localStorage.getItem('user'))?.id; // Lấy userId từ localStorage
+      const userId = JSON.parse(localStorage.getItem('user'))?.id;
 
       if (type === 'delivery') {
-        await updateDeliveryOrderStatus(orderId, userId, trip.status + 1); // Gửi userId và status
+        await updateDeliveryOrderStatus(orderId, userId); 
         message.success('Cập nhật trạng thái đơn giao hàng thành công');
       } else if (type === 'packing') {
-        await updatePackingOrderStatus(orderId, userId, trip.status + 1); // Gửi userId và status
+        await updatePackingOrderStatus(orderId, userId); 
         message.success('Cập nhật trạng thái đơn đóng hàng thành công');
       }
       onUpdateStatus(orderId);
@@ -134,14 +134,12 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
     }
   };
 
-  // Tiêu đề tích hợp link xem chi tiết
   const titleContent = (
     <Link onClick={() => onViewDetail(trip._id)} style={{ fontSize: 14 }}>
       {type === 'delivery' ? `Chuyến giao hàng: ${customerName}` : `Chuyến đóng hàng: ${customerName}`}
     </Link>
   );
 
-  // Extra: chỉ chứa nút cập nhật trạng thái hoặc xuất file
   const extraContent = (
     trip.writeToSheet === 1 ? (
       <span style={{ color: 'green', fontWeight: 'bold' }}>Đã hoàn thành</span>
@@ -180,7 +178,7 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
             <strong>Loại cont:</strong> {trip.contType === 0 ? "20''" : "40''"}
           </Col>
           <Col span={8}>
-            <strong>Số container:</strong> {trip.containerNumber}
+            <strong>Số container:</strong> {trip.containerNumber} {`- ${trip.owner}` || ''}
           </Col>
           <Col span={8}>
             {vehicleDetails && (
@@ -207,7 +205,7 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
                   title={
                     <span
                       style={{ fontSize: '10px', padding: '0 2px', cursor: 'pointer' }}
-                      onClick={() => handleStatusClick(index + 1)}
+                      onClick={() => handleStatusClick(index + 2)}
                     >
                       {step}
                     </span>

@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, Row, Col, Button, Steps, message, Typography, Popconfirm } from 'antd';
 import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 import { 
-  updateDeliveryOrderStatus, 
-  updatePackingOrderStatus, 
+  updateCombinationOrderStatus,
   exportOrderConnectionsToSheet,
   getVehicleByOrderId, 
   getOrderPartnerConnectionByOrderId,
@@ -15,6 +14,7 @@ const { Step } = Steps;
 const { Title, Text, Link } = Typography;
 
 const CombinedOrderCard = ({
+  combinedStatus,
   combinedOrderId,
   deliveryTrip,
   packingTrip,
@@ -29,7 +29,6 @@ const CombinedOrderCard = ({
   const [packingVehicleDetails, setPackingVehicleDetails] = useState(null); 
   const [statusModalVisible, setStatusModalVisible] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(null);
-  const [selectedOrderId, setSelectedOrderId] = useState(null);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -140,65 +139,28 @@ const CombinedOrderCard = ({
     }
   };
 
-  const statusMap = {
-    delivery: [
-      'Đã giao xe',
-      'Đang giao hàng',
-      'Đã giao hàng',
-      'Đang hạ vỏ',
-      'Đã hạ vỏ',
-      'Hoàn thành',
-    ],
-    packing: [
-      'Đã giao xe',
-      'Đang lên kho',
-      'Chờ đóng hàng',
-      'Đã đóng hàng',
-      'Đang về cảng',
-      'Đã hạ cảng',
-      'Hoàn thành',
-    ],
-  };
+  const deliverySteps = ['Giao hàng', 'Đã giao hàng', 'Đang lên kho', 'Đã đến kho'];
+  const packingSteps = ['Đang đóng hàng', 'Đã đóng hàng', 'Đang về cảng', 'Hoàn thành'];
+  const currentDeliveryStep = combinedStatus >= 0 && combinedStatus <= 5 ? combinedStatus - 2 : 4;
+  const currentPackingStep = combinedStatus >= 6 && combinedStatus <= 9 ? combinedStatus - 5 : -1; 
 
-  const deliverySteps = statusMap.delivery;
-  const packingSteps = statusMap.packing;
-
-  const currentDeliveryStep = deliveryTrip.status - 1 < deliverySteps.length
-    ? deliveryTrip.status
-    : 0;
-  const currentPackingStep = packingTrip.status - 1 < packingSteps.length
-    ? packingTrip.status
-    : 0;
 
   let updateButtonLabel = 'Cập nhật trạng thái';
   let updateAction = async () => {
     try {
-      const userId = JSON.parse(localStorage.getItem('user'))?.id; 
-
-      if (deliveryTrip.status < 6) {
-        await updateDeliveryOrderStatus(deliveryTrip._id, userId, deliveryTrip.status + 1); 
-        message.success('Cập nhật trạng thái đơn giao hàng thành công');
-        onUpdateCombinedStatus(
-          { ...deliveryTrip, status: deliveryTrip.status + 1 },
-          packingTrip
-        );
-      } else if (deliveryTrip.status === 6 && packingTrip.status < 7) {
-        await updatePackingOrderStatus(packingTrip._id, userId, packingTrip.status + 1); 
-        message.success('Cập nhật trạng thái đơn đóng hàng thành công');
-        onUpdateCombinedStatus(
-          deliveryTrip,
-          { ...packingTrip, status: packingTrip.status + 1 }
-        );
-      }
+      const userId = JSON.parse(localStorage.getItem('user'))?.id;
+      await updateCombinationOrderStatus(combinedOrderId, userId);
+      message.success('Cập nhật trạng thái thành công');
+      onUpdateCombinedStatus(combinedOrderId, combinedStatus + 1); 
     } catch (error) {
-      message.error('Lỗi khi cập nhật trạng thái đơn hàng.');
+      message.error('Lỗi khi cập nhật trạng thái');
     }
   };
 
-  if (deliveryTrip.status === 6 && packingTrip.status === 7) {
+  if (combinedStatus === 9 ) {
     if (packingTrip.writeToSheet === 1) {
       updateButtonLabel = 'Đã hoàn thành';
-      updateAction = null; // Không cần hành động khi đã hoàn thành
+      updateAction = null; 
     } else if (packingTrip.writeToSheet === 0) {
       updateButtonLabel = 'Xuất ra file';
       updateAction = async () => {
@@ -212,16 +174,18 @@ const CombinedOrderCard = ({
     }
   }
 
-  const handleStatusClick = (orderId, status, type) => {
-    setSelectedOrderId(orderId);
-    setSelectedStatus({ status, type }); // Lưu cả trạng thái và loại đơn
-    setStatusModalVisible(true);
+  const handleStatusClick = (statusIndex) => {
+    if (statusIndex !== undefined && statusIndex !== null) {
+      setSelectedStatus({ statusIndex }); // Ensure statusIndex is wrapped in an object
+      setStatusModalVisible(true);
+    } else {
+      console.error('Invalid statusIndex:', statusIndex);
+    }
   };
 
-  // Style được tối giản để tiết kiệm diện tích
   const containerStyle = {
     border: '2px dashed #1890ff',
-    padding: 4,
+    padding: 2,
     position: 'relative',
   };
   const blockStyle = { marginBottom: 4 };
@@ -270,7 +234,7 @@ const CombinedOrderCard = ({
             </Col>
             <Col span={8}>
               <Text style={labelStyle}>Số container:</Text>
-              <Text>{deliveryTrip.containerNumber}</Text>
+              <Text>{deliveryTrip.containerNumber} - {deliveryTrip.owner}</Text>
             </Col>
             <Col span={8}>
               <Text style={labelStyle}>Loại cont:</Text>
@@ -302,7 +266,7 @@ const CombinedOrderCard = ({
                 title={
                   <span
                     style={{ fontSize: '10px', padding: '0 2px', cursor: 'pointer' }}
-                    onClick={() => handleStatusClick(deliveryTrip._id, index + 1, 'delivery')}
+                    onClick={() => handleStatusClick(index + 2)}
                   >
                     {step}
                   </span>
@@ -322,7 +286,7 @@ const CombinedOrderCard = ({
                 </Link>
               </Title>
             </Col>
-            {deliveryTrip.status !== 6 && (
+            {combinedStatus < 4 && (
               <Col>
                 <Popconfirm
                   title="Bạn có chắc chắn muốn xóa kết nối đơn hàng này không?"
@@ -352,7 +316,7 @@ const CombinedOrderCard = ({
             </Col>
             <Col span={8}>
               <Text style={labelStyle}>Số container:</Text>
-              <Text>{packingTrip.containerNumber}</Text>
+              <Text>{packingTrip.containerNumber} - {packingTrip.owner}</Text>
             </Col>
             <Col span={8}>
               <Text style={labelStyle}>Loại cont:</Text>
@@ -384,7 +348,7 @@ const CombinedOrderCard = ({
                 title={
                   <span
                     style={{ fontSize: '10px', padding: '0 2px', cursor: 'pointer' }}
-                    onClick={() => handleStatusClick(packingTrip._id, index + 1, 'packing')}
+                    onClick={() => handleStatusClick(index + 6)}
                   >
                     {step}
                   </span>
@@ -396,11 +360,10 @@ const CombinedOrderCard = ({
       </div>
 
       {/* Modal hiển thị chi tiết trạng thái */}
-      {selectedStatus && (
+      {selectedStatus && selectedStatus.statusIndex !== undefined && (
         <OrderStatusDetails
-          orderId={selectedOrderId}
-          status={selectedStatus.status}
-          type={selectedStatus.type} // Truyền loại đơn
+          orderId={combinedOrderId}
+          status={selectedStatus.statusIndex}
           visible={statusModalVisible}
           onClose={() => setStatusModalVisible(false)}
         />
