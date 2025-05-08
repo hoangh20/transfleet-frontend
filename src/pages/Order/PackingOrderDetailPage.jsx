@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, Row, Col, Spin, message, Button, Modal, Form, Input, Select } from 'antd';
+import { Card, Row, Col, Spin, message, Button, Modal, Form, Input, Select,DatePicker } from 'antd';
 import { getPackingOrderDetails, updatePackingOrder } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 import CostCard from '../../components/card/CostCard';
 import DispatchVehicleCard from '../../components/card/DispatchVehicleCard';
 import LocationSelector from '../../components/location/LocationSelector';
-
+import dayjs from 'dayjs';
 const PackingOrderDetailPage = () => {
   const { orderId } = useParams();
   const [orderDetails, setOrderDetails] = useState(null);
@@ -73,6 +73,8 @@ const PackingOrderDetailPage = () => {
       closeCombination: orderDetails.closeCombination,
       startPoint: orderDetails.location.startPoint, 
       locationText: orderDetails.location.startPoint.locationText || '', 
+      packingDate: orderDetails.packingDate ? dayjs(orderDetails.packingDate) : null, 
+      estimatedTime: orderDetails.estimatedTime ? dayjs(orderDetails.estimatedTime) : null,
     });
   };
 
@@ -81,6 +83,8 @@ const PackingOrderDetailPage = () => {
       const values = await form.validateFields();
       const updatedDetails = {
         ...values,
+        packingDate: values.packingDate ? values.packingDate.format('YYYY-MM-DD') : null, 
+        estimatedTime: values.estimatedTime ? values.estimatedTime.format('YYYY-MM-DD HH:mm:ss') : null,
         location: {
           ...orderDetails.location,
           startPoint: {
@@ -119,8 +123,8 @@ const PackingOrderDetailPage = () => {
       >
         <Row gutter={[16, 16]}>
           <Col span={12}><strong>Khách hàng:</strong> {orderDetails.customer.name}</Col>
-          <Col span={12}><strong>Ngày tạo:</strong> {new Date(orderDetails.createdAt).toLocaleString()}</Col>
-          <Col span={12}><strong>Thời gian dự kiến:</strong> {orderDetails.estimatedTime ? new Date(orderDetails.estimatedTime).toLocaleString() : 'Chưa có'}</Col>
+          <Col span={12}><strong>Ngày tạo đơn:</strong> {orderDetails.packingDate ? dayjs(orderDetails.packingDate).format('DD/MM/YYYY') : 'Chưa có'}</Col>
+          <Col span={12}><strong>Thời gian dự kiến:</strong> {orderDetails.estimatedTime ? dayjs(orderDetails.estimatedTime).format('DD/MM/YYYY HH:mm:ss') : 'Chưa có'}</Col>
           <Col span={12}><strong>Điểm đi:</strong> {startLocation}</Col>
           <Col span={12}><strong>Điểm đến:</strong> {endLocation}</Col>
           <Col span={12}><strong>Số container:</strong> {orderDetails.containerNumber}</Col>
@@ -160,6 +164,26 @@ const PackingOrderDetailPage = () => {
         cancelText="Hủy"
       >
         <Form form={form} layout="vertical">
+        <Form.Item
+          label="Ngày đóng hàng"
+          name="packingDate"
+          rules={[{ required: true, message: 'Vui lòng chọn ngày đóng hàng' }]}
+        >
+          <DatePicker style={{ width: '100%' }} placeholder="Chọn ngày đóng hàng" format="YYYY-MM-DD" />
+        </Form.Item>
+
+        <Form.Item
+          label="Thời gian dự kiến"
+          name="estimatedTime"
+          rules={[{ required: true, message: 'Vui lòng chọn thời gian dự kiến' }]}
+        >
+          <DatePicker
+            showTime={{ format: 'HH:mm:ss' }} 
+            format="YYYY-MM-DD HH:mm:ss"
+            style={{ width: '100%' }}
+            placeholder="Chọn thời gian dự kiến"
+          />
+        </Form.Item>
           <Form.Item
             label="Số container"
             name="containerNumber"

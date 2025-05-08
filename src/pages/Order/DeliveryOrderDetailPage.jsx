@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, Row, Col, Spin, message, Button, Modal, Form, Input } from 'antd';
+import { Card, Row, Col, Spin, message, Button, Modal, Form, Input,DatePicker } from 'antd';
 import { getDeliveryOrderDetails, updateDeliveryOrder } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 import CostCard from '../../components/card/CostCard';
 import DispatchVehicleCard from '../../components/card/DispatchVehicleCard';
 import LocationSelector from '../../components/location/LocationSelector';
-
+import dayjs from 'dayjs';
 const DeliveryOrderDetailPage = () => {
   const { orderId } = useParams();
   const [orderDetails, setOrderDetails] = useState(null);
@@ -66,6 +66,9 @@ const DeliveryOrderDetailPage = () => {
       note: orderDetails.note,
       endPoint: orderDetails.location.endPoint, 
       locationText: orderDetails.location.endPoint.locationText || '', 
+      deliveryDate: orderDetails.deliveryDate ? dayjs(orderDetails.deliveryDate) : null,
+      estimatedTime: orderDetails.estimatedTime ? dayjs(orderDetails.estimatedTime) : null, 
+
     });
   };
 
@@ -74,6 +77,9 @@ const DeliveryOrderDetailPage = () => {
       const values = await form.validateFields();
       const updatedDetails = {
         ...values,
+        deliveryDate: values.deliveryDate ? values.deliveryDate.format('YYYY-MM-DD') : null,
+        estimatedTime: values.estimatedTime ? values.estimatedTime.format('YYYY-MM-DD HH:mm:ss') : null, 
+
         location: {
           ...orderDetails.location,
           endPoint: {
@@ -116,11 +122,13 @@ const DeliveryOrderDetailPage = () => {
           <Col span={12}><strong>Tên ngắn:</strong> {orderDetails.customer.shortName}</Col>
           <Col span={12}><strong>Điểm đi:</strong> {startLocation}</Col>
           <Col span={12}><strong>Điểm đến:</strong> {endLocation}</Col>
+          <Col span={12}><strong>Ngày tạo đơn:</strong> {orderDetails.deliveryDate ? dayjs(orderDetails.deliveryDate).format('DD/MM/YYYY') : 'Chưa có'}</Col>
           <Col span={12}><strong>Đã có xe:</strong> {orderDetails.hasVehicle ? 'Có' : 'Không'}</Col>
-          <Col span={12}><strong>Thời gian dự kiến:</strong> {orderDetails.estimatedTime ? orderDetails.estimatedTime : 'Chưa có'}</Col>
+          <Col span={12}><strong>Thời gian dự kiến:</strong> {orderDetails.estimatedTime ? dayjs(orderDetails.estimatedTime).format('DD/MM/YYYY HH:mm:ss') : 'Chưa có'}</Col>
           <Col span={12}><strong>Ghép chuyến:</strong> {orderDetails.isCombinedTrip ? 'Có' : 'Không'}</Col>
           <Col span={12}><strong>Trạng thái:</strong> {statusMap[orderDetails.status]}</Col>
           <Col span={12}><strong>Loại cont:</strong> {orderDetails.contType === 0 ? "20''" : "40''"}</Col>
+          <Col span={12}><strong>Mặt hàng:</strong> {orderDetails.item}</Col>
           <Col span={12}><strong>Trọng lượng:</strong> {orderDetails.weight} tấn</Col>
           <Col span={12}><strong>Chủ sở hữu:</strong> {orderDetails.owner}</Col>
           <Col span={12}><strong>Số container:</strong> {orderDetails.containerNumber}</Col>
@@ -154,6 +162,25 @@ const DeliveryOrderDetailPage = () => {
         cancelText="Hủy"
       >
         <Form form={form} layout="vertical">
+        <Form.Item
+            label="Ngày giao hàng"
+            name="deliveryDate"
+            rules={[{ required: true, message: 'Vui lòng chọn ngày giao hàng' }]}
+          >
+            <DatePicker style={{ width: '100%' }} placeholder="Chọn ngày giao hàng" format="DD/MM/YYYY" />
+          </Form.Item>
+          <Form.Item
+            label="Thời gian dự kiến"
+            name="estimatedTime"
+            rules={[{ required: true, message: 'Vui lòng chọn thời gian dự kiến' }]}
+          >
+            <DatePicker
+              showTime={{ format: 'HH:mm:ss' }}
+              format="DD/MM/YYYY HH:mm:ss"
+              style={{ width: '100%' }}
+              placeholder="Chọn thời gian dự kiến"
+            />
+          </Form.Item>
           <Form.Item
             label="Số container"
             name="containerNumber"
