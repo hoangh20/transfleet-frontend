@@ -9,11 +9,37 @@ const SuggestionModal = ({
   onCancel,
   onSelectSuggestion,
 }) => {
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}h${minutes}'`;
+  };
+
   const suggestionColumns = [
+    {
+      title: 'Thông Tin Đơn Giao Hàng',
+      key: 'deliveryInfo',
+      render: (_, record) => (
+        <>
+          <div> {record.deliveryOrder.customer.shortName}</div>
+          <div> {record.deliveryOrder.containerNumber}</div>
+          <div> {record.deliveryOrder.owner}</div>
+        </>
+      ),
+    },
     {
       title: 'Đơn Giao Hàng',
       dataIndex: 'deliveryAddress',
       key: 'deliveryAddress',
+    },
+    {
+      title: 'Thông Tin Đơn Đóng Hàng',
+      key: 'packingInfo',
+      render: (_, record) => (
+        <>
+          <div>{record.packingOrder.customer.shortName}</div>
+        </>
+      ),
     },
     {
       title: 'Đơn Đóng Hàng',
@@ -25,6 +51,19 @@ const SuggestionModal = ({
       dataIndex: 'distance',
       key: 'distance',
       render: (distance) => distance.toFixed(2),
+    },
+    {
+      title: 'Thời Gian Dự Kiến',
+      dataIndex: 'time',
+      key: 'time',
+      render: (time) => formatTime(time),
+    },
+    {
+      title: 'Lợi Nhuận Dự Kiến (VND)',
+      dataIndex: 'expectedProfit',
+      key: 'expectedProfit',
+      render: (profit) =>
+        Math.round(profit).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
     },
     {
       title: 'Hành Động',
@@ -43,7 +82,7 @@ const SuggestionModal = ({
       visible={visible}
       onCancel={onCancel}
       footer={null}
-      width={800}
+      width={1200}
     >
       {loading ? (
         <Spin tip="Đang tải gợi ý..." />
