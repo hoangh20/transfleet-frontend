@@ -155,7 +155,7 @@ const WarehouseSelector = ({ visible, onCancel, onSelect, selectedRouteId }) => 
             <MapContainer
               center={[21.028511, 105.804817]} // Tọa độ Hà Nội
               zoom={13}
-              style={{ height: '400px' }}
+              style={{ height: '400px', width: '100%' }}
             >
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
