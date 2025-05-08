@@ -1,24 +1,58 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, List, Button, Spin, Alert, Input, Form, message, Row, Col, Popconfirm } from 'antd';
-import { getWarehouseAddressesByExternalFleetCostId, addWarehouseAddress, deleteWarehouseAddressById } from '../../services/ExternalFleetCostService';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Tooltip } from 'react-leaflet';
-import L from 'leaflet'; // Import Leaflet để tùy chỉnh icon
+import {
+  Modal,
+  List,
+  Button,
+  Spin,
+  Alert,
+  Input,
+  Form,
+  message,
+  Row,
+  Col,
+  Popconfirm,
+} from 'antd';
+import {
+  getWarehouseAddressesByExternalFleetCostId,
+  addWarehouseAddress,
+  deleteWarehouseAddressById,
+} from '../../services/ExternalFleetCostService';
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMapEvents,
+  Tooltip,
+  useMap,
+} from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 // Tùy chỉnh icon cho kho
 const warehouseIcon = new L.Icon({
-  iconUrl: '/warehouse.png', // Đường dẫn đến ảnh trong thư mục public
-  iconSize: [32, 32], // Kích thước icon
-  iconAnchor: [16, 32], // Điểm neo của icon
-  popupAnchor: [0, -32], // Điểm neo của popup
+  iconUrl: '/warehouse.png',
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32],
 });
+
+const InvalidateMapSize = () => {
+  const map = useMap();
+  useEffect(() => {
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 300); // Delay để đảm bảo modal đã render xong
+  }, [map]);
+  return null;
+};
 
 const WarehouseSelector = ({ visible, onCancel, onSelect, selectedRouteId }) => {
   const [warehouses, setWarehouses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [addingWarehouse, setAddingWarehouse] = useState(false);
-  const [selectedPosition, setSelectedPosition] = useState(null); // Vị trí được chọn từ bản đồ
-  const [showAddForm, setShowAddForm] = useState(false); // Hiển thị giao diện thêm kho
+  const [selectedPosition, setSelectedPosition] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -31,7 +65,9 @@ const WarehouseSelector = ({ visible, onCancel, onSelect, selectedRouteId }) => 
   const fetchWarehouses = async () => {
     setLoading(true);
     try {
-      const response = await getWarehouseAddressesByExternalFleetCostId(selectedRouteId);
+      const response = await getWarehouseAddressesByExternalFleetCostId(
+        selectedRouteId
+      );
       setWarehouses(response.data || []);
     } catch (error) {
       setWarehouses([]);
@@ -57,10 +93,10 @@ const WarehouseSelector = ({ visible, onCancel, onSelect, selectedRouteId }) => 
     try {
       await addWarehouseAddress(newWarehouse);
       message.success('Thêm kho thành công!');
-      fetchWarehouses(); 
+      fetchWarehouses();
       form.resetFields();
-      setSelectedPosition(null); 
-      setShowAddForm(false); 
+      setSelectedPosition(null);
+      setShowAddForm(false);
     } catch (error) {
       message.error('Lỗi khi thêm kho.');
     } finally {
@@ -72,7 +108,7 @@ const WarehouseSelector = ({ visible, onCancel, onSelect, selectedRouteId }) => 
     try {
       await deleteWarehouseAddressById(id);
       message.success('Xóa kho thành công!');
-      fetchWarehouses(); // Tải lại danh sách kho sau khi xóa
+      fetchWarehouses();
     } catch (error) {
       message.error('Lỗi khi xóa kho.');
     }
@@ -81,7 +117,7 @@ const WarehouseSelector = ({ visible, onCancel, onSelect, selectedRouteId }) => 
   const MapClickHandler = () => {
     useMapEvents({
       click(e) {
-        setSelectedPosition(e.latlng); 
+        setSelectedPosition(e.latlng);
         form.setFieldsValue({
           lat: e.latlng.lat,
           lng: e.latlng.lng,
@@ -98,6 +134,7 @@ const WarehouseSelector = ({ visible, onCancel, onSelect, selectedRouteId }) => 
       onCancel={onCancel}
       footer={null}
       width={1000}
+      destroyOnClose={false}
     >
       {!selectedRouteId ? (
         <Alert
@@ -108,7 +145,6 @@ const WarehouseSelector = ({ visible, onCancel, onSelect, selectedRouteId }) => 
         />
       ) : (
         <Row gutter={16}>
-          {/* Danh sách kho */}
           <Col span={8}>
             {loading ? (
               <Spin tip="Đang tải danh sách kho..." />
@@ -125,7 +161,9 @@ const WarehouseSelector = ({ visible, onCancel, onSelect, selectedRouteId }) => 
                         </Button>,
                         <Popconfirm
                           title="Bạn có chắc chắn muốn xóa kho này?"
-                          onConfirm={() => handleDeleteWarehouse(warehouse._id)}
+                          onConfirm={() =>
+                            handleDeleteWarehouse(warehouse._id)
+                          }
                           okText="Có"
                           cancelText="Không"
                         >
@@ -150,36 +188,39 @@ const WarehouseSelector = ({ visible, onCancel, onSelect, selectedRouteId }) => 
             )}
           </Col>
 
-          {/* Bản đồ */}
           <Col span={16}>
             <MapContainer
-              center={[21.028511, 105.804817]} // Tọa độ Hà Nội
+              center={[21.028511, 105.804817]}
               zoom={13}
-              style={{ height: '400px', width: '100%' }}
+              style={{ height: '450px', width: '100%' }}
             >
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               />
               <MapClickHandler />
+              <InvalidateMapSize /> {/* Gọi resize sau khi hiển thị */}
               {warehouses.map((warehouse) => (
                 <Marker
                   key={warehouse._id}
                   position={[warehouse.lat, warehouse.lng]}
-                  icon={warehouseIcon} // Sử dụng icon tùy chỉnh
+                  icon={warehouseIcon}
                 >
                   <Tooltip direction="top" offset={[0, -20]} permanent>
                     {warehouse.name}
                   </Tooltip>
                   <Popup>
-                      <Button type="link" onClick={() => onSelect(warehouse)}>
-                        Chọn
-                      </Button>
+                    <Button type="link" onClick={() => onSelect(warehouse)}>
+                      Chọn
+                    </Button>
                   </Popup>
                 </Marker>
               ))}
               {selectedPosition && (
-                <Marker position={[selectedPosition.lat, selectedPosition.lng]} icon={warehouseIcon}>
+                <Marker
+                  position={[selectedPosition.lat, selectedPosition.lng]}
+                  icon={warehouseIcon}
+                >
                   <Tooltip direction="top" offset={[0, -20]} permanent>
                     Vị trí được chọn
                   </Tooltip>
@@ -191,9 +232,13 @@ const WarehouseSelector = ({ visible, onCancel, onSelect, selectedRouteId }) => 
         </Row>
       )}
 
-      {/* Giao diện thêm kho */}
       {showAddForm && (
-        <Form form={form} layout="vertical" onFinish={handleAddWarehouse} style={{ marginTop: '16px' }}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleAddWarehouse}
+          style={{ marginTop: '16px' }}
+        >
           <Form.Item
             label="Tên Kho"
             name="name"
