@@ -25,6 +25,7 @@ import {
 import CreateExternalFleetCost from '../location/CreateExternalFleetCost'; 
 import AddSalesPersonModal from '../popup/AddSalesPersonModal';
 import SystemService from '../../services/SystemService';
+import WarehouseSelector from '../popup/WarehouseSelector'; 
 
 const { Option } = Select;
 
@@ -39,6 +40,7 @@ const PackingOrderForm = () => {
   const [quantity, setQuantity] = useState(1); 
   const [salesPersonList, setSalesPersonList] = useState([]); 
   const [isAddSalesPersonModalVisible, setIsAddSalesPersonModalVisible] = useState(false);
+  const [isWarehouseModalVisible, setIsWarehouseModalVisible] = useState(false); 
 
   useEffect(() => {
     fetchCustomers(); 
@@ -188,6 +190,21 @@ const PackingOrderForm = () => {
     setSelectedRouteId(selectedRouteId);
   };
 
+  const handleWarehouseSelect = (selectedWarehouse) => {
+    form.setFieldsValue({
+      location: {
+        ...form.getFieldValue('location'),
+        startPoint: {
+          ...form.getFieldValue(['location', 'startPoint']),
+          locationText: selectedWarehouse.name, 
+          lat: selectedWarehouse.lat, 
+          lng: selectedWarehouse.lng, 
+        },
+      },
+    });
+    setIsWarehouseModalVisible(false); 
+  };
+
   const columns = [
     {
       title: 'Điểm đi',
@@ -227,12 +244,29 @@ const PackingOrderForm = () => {
                   }
                 />
               </Form.Item>
-              <Form.Item
-                label='Địa Chỉ Điểm Đi'
-                name={['location', 'startPoint', 'locationText']}
-              >
-                <Input placeholder='Nhập địa chỉ điểm đi' />
-              </Form.Item>
+              <Row gutter={8}>
+                <Col span={18}>
+                  <Form.Item
+                    label="Địa Chỉ Điểm Đi"
+                    name={['location', 'startPoint', 'locationText']}
+                    style={{ marginBottom: 0 }} 
+                  >
+                    <Input placeholder="Nhập địa chỉ điểm đi" />
+                  </Form.Item>
+                </Col>
+                <Col
+                  span={6}
+                  style={{ display: 'flex', alignItems: 'flex-end' }}
+                >
+                  <Button
+                    type="primary"
+                    onClick={() => setIsWarehouseModalVisible(true)} 
+                    style={{ width: '100%' }}
+                  >
+                    Chọn Kho
+                  </Button>
+                </Col>
+              </Row>
             </Col>
             <Col span={12}>
               <Form.Item
@@ -513,6 +547,12 @@ const PackingOrderForm = () => {
         visible={isAddSalesPersonModalVisible}
         onCancel={() => setIsAddSalesPersonModalVisible(false)}
         onSubmit={handleAddSalesPerson}
+      />
+      <WarehouseSelector
+        visible={isWarehouseModalVisible}
+        onCancel={() => setIsWarehouseModalVisible(false)}
+        onSelect={handleWarehouseSelect}
+        selectedRouteId={selectedRouteId} 
       />
     </>
   );

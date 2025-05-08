@@ -200,3 +200,34 @@ export const getAllEmptyDistances = async () => {
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+
+export const addWarehouseAddress = async (data) => {
+  try {
+    const response = await axios.post(`${API_URL}/external-fleet-cost/warehouse-address`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error adding warehouse address:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const deleteWarehouseAddressById = async (id) => {
+  try {
+    const response = await axios.delete(`${API_URL}/external-fleet-cost/warehouse-address/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting warehouse address by ID:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const getWarehouseAddressesByExternalFleetCostId = async (externalFleetCostId) => {
+  try {
+    const response = await axios.get(`${API_URL}/external-fleet-cost/warehouse-address/externalFleetCost/${externalFleetCostId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching warehouse addresses by external fleet cost ID:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
