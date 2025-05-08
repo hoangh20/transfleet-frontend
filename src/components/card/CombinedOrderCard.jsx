@@ -141,7 +141,7 @@ const CombinedOrderCard = ({
 
   const deliverySteps = ['Giao hàng', 'Đã giao hàng', 'Đang lên kho', 'Đã đến kho'];
   const packingSteps = ['Đang đóng hàng', 'Đã đóng hàng', 'Đang về cảng', 'Hoàn thành'];
-  const currentDeliveryStep = combinedStatus >= 0 && combinedStatus <= 5 ? combinedStatus - 2 : 4;
+  const currentDeliveryStep = combinedStatus >= 0 && combinedStatus <= 5 ? combinedStatus - 1 : 4;
   const currentPackingStep = combinedStatus >= 6 && combinedStatus <= 9 ? combinedStatus - 5 : -1; 
 
 
