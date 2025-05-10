@@ -81,7 +81,7 @@ const OrderPage = () => {
         setNotFoundAddresses(response.notFoundAddresses || []);
         message.success('Gợi ý ghép đơn cho đơn giao hàng đã được tải thành công.');
       } catch (error) {
-        message.error('Lỗi khi tải gợi ý ghép đơn cho đơn giao hàng.');
+        message.error(`Lỗi khi tải gợi ý ghép đơn cho đơn giao hàng: ${error.error}`);
       } finally {
         setLoadingSuggestions(false);
       }

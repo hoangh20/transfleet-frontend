@@ -7,6 +7,7 @@ import CostCard from '../../components/card/CostCard';
 import DispatchVehicleCard from '../../components/card/DispatchVehicleCard';
 import LocationSelector from '../../components/location/LocationSelector';
 import dayjs from 'dayjs';
+import IncidentalCostCard from '../../components/card/IncidentalCostCard';
 const PackingOrderDetailPage = () => {
   const { orderId } = useParams();
   const [orderDetails, setOrderDetails] = useState(null);
@@ -140,8 +141,11 @@ const PackingOrderDetailPage = () => {
       </Card>
 
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-        <Col span={12}>
+        <Col span={6}>
           <CostCard orderId={orderDetails._id} />
+        </Col>
+        <Col span={6}>
+          <IncidentalCostCard orderId={orderDetails._id} />
         </Col>
         <Col span={12}>
           <DispatchVehicleCard

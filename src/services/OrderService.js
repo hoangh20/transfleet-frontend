@@ -346,3 +346,43 @@ export const suggestCombinationsForDelivery = async (deliveryOrderId, startDay, 
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+export const createIncidentalCost = async (data) => {
+  try {
+    const response = await axios.post(`${API_URL}/orders/incidental-costs`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating incidental cost:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const updateIncidentalCost = async (id, data) => {
+  try {
+    const response = await axios.put(`${API_URL}/orders/incidental-costs/${id}`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating incidental cost:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const deleteIncidentalCost = async (id) => {
+  try {
+    const response = await axios.delete(`${API_URL}/orders/incidental-costs/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting incidental cost:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const getIncidentalCostsByOrderId = async (orderId) => {
+  try {
+    const response = await axios.get(`${API_URL}/orders/incidental-costs/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching incidental costs by order ID:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};

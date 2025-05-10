@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, message, Typography, Tooltip, Button, Popconfirm, Space, Tag } from 'antd';
+import { Card, message, Typography, Tooltip, Button, Popconfirm, Space, Tag, Spin } from 'antd';
 import { Link } from 'react-router-dom';
 import { DeleteOutlined, EnvironmentOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { getPackingOrdersByDate, getCostByOrderId, deletePackingOrder } from '../../services/OrderService';
@@ -9,7 +9,7 @@ import { getCustomerById } from '../../services/CustomerService';
 const { Title, Text } = Typography;
 
 const PackingOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange }) => {
-  const [, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
@@ -99,6 +99,7 @@ const PackingOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange 
   return (
     <div style={{ maxWidth: '100%', overflowX: 'auto' }}>
       <Title level={4} style={{ marginBottom: 16 }}>Danh Sách Đơn Đóng Hàng ({orders.length})</Title>
+      <Spin spinning={loading} tip="Đang tải danh sách đơn đóng hàng...">
       <div style={{ 
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
@@ -229,6 +230,7 @@ const PackingOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange 
           </Card>
         ))}
       </div>
+      </Spin>
     </div>
   );
 };

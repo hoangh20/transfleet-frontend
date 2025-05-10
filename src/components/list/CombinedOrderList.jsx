@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, message, Typography, Tooltip, Button, Popconfirm, Space, Tag } from 'antd';
+import { Card, message, Typography, Tooltip, Button, Popconfirm, Space, Tag , Spin} from 'antd';
 import { Link } from 'react-router-dom';
 import { DeleteOutlined, EnvironmentOutlined, InfoCircleOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { 
@@ -14,9 +14,11 @@ const { Title, Text } = Typography;
 
 const CombinedOrderList = ({ startDate, endDate }) => {
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchCombinedOrders = async () => {
+      setLoading(true);
       try {
         const fuelPrice = parseFloat(localStorage.getItem('fuelPrice')) || 0; // Lấy giá trị fuelPrice từ localStorage
         const combinedOrders = await getOrderConnectionsByDeliveryDate(startDate, endDate);
@@ -91,6 +93,8 @@ const CombinedOrderList = ({ startDate, endDate }) => {
         setOrders(filteredOrders);
       } catch (error) {
         message.error('Lỗi khi tải danh sách đơn hàng');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -222,6 +226,7 @@ const CombinedOrderList = ({ startDate, endDate }) => {
   );
 
   return (
+    <Spin spinning={loading} tip="Đang tải danh sách đơn hàng ghép...">
     <div style={{ maxWidth: '100%', overflowX: 'auto' }}>
       <Title level={4} style={{ marginBottom: 16 }}>Danh Sách Đơn Hàng Ghép ({orders.length})</Title>
       <div style={{ 
@@ -290,6 +295,7 @@ const CombinedOrderList = ({ startDate, endDate }) => {
         })}
       </div>
     </div>
+    </Spin>
   );
 };
 

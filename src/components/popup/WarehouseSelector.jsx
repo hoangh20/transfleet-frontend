@@ -29,7 +29,6 @@ import {
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Tùy chỉnh icon cho kho
 const warehouseIcon = new L.Icon({
   iconUrl: '/warehouse.png',
   iconSize: [32, 32],
@@ -42,7 +41,7 @@ const InvalidateMapSize = () => {
   useEffect(() => {
     setTimeout(() => {
       map.invalidateSize();
-    }, 300); // Delay để đảm bảo modal đã render xong
+    }, 300); 
   }, [map]);
   return null;
 };

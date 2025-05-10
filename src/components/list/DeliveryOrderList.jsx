@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
-import { Card, message, Typography, Tooltip, Button, Popconfirm, Space, Tag } from 'antd';
+import { Card, message, Typography, Tooltip, Button, Popconfirm, Space, Tag, Spin } from 'antd';
 import { Link } from 'react-router-dom';
 import { DeleteOutlined, EnvironmentOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { getDeliveryOrdersByDate, getCostByOrderId, deleteDeliveryOrder, getVehicleByOrderId, getOrderPartnerConnectionByOrderId } from '../../services/OrderService';
@@ -115,13 +115,16 @@ const DeliveryOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange
   };
 
   return (
+    
     <div style={{ maxWidth: '100%', overflowX: 'auto', padding: '1px' }}>
       <Title level={4} style={{ marginBottom: 16 }}>Danh Sách Đơn Giao Hàng ({orders.length})</Title>
+      <Spin spinning={loading} tip="Đang tải danh sách đơn giao hàng...">
       <div style={{ 
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
         gap: '12px'
       }}>
+
         {orders.map((order) => (
           <Card
             key={order._id}
@@ -258,7 +261,9 @@ const DeliveryOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange
             </Space>
           </Card>
         ))}
+
       </div>
+      </Spin>
     </div>
   );
 };
