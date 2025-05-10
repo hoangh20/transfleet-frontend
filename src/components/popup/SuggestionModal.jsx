@@ -50,20 +50,31 @@ const SuggestionModal = ({
       title: 'Khoảng Cách (km)',
       dataIndex: 'distance',
       key: 'distance',
-      render: (distance) => distance.toFixed(2),
+      render: (distance, record) => (
+        <span style={{ color: record.hasEmptyDistance === 1 ? 'green' : 'inherit' }}>
+          {distance.toFixed(2)}
+        </span>
+      ),
     },
     {
       title: 'Thời Gian Dự Kiến',
       dataIndex: 'time',
       key: 'time',
-      render: (time) => formatTime(time),
+      render: (time, record) => (
+        <span style={{ color: record.hasEmptyDistance === 1 ? 'green' : 'inherit' }}>
+          {formatTime(time)}
+        </span>
+      ),
     },
     {
       title: 'Lợi Nhuận Dự Kiến (VND)',
       dataIndex: 'expectedProfit',
       key: 'expectedProfit',
-      render: (profit) =>
-        Math.round(profit).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
+      render: (profit, record) => (
+        <span style={{ color: record.hasEmptyDistance === 1 ? 'green' : 'inherit' }}>
+          {Math.round(profit).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+        </span>
+      ),
     },
     {
       title: 'Hành Động',
