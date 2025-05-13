@@ -50,31 +50,58 @@ const SuggestionModal = ({
       title: 'Khoảng Cách (km)',
       dataIndex: 'distance',
       key: 'distance',
-      render: (distance, record) => (
-        <span style={{ color: record.hasEmptyDistance === 1 ? 'green' : 'inherit' }}>
-          {distance.toFixed(2)}
-        </span>
-      ),
+      render: (distance, record) => {
+        if (typeof distance === 'number') {
+          return (
+            <span style={{ color: record.hasEmptyDistance === 1 ? 'green' : 'inherit' }}>
+              {distance.toFixed(2)}
+            </span>
+          );
+        }
+        return (
+          <span style={{ color: 'red' }}>
+            {distance}
+          </span>
+        );
+      },
     },
     {
       title: 'Thời Gian Dự Kiến',
       dataIndex: 'time',
       key: 'time',
-      render: (time, record) => (
-        <span style={{ color: record.hasEmptyDistance === 1 ? 'green' : 'inherit' }}>
-          {formatTime(time)}
-        </span>
-      ),
+      render: (time, record) => {
+        if (typeof time === 'number') {
+          return (
+            <span style={{ color: record.hasEmptyDistance === 1 ? 'green' : 'inherit' }}>
+              {formatTime(time)}
+            </span>
+          );
+        }
+        return (
+          <span style={{ color: 'red' }}>
+            {time}
+          </span>
+        );
+      },
     },
     {
       title: 'Lợi Nhuận Dự Kiến (VND)',
       dataIndex: 'expectedProfit',
       key: 'expectedProfit',
-      render: (profit, record) => (
-        <span style={{ color: record.hasEmptyDistance === 1 ? 'green' : 'inherit' }}>
-          {Math.round(profit).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-        </span>
-      ),
+      render: (profit, record) => {
+        if (typeof profit === 'number') {
+          return (
+            <span style={{ color: record.hasEmptyDistance === 1 ? 'green' : 'inherit' }}>
+              {Math.round(profit).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+            </span>
+          );
+        }
+        return (
+          <span style={{ color: 'red' }}>
+            {profit}
+          </span>
+        );
+      },
     },
     {
       title: 'Hành Động',
