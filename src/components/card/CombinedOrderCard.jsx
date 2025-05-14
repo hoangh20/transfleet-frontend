@@ -238,7 +238,7 @@ const CombinedOrderCard = ({
             </Col>
             <Col span={8}>
               <Text style={labelStyle}>Loại cont:</Text>
-              <Text>{deliveryTrip.contType === 0 ? "20''" : "40''"}</Text>
+              <Text>{deliveryTrip.contType === 0 ? "20" : "40"}</Text>
             </Col>
             <Col span={8}>
               {deliveryVehicleDetails && (
@@ -246,7 +246,7 @@ const CombinedOrderCard = ({
                   <Text style={labelStyle}>Thông tin xe:</Text>
                   <Text>
                     {deliveryTrip.hasVehicle === 1
-                      ? `${deliveryVehicleDetails.headPlate || 'N/A'} - ${deliveryVehicleDetails.moocType === 0 ? "20''" : "40''"}`
+                      ? `${deliveryVehicleDetails.headPlate || 'N/A'} - ${deliveryVehicleDetails.moocType === 0 ? "20" : "40"}`
                       : deliveryVehicleDetails.shortName || 'Không xác định'}
                   </Text>
                 </Col>
@@ -320,7 +320,7 @@ const CombinedOrderCard = ({
             </Col>
             <Col span={8}>
               <Text style={labelStyle}>Loại cont:</Text>
-              <Text>{packingTrip.contType === 0 ? "20''" : "40''"}</Text>
+              <Text>{packingTrip.contType === 0 ? "20" : "40"}</Text>
             </Col>
             <Col span={8}>
               {packingVehicleDetails && (
@@ -328,7 +328,7 @@ const CombinedOrderCard = ({
                   <Text style={labelStyle}>Thông tin xe:</Text>
                   <Text>
                     {packingTrip.hasVehicle === 1
-                      ? `${packingVehicleDetails.headPlate || 'N/A'} - ${packingVehicleDetails.moocType === 0 ? "20''" : "40''"}`
+                      ? `${packingVehicleDetails.headPlate || 'N/A'} - ${packingVehicleDetails.moocType === 0 ? "20" : "40"}`
                       : packingVehicleDetails.shortName || 'Không xác định'}
                   </Text>
                 </Col>

@@ -88,8 +88,8 @@ const VehicleListPage = () => {
             style={{ width: '100%' }}
           >
             <Option value=''>Tất cả</Option>
-            <Option value='0'>20''</Option>
-            <Option value='1'>40''</Option>
+            <Option value='0'>20</Option>
+            <Option value='1'>40</Option>
           </Select>
         </Col>
 

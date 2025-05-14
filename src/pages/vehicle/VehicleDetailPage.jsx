@@ -496,8 +496,8 @@ const VehicleDetailPage = () => {
                     ]}
                   >
                     <Select placeholder='Chọn loại rơ moóc' size='large'>
-                      <Option value={0}>20''</Option>
-                      <Option value={1}>40''</Option>
+                      <Option value={0}>20</Option>
+                      <Option value={1}>40</Option>
                     </Select>
                   </Form.Item>
                 </Col>

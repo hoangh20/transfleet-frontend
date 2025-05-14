@@ -98,7 +98,7 @@ const DriverCard = ({ driver }) => {
           <CarOutlined style={{ color: '#52c41a', marginRight: 8 }} />
           <span>
             Biển số: {vehicle.headPlate}, Mooc:{' '}
-            {vehicle.moocType === 0 ? "20''" : "40''"}
+            {vehicle.moocType === 0 ? "20" : "40"}
           </span>
         </>
       );

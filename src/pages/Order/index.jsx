@@ -275,18 +275,18 @@ const OrderPage = () => {
                 onChange={(e) => setEmptyDistanceInput(e.target.value)}
                 style={{ marginBottom: 8 }}
               />
-              <label>Vé kết hợp mooc 20'':</label>
+              <label>Vé kết hợp mooc 20:</label>
               <Input
                 type="number"
-                placeholder="Nhập vé kết hợp mooc 20''"
+                placeholder="Nhập vé kết hợp mooc 20"
                 value={singleTicketInput}
                 onChange={(e) => setSingleTicketInput(e.target.value)}
                 style={{ marginBottom: 8 }}
               />
-              <label>Vé kết hợp mooc 40'':</label>
+              <label>Vé kết hợp mooc 40:</label>
               <Input
                 type="number"
-                placeholder="Nhập vé kết hợp mooc 40''"
+                placeholder="Nhập vé kết hợp mooc 40"
                 value={singleTicket40Input}
                 onChange={(e) => setSingleTicket40Input(e.target.value)}
               />
@@ -303,19 +303,19 @@ const OrderPage = () => {
                 style={{ marginBottom: 8 }}
                 readOnly 
               />
-              <label>Vé kết hợp mooc 20'':</label>
+              <label>Vé kết hợp mooc 20:</label>
               <Input
                 type="number"
-                placeholder="Nhập vé kết hợp mooc 20''"
+                placeholder="Nhập vé kết hợp mooc 20"
                 value={singleTicketInput}
                 onChange={(e) => setSingleTicketInput(e.target.value)}
                 style={{ marginBottom: 8 }}
                 readOnly 
               />
-              <label>Vé kết hợp mooc 40'':</label>
+              <label>Vé kết hợp mooc 40:</label>
               <Input
                 type="number"
-                placeholder="Nhập vé kết hợp mooc 40''"
+                placeholder="Nhập vé kết hợp mooc 40"
                 value={singleTicket40Input}
                 onChange={(e) => setSingleTicket40Input(e.target.value)}
                 readOnly

@@ -175,7 +175,7 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
             {`${endLocationText ? endLocationText + ', ' : ''}${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`}
           </Col>
           <Col span={8}>
-            <strong>Loại cont:</strong> {trip.contType === 0 ? "20''" : "40''"}
+            <strong>Loại cont:</strong> {trip.contType === 0 ? "20" : "40"}
           </Col>
           <Col span={8}>
             <strong>Số container:</strong> {trip.containerNumber} {`- ${trip.owner}` || ''}
@@ -185,7 +185,7 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
               <Col span={24}>
                 <strong>Thông tin xe:</strong>{' '}
                 {trip.hasVehicle === 1
-                  ? `${vehicleDetails.headPlate || 'N/A'} - ${vehicleDetails.moocType === 0 ? "20''" : "40''"}`
+                  ? `${vehicleDetails.headPlate || 'N/A'} - ${vehicleDetails.moocType === 0 ? "20" : "40"}`
                   : vehicleDetails.shortName || 'Không xác định'}
               </Col>
             )}

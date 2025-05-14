@@ -73,7 +73,7 @@ const CombinedOrderList = ({ startDate, endDate }) => {
                 startLocation: `${startLocationText ? startLocationText + ', ' : ''}${startWard ? startWard + ', ' : ''}${startDistrict}, ${startProvince}`,
                 endLocation: `${endLocationText ? endLocationText + ', ' : ''}${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`,
                 customerName: customer.shortName,
-                moocType: order.moocType === 0 ? "20''" : "40''",
+                moocType: order.moocType === 0 ? "20" : "40",
                 containerNumber: order.containerNumber || 'Không có',
               };
             };
@@ -134,7 +134,7 @@ const CombinedOrderList = ({ startDate, endDate }) => {
             <Text strong style={{ fontSize: 14 }}>
               {type === 'delivery' ? '🚚 ' : '📦 '} {order.customerName}
             </Text>
-            <Tag color={order.moocType === "20''" ? "blue" : "purple"}>{order.moocType}</Tag>
+            <Tag color={order.moocType === "20" ? "blue" : "purple"}>{order.moocType}</Tag>
           </div>
         </Link>
       }

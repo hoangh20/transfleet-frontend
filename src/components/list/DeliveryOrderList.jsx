@@ -62,7 +62,7 @@ const DeliveryOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange
             const vehicle = await getVehicleByOrderId(order._id);
             vehicleDetails = {
               type: 'internal',
-              details: `${vehicle.headPlate || 'N/A'} - ${vehicle.moocType === 0 ? "20''" : "40''"}`,
+              details: `${vehicle.headPlate || 'N/A'} - ${vehicle.moocType === 0 ? "20" : "40"}`,
             };
           } else if (order.hasVehicle === 2) {
             const partnerConnection = await getOrderPartnerConnectionByOrderId(order._id);
@@ -81,8 +81,8 @@ const DeliveryOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange
             startLocation: `${startLocationText ? startLocationText + ', ' : ''}${startWard ? startWard + ', ' : ''}${startDistrict}, ${startProvince}`,
             endLocation: `${endLocationText ? endLocationText + ', ' : ''}${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`,
             shortName: customer.shortName,
-            contType: order.contType === 0 ? "20''" : "40''",
-            moocType: order.moocType === 0 ? "20''" : "40''",
+            contType: order.contType === 0 ? "20" : "40",
+            moocType: order.moocType === 0 ? "20" : "40",
             containerNumber: order.containerNumber,
             vehicleDetails, // Thêm thông tin xe hoặc đối tác
           };
@@ -133,7 +133,7 @@ const DeliveryOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange
               <Link to={`/order/delivery-orders/${order._id}`} style={{ display: 'block' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text strong style={{ fontSize: 14 }}>🚚 {order.shortName}</Text>
-                  <Tag color={order.contType === "20''" ? "blue" : "purple"}>{order.contType}</Tag>
+                  <Tag color={order.contType === "20" ? "blue" : "purple"}>{order.contType}</Tag>
                 </div>
               </Link>
             }

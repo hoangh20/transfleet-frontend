@@ -179,7 +179,7 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, has
       {assignedData && (
         <div style={{ marginBottom: '16px', color: '#1890ff' }}>
           {hasVehicle === 1 ? (
-            <p>Xe đã được giao: {assignedData.headPlate} - {assignedData.moocType === 0 ? "20''" : "40''"}</p>
+            <p>Xe đã được giao: {assignedData.headPlate} - {assignedData.moocType === 0 ? "20" : "40"}</p>
           ) : hasVehicle === 2 ? (
             <p>Đối tác đã được giao: {assignedData.partnerId?.shortName} - {Number(assignedData.partnerFee).toLocaleString()} VND</p>
           ) : null}
@@ -286,7 +286,7 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, has
                   onChange={() => handleVehicleSelect(vehicle._id)}
                   checked={selectedVehicles.includes(vehicle._id)}
                 >
-                  {vehicle.headPlate} - {vehicle.moocType === 0 ? "20''" : "40''"}
+                  {vehicle.headPlate} - {vehicle.moocType === 0 ? "20" : "40"}
                 </Checkbox>
               </List.Item>
             )}

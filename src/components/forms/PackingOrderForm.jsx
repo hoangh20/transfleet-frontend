@@ -368,8 +368,8 @@ const PackingOrderForm = () => {
                     return false;
                   }}
                 >
-                  <Option value={0}>20''</Option>
-                  <Option value={1}>40''</Option>
+                  <Option value={0}>20</Option>
+                  <Option value={1}>40</Option>
                 </Select>
               </Form.Item>
             </Col>

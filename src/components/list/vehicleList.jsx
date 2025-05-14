@@ -56,7 +56,7 @@ const ListVehicle = ({ vehicle, onDelete }) => {
     status,
   } = vehicle;
 
-  const moocTypeLabels = ["20''", "40''"];
+  const moocTypeLabels = ["20", "40"];
 
   useEffect(() => {
     const fetchDriver = async () => {

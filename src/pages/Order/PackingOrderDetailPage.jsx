@@ -129,7 +129,7 @@ const PackingOrderDetailPage = () => {
           <Col span={12}><strong>Điểm đi:</strong> {startLocation}</Col>
           <Col span={12}><strong>Điểm đến:</strong> {endLocation}</Col>
           <Col span={12}><strong>Số container:</strong> {orderDetails.containerNumber}</Col>
-          <Col span={12}><strong>Loại cont:</strong> {orderDetails.contType === 0 ? "20''" : "40''"}</Col>
+          <Col span={12}><strong>Loại cont:</strong> {orderDetails.contType === 0 ? "20" : "40"}</Col>
           <Col span={12}><strong>Trọng lượng:</strong> {orderDetails.weight} Tấn</Col>
           <Col span={12}><strong>Chủ sở hữu:</strong> {orderDetails.owner}</Col>
           <Col span={12}><strong>Ghi chú:</strong> {orderDetails.note}</Col>

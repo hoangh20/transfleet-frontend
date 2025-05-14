@@ -62,8 +62,8 @@ const PackingOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange 
             startLocation: `${startLocationText ? startLocationText + ', ' : ''}${startWard ? startWard + ', ' : ''}${startDistrict}, ${startProvince}`,
             endLocation: `${endLocationText ? endLocationText + ', ' : ''}${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`,
             shortName: customer.shortName,
-            contType: order.contType === 0 ? "20''" : "40''",
-            moocType: order.moocType === 0 ? "20''" : "40''",
+            contType: order.contType === 0 ? "20" : "40",
+            moocType: order.moocType === 0 ? "20" : "40",
             closeCombination: order.closeCombination === 0 ? "Gắp vỏ" : "Kết hợp",
             containerNumber: order.containerNumber 
           };
@@ -114,7 +114,7 @@ const PackingOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text strong style={{ fontSize: 14 }}>📦 {order.shortName}</Text>
                   <Tag color={order.closeCombination === "Gắp vỏ" ? "blue" : "green"}>{order.closeCombination}</Tag>
-                  <Tag color={order.contType === "20''" ? "blue" : "purple"}>{order.contType}</Tag>
+                  <Tag color={order.contType === "20" ? "blue" : "purple"}>{order.contType}</Tag>
                 </div>
               </Link>
             }

@@ -129,7 +129,7 @@ const DeliveryOrderDetailPage = () => {
           <Col span={12}><strong>Thời gian dự kiến:</strong> {orderDetails.estimatedTime ? dayjs(orderDetails.estimatedTime).format('DD/MM/YYYY HH:mm:ss') : 'Chưa có'}</Col>
           <Col span={12}><strong>Ghép chuyến:</strong> {orderDetails.isCombinedTrip ? 'Có' : 'Không'}</Col>
           <Col span={12}><strong>Trạng thái:</strong> {statusMap[orderDetails.status]}</Col>
-          <Col span={12}><strong>Loại cont:</strong> {orderDetails.contType === 0 ? "20''" : "40''"}</Col>
+          <Col span={12}><strong>Loại cont:</strong> {orderDetails.contType === 0 ? "20" : "40"}</Col>
           <Col span={12}><strong>Mặt hàng:</strong> {orderDetails.item}</Col>
           <Col span={12}><strong>Trọng lượng:</strong> {orderDetails.weight} tấn</Col>
           <Col span={12}><strong>Chủ sở hữu:</strong> {orderDetails.owner}</Col>

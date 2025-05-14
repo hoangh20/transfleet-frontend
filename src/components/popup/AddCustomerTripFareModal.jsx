@@ -42,18 +42,18 @@ const AddCustomerTripFareModal = ({
           />
         </Form.Item>
         <Form.Item
-          label="Cước chuyến 20''"
+          label="Cước chuyến 20"
           name="tripFare0"
           rules={[{ required: true, message: 'Vui lòng nhập cước chuyến 20"' }]}
         >
-          <Input type="number" placeholder="Nhập cước chuyến 20''" />
+          <Input type="number" placeholder="Nhập cước chuyến 20" />
         </Form.Item>
         <Form.Item
-          label="Cước chuyến 40''"
+          label="Cước chuyến 40"
           name="tripFare1"
           rules={[{ required: true, message: 'Vui lòng nhập cước chuyến 40"' }]}
         >
-          <Input type="number" placeholder="Nhập cước chuyến 40''" />
+          <Input type="number" placeholder="Nhập cước chuyến 40" />
         </Form.Item>
       </Form>
     </Modal>
