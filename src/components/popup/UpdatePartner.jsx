@@ -74,8 +74,8 @@ const UpdatePartnerModal = ({ visible, onCancel, onSuccess, partnerId }) => {
           <Input placeholder='Nhập tên đối tác' />
         </Form.Item>
         <Form.Item
-          label='Mã đối tác'
-          name='partnerCode'
+          label='Tên viết tắt'
+          name='shortName'
             rules={[{ required: true, message: 'Vui lòng nhập mã đối tác' }]}
         >
             <Input placeholder='Nhập mã đối tác' />
