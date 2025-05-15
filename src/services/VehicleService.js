@@ -95,3 +95,19 @@ export const getVehicleLocations = async () => {
     );
   }
 };
+
+export const updateVehicleStatus = async (id, status) => {
+  try {
+    const response = await axios.put(
+      `${process.env.REACT_APP_API_URL}/vehicle/update-status/${id}`,
+      { status },
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response
+        ? error.response.data.message
+        : 'Error updating vehicle status',
+    );
+  }
+};

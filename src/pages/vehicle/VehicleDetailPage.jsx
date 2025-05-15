@@ -32,6 +32,7 @@ import {
   deleteVehicle,
   getDriverByVehicleId,
   unlinkDriverFromVehicle,
+  updateVehicleStatus,
 } from '../../services/VehicleService';
 import { getAllDrivers } from '../../services/DriverService';
 import LoadingPage from '../../components/loading/LoadingPage';
@@ -55,6 +56,9 @@ const VehicleDetailPage = () => {
 
   const [errorDriver, setErrorDriver] = useState(null);
   const [listDrivers, setlistDrivers] = useState([]);
+  const [vehicleStatus, setVehicleStatus] = useState(vehicle?.status || 0);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
   useEffect(() => {
     const fetchVehicle = async () => {
       setLoading(true);
@@ -111,6 +115,12 @@ const VehicleDetailPage = () => {
     };
     if (vehicle && vehicle.hasDriver === 0) {
       fetchlistDrivers();
+    }
+  }, [vehicle]);
+
+  useEffect(() => {
+    if (vehicle) {
+      setVehicleStatus(vehicle.status);
     }
   }, [vehicle]);
 
@@ -276,6 +286,23 @@ const VehicleDetailPage = () => {
     } catch (error) {
       console.error('Error unlinking:', error);
       message.error('Đã xảy ra lỗi khi hủy giao xe');
+    }
+  };
+
+  const handleStatusChange = (value) => {
+    setVehicleStatus(value);
+  };
+
+  const handleUpdateStatus = async () => {
+    try {
+      setIsUpdatingStatus(true);
+      await updateVehicleStatus(vehicle._id, vehicleStatus);
+      message.success('Cập nhật trạng thái xe thành công!');
+      setVehicle((prev) => ({ ...prev, status: vehicleStatus }));
+    } catch (error) {
+      message.error('Lỗi khi cập nhật trạng thái xe.');
+    } finally {
+      setIsUpdatingStatus(false);
     }
   };
 
@@ -684,6 +711,35 @@ const VehicleDetailPage = () => {
                 </div>
               </div>
             )}
+          </Card>
+
+          {/* Di chuyển ô cập nhật trạng thái xuống đây */}
+          <Card title="Cập nhật trạng thái xe" bordered={false} style={{ marginTop: '20px' }}>
+            <Row gutter={[16, 16]} align="middle">
+              <Col span={12}>
+                <Select
+                  value={vehicleStatus}
+                  onChange={handleStatusChange}
+                  style={{ width: '100%' }}
+                  placeholder="Chọn trạng thái xe"
+                >
+                  <Option value={0}>Rảnh</Option>
+                  <Option value={1}>Đang chạy</Option>
+                  <Option value={2}>Bảo dưỡng</Option>
+                  <Option value={3}>Hỏng</Option>
+                </Select>
+              </Col>
+              <Col span={12}>
+                <Button
+                  type="primary"
+                  onClick={handleUpdateStatus}
+                  loading={isUpdatingStatus}
+                  style={{ width: '100%' }}
+                >
+                  Lưu trạng thái
+                </Button>
+              </Col>
+            </Row>
           </Card>
         </Col>
       </Row>
