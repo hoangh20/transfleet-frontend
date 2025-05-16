@@ -38,6 +38,8 @@ const VehicleMap = ({ vehicles, loading, onPreview }) => {
                   <strong>Biển số:</strong> {vehicle.NumberPlate || 'Không xác định'} <br />
                   <strong>Tài xế:</strong> {vehicle.DriverName || 'Không xác định'} <br />
                   <strong>Tốc độ:</strong> {vehicle.Speed} km/h <br />
+                  <strong>Thời gian lái trong ngày:</strong> {vehicle.DriverTimeInDay || 'Không xác định'} <br />
+                  <strong>Thời gian lái trong tuần:</strong> {vehicle.DriverTimeInWeek || 'Không xác định'} <br />
                   <strong>Địa chỉ:</strong> {vehicle.Address || 'Không xác định'}{' '}
                   <a
                     href={`https://www.openstreetmap.org/search?lat=${vehicle.Lt}&lon=${vehicle.Ln}&zoom=14#map=11/${vehicle.Lt}/${vehicle.Ln}`}
