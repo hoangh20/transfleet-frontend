@@ -53,13 +53,19 @@ const AdminMenu = () => {
       >
         <Link to='/order/list-trip'>Danh sách các chuyến </Link>
       </Menu.Item>
-      <Menu.Item
+      <SubMenu
         key='partner-cost'
+        title='Tuyến vận tải'
         icon={<ContainerOutlined />}
         style={{ fontSize: '18px' }}
       >
-        <Link to='/transport-route'>Tuyến vận tải</Link>
-      </Menu.Item>
+        <Menu.Item key='transport-route-list' style={{ fontSize: '18px' }}>
+          <Link to='/transport-route'>Danh sách tuyến</Link>
+        </Menu.Item>
+        <Menu.Item key='transport-route-empty-distance' style={{ fontSize: '18px' }}>
+          <Link to='/transport-route/empty-distance'>Tuyến kết hợp</Link>
+        </Menu.Item>
+      </SubMenu>
 
       <SubMenu
         key='vehicle'

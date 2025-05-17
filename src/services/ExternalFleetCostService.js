@@ -231,3 +231,32 @@ export const getWarehouseAddressesByExternalFleetCostId = async (externalFleetCo
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+export const getAllEmptyDistancesWithFilter = async (query = {}) => {
+  try {
+    const response = await axios.get(`${API_URL}/external-fleet-cost/empty-distances/get-all`, { params: query });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching filtered empty distances:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+export const updateEmptyDistance = async (id, data) => {
+  try {
+    const response = await axios.put(`${API_URL}/external-fleet-cost/empty-distance/${id}`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating empty distance:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const deleteEmptyDistance = async (id) => {
+  try {
+    const response = await axios.delete(`${API_URL}/external-fleet-cost/empty-distance/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting empty distance:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};

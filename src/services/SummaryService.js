@@ -34,6 +34,40 @@ class SummaryService {
       throw error.response?.data || error.message;
     }
   }
+  static async getIncidentalCostsByDay(date) {
+  try {
+    const response = await axios.get(`${API_URL}/incidental-costs/day`, {
+      params: { date }
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
 }
+
+static async getIncidentalCostsByWeek(startDate) {
+  try {
+    const response = await axios.get(`${API_URL}/incidental-costs/week`, {
+      params: { startDate }
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+}
+
+static async getIncidentalCostsByMonth(startDate) {
+  try {
+    const response = await axios.get(`${API_URL}/incidental-costs/month`, {
+      params: { startDate }
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+}
+}
+
+
 
 export default SummaryService;

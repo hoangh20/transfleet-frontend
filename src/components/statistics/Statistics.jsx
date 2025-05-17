@@ -9,6 +9,7 @@ import SummaryService from '../../services/SummaryService';
 import StatsCard from './StatsCard';
 import TripChart from './TripChart';
 import InternalFareChart from './InternalFareChart';
+import IncidentalCostSummary from './IncidentalCostSummary';
 
 const { Option } = Select;
 // eslint-disable-next-line no-unused-vars
@@ -368,7 +369,7 @@ const Statistics = () => {
           />
           <StatsCard
             icon="🧑‍✈️"
-            label="Lái xe - xe (nội bộ) nổi bật"
+            label="Lái xe"
             value={
               <div>
                 <List
@@ -451,141 +452,154 @@ const Statistics = () => {
       </Row>
       <Row gutter={[24, 24]} style={{ marginTop: 32 }}>
         <Col span={24}>
-          <Title level={4} style={{ marginBottom: 16 }}>Đội xe đối tác</Title>
-        </Col>
-        <Col xs={24} md={4}>
-          <StatsCard
-            icon={'🚚'}
-            value={currentStatsPartner.totalTrips}
-            label="Tổng số chuyến"
-            change={getChange(currentStatsPartner.totalTrips, prevStatsPartner.totalTrips)}
-          />
-        </Col>
-        <Col xs={24} md={4}>
-          <StatsCard
-            icon={'🔄'}
-            value={
-              <span>
-                {currentStatsPartner.combinedTrips} - {currentStatsPartner.combinedTripRatio}%
-              </span>
-            }
-            label="Chuyến ghép"
-            change={getChange(currentStatsPartner.combinedTrips, prevStatsPartner.combinedTrips)}
-          />
-        </Col>
-        <Col xs={24} md={4}>
-          <StatsCard
-            icon={'💰'}
-            value={totalFarePartner.toLocaleString('vi-VN')}
-            label="Tổng cước thu"
-            change={getChange(totalFarePartner, prevTotalFarePartner)}
-          />
-        </Col>
-        <Col xs={24} md={4}>
-          <StatsCard
-            icon={'💸'}
-            value={totalPartnerFee.toLocaleString('vi-VN')}
-            label="Tổng cước trả"
-            change={getChange(totalPartnerFee, prevTotalPartnerFee)}
-          />
+          <Title level={4} style={{ marginBottom: 16 }}>
+            Đội xe đối tác
+          </Title>
         </Col>
       </Row>
-      <Row gutter={[24, 24]} style={{ marginTop: 32 }}>
+      <Row gutter={[24, 24]}>        
         <Col xs={24} md={8}>
-          <StatsCard
-            icon={'👥'}
-            label="Khách hàng hàng đầu"
-            value={
-              <div>
-                <List
-                  size="small"
-                  dataSource={top5Customers}
-                  renderItem={([customer, count], idx) => (
-                    <List.Item>
-                      <span style={{ fontWeight: 500 }}>{idx + 1}. {customer}</span>
-                      <span style={{ float: 'right' }}>{count} chuyến</span>
-                    </List.Item>
-                  )}
-                />
-                {sortedCustomers.length > 5 && (
-                  <Button
-                    size="small"
-                    type="link"
-                    onClick={() => setShowAllCustomers(true)}
-                    style={{ padding: 0, marginTop: 8 }}
-                  >
-                    Xem tất cả
-                  </Button>
-                )}
-                <Modal
-                  title="Danh sách tất cả khách hàng theo số chuyến"
-                  open={showAllCustomers}
-                  onCancel={() => setShowAllCustomers(false)}
-                  footer={null}
-                  width={600}
-                >
-                  <List
-                    size="small"
-                    dataSource={sortedCustomers}
-                    renderItem={([customer, count], idx) => (
-                      <List.Item>
-                        <span style={{ fontWeight: 500 }}>{idx + 1}. {customer}</span>
-                        <span style={{ float: 'right' }}>{count} chuyến</span>
-                      </List.Item>
+          <Row gutter={[24, 24]}>
+            <Col xs={24} sm={12}>
+              <StatsCard
+                icon={'🚚'}
+                value={currentStatsPartner.totalTrips}
+                label="Tổng số chuyến"
+                change={getChange(currentStatsPartner.totalTrips, prevStatsPartner.totalTrips)}
+              />
+            </Col>
+            <Col xs={24} sm={12}>
+              <StatsCard
+                icon={'🔄'}
+                value={
+                  <span>
+                    {currentStatsPartner.combinedTrips} - {currentStatsPartner.combinedTripRatio}%
+                  </span>
+                }
+                label="Chuyến ghép"
+                change={getChange(currentStatsPartner.combinedTrips, prevStatsPartner.combinedTrips)}
+              />
+            </Col>
+            <Col span={24}>
+              <StatsCard
+                icon={'👥'}
+                label="Khách hàng hàng đầu"
+                value={
+                  <div>
+                    <List
+                      size="small"
+                      dataSource={top5Customers}
+                      renderItem={([customer, count], idx) => (
+                        <List.Item>
+                          <span style={{ fontWeight: 500 }}>{idx + 1}. {customer}</span>
+                          <span style={{ float: 'right' }}>{count} chuyến</span>
+                        </List.Item>
+                      )}
+                    />
+                    {sortedCustomers.length > 5 && (
+                      <Button
+                        size="small"
+                        type="link"
+                        onClick={() => setShowAllCustomers(true)}
+                        style={{ padding: 0, marginTop: 8 }}
+                      >
+                        Xem tất cả
+                      </Button>
                     )}
-                  />
-                </Modal>
-              </div>
-            }
-          />
+                    <Modal
+                      title="Danh sách tất cả khách hàng theo số chuyến"
+                      open={showAllCustomers}
+                      onCancel={() => setShowAllCustomers(false)}
+                      footer={null}
+                      width={600}
+                    >
+                      <List
+                        size="small"
+                        dataSource={sortedCustomers}
+                        renderItem={([customer, count], idx) => (
+                          <List.Item>
+                            <span style={{ fontWeight: 500 }}>{idx + 1}. {customer}</span>
+                            <span style={{ float: 'right' }}>{count} chuyến</span>
+                          </List.Item>
+                        )}
+                      />
+                    </Modal>
+                  </div>
+                }
+              />
+            </Col>
+          </Row>
         </Col>
         <Col xs={24} md={8}>
-          <StatsCard
-            icon={'🤝'}
-            label="Đối tác hàng đầu "
-            value={
-              <div>
-                <List
-                  size="small"
-                  dataSource={top5Partners}
-                  renderItem={([partner, count], idx) => (
-                    <List.Item>
-                      <span style={{ fontWeight: 500 }}>{idx + 1}. {partner}</span>
-                      <span style={{ float: 'right' }}>{count} chuyến</span>
-                    </List.Item>
-                  )}
-                />
-                {sortedPartners.length > 5 && (
-                  <Button
-                    size="small"
-                    type="link"
-                    onClick={() => setShowAllPartners(true)}
-                    style={{ padding: 0, marginTop: 8 }}
-                  >
-                    Xem tất cả
-                  </Button>
-                )}
-                <Modal
-                  title="Danh sách tất cả đối tác theo số chuyến (chỉ xe đối tác)"
-                  open={showAllPartners}
-                  onCancel={() => setShowAllPartners(false)}
-                  footer={null}
-                  width={600}
-                >
-                  <List
-                    size="small"
-                    dataSource={sortedPartners}
-                    renderItem={([partner, count], idx) => (
-                      <List.Item>
-                        <span style={{ fontWeight: 500 }}>{idx + 1}. {partner}</span>
-                        <span style={{ float: 'right' }}>{count} chuyến</span>
-                      </List.Item>
+          <Row gutter={[24, 24]}>
+            <Col xs={24} sm={12}>
+              <StatsCard
+                icon={'💰'}
+                value={totalFarePartner.toLocaleString('vi-VN')}
+                label="Tổng cước thu"
+                change={getChange(totalFarePartner, prevTotalFarePartner)}
+              />
+            </Col>
+            <Col xs={24} sm={12}>
+              <StatsCard
+                icon={'💸'}
+                value={totalPartnerFee.toLocaleString('vi-VN')}
+                label="Tổng cước trả"
+                change={getChange(totalPartnerFee, prevTotalPartnerFee)}
+              />
+            </Col>
+            <Col span={24}>
+              <StatsCard
+                icon={'🤝'}
+                label="Đối tác hàng đầu"
+                value={
+                  <div>
+                    <List
+                      size="small"
+                      dataSource={top5Partners}
+                      renderItem={([partner, count], idx) => (
+                        <List.Item>
+                          <span style={{ fontWeight: 500 }}>{idx + 1}. {partner}</span>
+                          <span style={{ float: 'right' }}>{count} chuyến</span>
+                        </List.Item>
+                      )}
+                    />
+                    {sortedPartners.length > 5 && (
+                      <Button
+                        size="small"
+                        type="link"
+                        onClick={() => setShowAllPartners(true)}
+                        style={{ padding: 0, marginTop: 8 }}
+                      >
+                        Xem tất cả
+                      </Button>
                     )}
-                  />
-                </Modal>
-              </div>
-            }
-          />
+                    <Modal
+                      title="Danh sách tất cả đối tác theo số chuyến (chỉ xe đối tác)"
+                      open={showAllPartners}
+                      onCancel={() => setShowAllPartners(false)}
+                      footer={null}
+                      width={600}
+                    >
+                      <List
+                        size="small"
+                        dataSource={sortedPartners}
+                        renderItem={([partner, count], idx) => (
+                          <List.Item>
+                            <span style={{ fontWeight: 500 }}>{idx + 1}. {partner}</span>
+                            <span style={{ float: 'right' }}>{count} chuyến</span>
+                          </List.Item>
+                        )}
+                      />
+                    </Modal>
+                  </div>
+                }
+              />
+            </Col>
+          </Row>
+        </Col>
+        <Col xs={24} md={8}>
+          <IncidentalCostSummary type={type} selectedDate={selectedDate} />
         </Col>
       </Row>
     </div>

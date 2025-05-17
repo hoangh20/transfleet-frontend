@@ -19,6 +19,7 @@ import DeliveryOrderDetailPage from '../pages/Order/DeliveryOrderDetailPage';
 import PackingOrderDetailPage from '../pages/Order/PackingOrderDetailPage';
 import OrderTripListPage from '../pages/Order/OrderTripListPage';
 import AccountManagementPage from '../pages/System/AccountManagementPage';
+import EmptyDistance from '../pages/TransportRoute/Emptydistance';
 export const routes = [
   {
     path: '/',
@@ -67,6 +68,10 @@ export const routes = [
   {
     path: '/transport-route',
     page: PartnerCostPage,
+  },
+  {
+    path: '/transport-route/empty-distance',
+    page: EmptyDistance,
   },
   {
     path: '/transport-route/packing/:id',
