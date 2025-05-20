@@ -389,7 +389,7 @@ export const getIncidentalCostsByOrderId = async (orderId) => {
 
 export const reExportOrderToSheet = async ({ orderId, type }) => {
   try {
-    const response = await axios.post(`${API_URL}/re-export-to-sheet`, {
+    const response = await axios.post(`${API_URL}/orders/re-export-to-sheet`, {
       orderId,
       type,
     });
