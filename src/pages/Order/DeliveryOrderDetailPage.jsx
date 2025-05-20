@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, Row, Col, Spin, message, Button, Modal, Form, Input,DatePicker } from 'antd';
-import { getDeliveryOrderDetails, updateDeliveryOrder } from '../../services/OrderService';
+import { getDeliveryOrderDetails, updateDeliveryOrder, reExportOrderToSheet } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 import CostCard from '../../components/card/CostCard';
 import DispatchVehicleCard from '../../components/card/DispatchVehicleCard';
@@ -104,6 +104,15 @@ const DeliveryOrderDetailPage = () => {
     setIsModalVisible(false);
   };
 
+  const handleReExport = async () => {
+    try {
+      await reExportOrderToSheet({ orderId: orderDetails._id, type: 'delivery' });
+      message.success('Xuất lại file thành công!');
+    } catch (error) {
+      message.error(error.message || 'Xuất lại file thất bại!');
+    }
+  };
+
   if (loading) {
     return <Spin size="large" />;
   }
@@ -117,7 +126,18 @@ const DeliveryOrderDetailPage = () => {
       <Card
         title="Chi tiết đơn giao hàng"
         bordered={false}
-        extra={<Button onClick={handleUpdateStatus}>Cập nhật thông tin đơn hàng</Button>}
+        extra={
+          <div>
+            {orderDetails.writeToSheet === 1 && (
+              <Button type="primary" onClick={handleReExport}>
+                Xuất lại ra file
+              </Button>
+            )}
+            <Button onClick={handleUpdateStatus} style={{ marginLeft: 8 }}>
+              Cập nhật thông tin đơn hàng
+            </Button>
+          </div>
+        }
       >
         <Row gutter={[16, 16]}>
           <Col span={12}><strong>Khách hàng:</strong> {orderDetails.customer.name}</Col>

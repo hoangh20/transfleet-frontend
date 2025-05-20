@@ -8,6 +8,7 @@ import DispatchVehicleCard from '../../components/card/DispatchVehicleCard';
 import LocationSelector from '../../components/location/LocationSelector';
 import dayjs from 'dayjs';
 import IncidentalCostCard from '../../components/card/IncidentalCostCard';
+import { reExportOrderToSheet } from '../../services/OrderService';
 const PackingOrderDetailPage = () => {
   const { orderId } = useParams();
   const [orderDetails, setOrderDetails] = useState(null);
@@ -64,7 +65,14 @@ const PackingOrderDetailPage = () => {
 
     fetchOrderDetails();
   }, [orderId]);
-
+  const handleReExport = async () => {
+  try {
+    await reExportOrderToSheet({ orderId: orderDetails._id, type: 'packing' });
+    message.success('Xuất lại file thành công!');
+  } catch (error) {
+    message.error(error.message || 'Xuất lại file thất bại!');
+  }
+  };
   const handleUpdateStatus = () => {
     setIsModalVisible(true);
     form.setFieldsValue({
@@ -120,7 +128,18 @@ const PackingOrderDetailPage = () => {
       <Card
         title="Chi tiết đơn đóng hàng"
         bordered={false}
-        extra={<Button onClick={handleUpdateStatus}>Cập nhật thông tin đơn hàng</Button>}
+        extra={
+            <div>
+              {orderDetails.writeToSheet === 1 && (
+                <Button type="primary" onClick={handleReExport}>
+                  Xuất lại ra file
+                </Button>
+              )}
+              <Button onClick={handleUpdateStatus} style={{ marginLeft: 8 }}>
+                Cập nhật thông tin đơn hàng
+              </Button>
+            </div>
+          }
       >
         <Row gutter={[16, 16]}>
           <Col span={12}><strong>Khách hàng:</strong> {orderDetails.customer.name}</Col>

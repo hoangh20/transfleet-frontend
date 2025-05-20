@@ -386,3 +386,18 @@ export const getIncidentalCostsByOrderId = async (orderId) => {
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+export const reExportOrderToSheet = async ({ orderId, type }) => {
+  try {
+    const response = await axios.post(`${API_URL}/re-export-to-sheet`, {
+      orderId,
+      type,
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      throw new Error(error.response.data.message || 'Re-export failed');
+    }
+    throw error;
+  }
+};
