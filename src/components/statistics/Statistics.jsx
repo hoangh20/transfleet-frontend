@@ -25,6 +25,7 @@ const Statistics = () => {
   const [currentData, setCurrentData] = useState([]);
   const [prevData, setPrevData] = useState([]);
   const [type, setType] = useState('daily');
+  const [summaryData, setSummaryData] = useState([]);
 
   const getDefaultDate = (statType) => {
     const now = dayjs();
@@ -84,6 +85,58 @@ const Statistics = () => {
   useEffect(() => {
     if (selectedDate) fetchBothPeriods();
   }, [type, selectedDate, fetchBothPeriods]);
+
+  const fetchSummaryData = React.useCallback(
+    async (customType = type, customDate = selectedDate) => {
+      setLoading(true);
+      try {
+        let fetchFunc, formatStr, getLabel;
+        if (customType === 'daily') {
+          fetchFunc = SummaryService.getDailyTripsSummary;
+          formatStr = 'YYYY-MM-DD';
+          getLabel = (date) => dayjs(date).format('DD/MM');
+        } else if (customType === 'weekly') {
+          fetchFunc = SummaryService.getWeeklyTripsSummary;
+          formatStr = 'YYYY-MM-DD';
+          getLabel = (date) => 'Tuần ' + dayjs(date).week();
+        } else {
+          fetchFunc = SummaryService.getMonthlyTripsSummary;
+          formatStr = 'YYYY-MM-DD';
+          getLabel = (date) => dayjs(date).format('MM/YYYY');
+        }
+
+        const promises = [];
+        for (let i = 5; i >= 0; i--) {
+          let date;
+          if (customType === 'daily') date = customDate.subtract(i, 'day');
+          else if (customType === 'weekly') date = customDate.subtract(i, 'week').startOf('week');
+          else date = customDate.subtract(i, 'month').startOf('month');
+          promises.push(fetchFunc(date.format(formatStr)));
+        }
+        const results = await Promise.all(promises);
+
+        setSummaryData(results.map((res, idx) => ({
+          label: getLabel(
+            customType === 'daily'
+              ? customDate.subtract(5 - idx, 'day')
+              : customType === 'weekly'
+              ? customDate.subtract(5 - idx, 'week').startOf('week')
+              : customDate.subtract(5 - idx, 'month').startOf('month')
+          ),
+          data: res.data || [],
+        })));
+      } catch (error) {
+        message.error(`Lỗi khi tải dữ liệu: ${error}`);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [type, selectedDate]
+  );
+
+  useEffect(() => {
+    if (selectedDate) fetchSummaryData();
+  }, [type, selectedDate, fetchSummaryData]);
 
   const handleTypeChange = (value) => {
     setType(value);
@@ -295,7 +348,7 @@ const Statistics = () => {
         </Col>
         <Col xs={24} md={16}>
           <Card style={{ height: '100%' }}>
-            <TripChart type={type} selectedDate={selectedDate} />
+            <TripChart summaryData={summaryData} type={type} selectedDate={selectedDate} />
           </Card>
         </Col>
       </Row>
@@ -352,7 +405,7 @@ const Statistics = () => {
             </Card>
           </Row>
             <Card style={{ widh: '100%' }}> 
-            <InternalFareChart type={type} selectedDate={selectedDate} />
+            <InternalFareChart summaryData={summaryData} type={type} selectedDate={selectedDate} />
           </Card>
         </Col>
         <Col xs={24} md={9} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

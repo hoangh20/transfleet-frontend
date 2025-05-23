@@ -61,15 +61,26 @@ export const deleteAccount = async (accountId) => {
   );
   return response.data;
 };
-export const createDriverAccount = async (driverId, data, access_token) => {
-  const response = await axiosJWT.post(
-    `${process.env.REACT_APP_API_URL}/user/create-driver-account/${driverId}`,
-    data,
-    {
-      headers: {
-        token: `Bearer ${access_token}`,
-      },
-    },
+export const updateUserRole = async (userId, role) => {
+  const res = await axios.put(
+    `${process.env.REACT_APP_API_URL}/user/update-role/${userId}`,
+    { role }
   );
-  return response.data;
+  return res.data;
+};
+
+export const connectUserToDriver = async (userId, driverId) => {
+  const res = await axios.post(
+    `${process.env.REACT_APP_API_URL}/user/connect-user-driver`,
+    { userId, driverId }
+  );
+  return res.data;
+};
+
+export const unlinkUserFromDriver = async (userId) => {
+  const res = await axios.post(
+    `${process.env.REACT_APP_API_URL}/user/unlink-user-driver`,
+    { userId }
+  );
+  return res.data;
 };

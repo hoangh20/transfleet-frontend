@@ -8,8 +8,6 @@ import {
   Tag,
   Statistic,
   Modal,
-  Button,
-  message,
 } from 'antd';
 import {
   CarOutlined,
@@ -24,7 +22,6 @@ import {
   deleteDriver,
   getVehicleByDriverId,
 } from '../../services/DriverService';
-import { createDriverAccount } from '../../services/UserService';
 import DriverDetail from '../popup/DriverDetail';
 import dayjs from 'dayjs';
 const { Title, Text } = Typography;
@@ -112,23 +109,6 @@ const DriverCard = ({ driver }) => {
     }
   };
 
-  const handleCreateAccount = async () => {
-    const nameParts = driver.name.split(' ');
-    const firstName = nameParts[nameParts.length - 1].normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    const lastName = nameParts.slice(0, -1).map(part => part[0].toLowerCase()).join('');
-    const birthDate = new Date(driver.birthDate);
-    const email = `${firstName}.${lastName}${birthDate.getDate()}${birthDate.getMonth() + 1}${birthDate.getFullYear()}@gmail.com`;
-
-
-
-    try {
-      await createDriverAccount(driver._id);
-      message.success(`Tạo tài khoản thành công! Email: ${email}, Mật khẩu: ${driver.phone}`);
-      window.location.reload();
-    } catch (error) {
-      message.error('Lỗi khi tạo tài khoản. Vui lòng thử lại!');
-    }
-  };
 
   return (
     <>
@@ -264,9 +244,7 @@ const DriverCard = ({ driver }) => {
 
           <Col span={24}>
             {driver.hasAccount === 0 ? (
-              <Button type="primary" onClick={handleCreateAccount}>
-                Thêm tài khoản
-              </Button>
+              <Tag color="red">Chưa có tài khoản</Tag>
             ) : (
               <Tag color="green">Đã có tài khoản</Tag>
             )}

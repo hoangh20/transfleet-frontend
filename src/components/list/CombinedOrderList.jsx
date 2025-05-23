@@ -193,24 +193,28 @@ const CombinedOrderList = ({ startDate, endDate }) => {
             </Tooltip>
           )}
         </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '4px 0' }}>
-            <EnvironmentOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
-            <div style={{ flex: 1 }}>
-              <Text style={{ fontSize: 12, whiteSpace: 'normal' }}>
-                <span style={{ fontWeight: 500 }}>Đi: </span>
-                {order.startLocation}
-              </Text>
+          {type === 'delivery' && (
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '4px 0' }}>
+              <EnvironmentOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
+              <div style={{ flex: 1 }}>
+                <Text style={{ fontSize: 12, whiteSpace: 'normal' }}>
+                  <span style={{ fontWeight: 500 }}>Đến: </span>
+                  {order.endLocation}
+                </Text>
+              </div>
             </div>
-          </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '4px 0' }}>
-            <EnvironmentOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
-            <div style={{ flex: 1 }}>
-              <Text style={{ fontSize: 12, whiteSpace: 'normal' }}>
-                <span style={{ fontWeight: 500 }}>Đến: </span>
-                {order.endLocation}
-              </Text>
+          )}
+          {type === 'packing' && (
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '4px 0' }}>
+              <EnvironmentOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
+              <div style={{ flex: 1 }}>
+                <Text style={{ fontSize: 12, whiteSpace: 'normal' }}>
+                  <span style={{ fontWeight: 500 }}>Đi: </span>
+                  {order.startLocation}
+                </Text>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Thông tin phụ */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>

@@ -1,60 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Card, Typography } from 'antd';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import dayjs from 'dayjs';
-import SummaryService from '../../services/SummaryService';
 
 const { Title } = Typography;
 
-const InternalFareChart = ({ type, selectedDate }) => {
-  const [chartData, setChartData] = useState([]);
-
-  useEffect(() => {
-    const fetchChartData = async () => {
-      let fetchFunc, formatStr, getLabel;
-      if (type === 'daily') {
-        fetchFunc = SummaryService.getDailyTripsSummary;
-        formatStr = 'YYYY-MM-DD';
-        getLabel = (date) => dayjs(date).format('DD/MM');
-      } else if (type === 'weekly') {
-        fetchFunc = SummaryService.getWeeklyTripsSummary;
-        formatStr = 'YYYY-MM-DD';
-        getLabel = (date) => 'Tuần ' + dayjs(date).week();
-      } else {
-        fetchFunc = SummaryService.getMonthlyTripsSummary;
-        formatStr = 'YYYY-MM-DD';
-        getLabel = (date) => dayjs(date).format('MM/YYYY');
-      }
-
-      const promises = [];
-      for (let i = 5; i >= 0; i--) {
-        let date;
-        if (type === 'daily') date = selectedDate.subtract(i, 'day');
-        else if (type === 'weekly') date = selectedDate.subtract(i, 'week').startOf('week');
-        else date = selectedDate.subtract(i, 'month').startOf('month');
-        promises.push(fetchFunc(date.format(formatStr)));
-      }
-      const results = await Promise.all(promises);
-
-      const data = results.map((res, idx) => {
-        const trips = (res.data || []).filter(t => t.hasVehicle === 1);
-        const totalFare = trips.reduce((sum, t) => sum + (Number(t.cost?.tripFare) || 0), 0);
-        return {
-          label: getLabel(
-            type === 'daily'
-              ? selectedDate.subtract(5 - idx, 'day')
-              : type === 'weekly'
-              ? selectedDate.subtract(5 - idx, 'week').startOf('week')
-              : selectedDate.subtract(5 - idx, 'month').startOf('month')
-          ),
-          totalFare,
-        };
-      });
-      setChartData(data);
+const InternalFareChart = ({ summaryData, type }) => {
+  const chartData = summaryData.map(item => {
+    const trips = (item.data || []).filter(t => t.hasVehicle === 1);
+    const totalFare = trips.reduce((sum, t) => sum + (Number(t.cost?.tripFare) || 0), 0);
+    return {
+      label: item.label,
+      totalFare,
     };
-
-    if (selectedDate) fetchChartData();
-  }, [type, selectedDate]);
+  });
 
   return (
     <div style={{ marginBottom: 12 }}>

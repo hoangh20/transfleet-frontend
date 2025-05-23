@@ -27,12 +27,6 @@ const PackingOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange 
                       : null;
                     const startLocationText = order.location.startPoint.locationText || '';
           
-                    const endProvince = await fetchProvinceName(order.location.endPoint.provinceCode);
-                    const endDistrict = await fetchDistrictName(order.location.endPoint.districtCode);
-                    const endWard = order.location.endPoint.wardCode
-                      ? await fetchWardName(order.location.endPoint.wardCode)
-                      : null;
-                    const endLocationText = order.location.endPoint.locationText || '';
           
           const customer = await getCustomerById(order.customer);
           const cost = await getCostByOrderId(order._id);
@@ -60,7 +54,6 @@ const PackingOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange 
             fuelCost,
             estimatedProfit,
             startLocation: `${startLocationText ? startLocationText + ', ' : ''}${startWard ? startWard + ', ' : ''}${startDistrict}, ${startProvince}`,
-            endLocation: `${endLocationText ? endLocationText + ', ' : ''}${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`,
             shortName: customer.shortName,
             contType: order.contType === 0 ? "20" : "40",
             moocType: order.moocType === 0 ? "20" : "40",
@@ -206,12 +199,6 @@ const PackingOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange 
                     {order.startLocation}
                   </Text>
                   </div>
-                  <div style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 12, whiteSpace: 'normal' }}>
-                    <span style={{ fontWeight: 500 }}>Đến: </span>
-                    {order.endLocation}
-                  </Text>
-                </div>
               </div>
 
               {/* Thông tin phụ */}
