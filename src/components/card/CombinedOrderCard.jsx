@@ -216,7 +216,7 @@ const CombinedOrderCard = ({
         <div style={blockStyle}>
           <Title level={5} style={{ margin: 0 }}>
             <Link onClick={() => onViewDetailDelivery(deliveryTrip._id)}>
-              Chuyến giao hàng: {deliveryTrip.customerName}
+              Chuyến giao hàng: {deliveryTrip.customer.shortName}
             </Link>
           </Title>
           <Row gutter={[4, 2]}>
@@ -282,7 +282,7 @@ const CombinedOrderCard = ({
             <Col>
               <Title level={5} style={{ margin: 0 }}>
                 <Link onClick={() => onViewDetailPacking(packingTrip._id)}>
-                  Chuyến đóng hàng: {packingTrip.customerName}
+                  Chuyến đóng hàng: {packingTrip.customer.shortName}
                 </Link>
               </Title>
             </Col>

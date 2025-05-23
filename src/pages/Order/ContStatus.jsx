@@ -134,8 +134,8 @@ const packingColumns = [
         render: (command) => {
             const map = {
                 0: <Tag color="default">Không có</Tag>,
-                1: <Tag color="green">OK</Tag>,
-                2: <Tag color="red">Không OK</Tag>,
+                1: <Tag color="green">Hạ</Tag>,
+                2: <Tag color="red">Không hạ</Tag>,
             };
             return map[command] || '';
         }
@@ -154,8 +154,8 @@ const containerStatusOptions = [
 ];
 const commandOptions = [
   { label: 'Không có', value: 0 },
-  { label: 'OK', value: 1 },
-  { label: 'Không OK', value: 2 },
+  { label: 'Hạ', value: 1 },
+  { label: 'Không hạ', value: 2 },
 ];
 
 const pageSizeOptions = [5, 10, 20, 50, 100];
@@ -189,19 +189,15 @@ const ContStatus = () => {
 
   const [loading, setLoading] = useState(false);
 
-  // State cho tìm kiếm số cont
   const [deliverySearch, setDeliverySearch] = useState('');
   const [packingSearch, setPackingSearch] = useState('');
 
-  // State cho lọc salesPerson
   const [selectedDeliverySales, setSelectedDeliverySales] = useState([]);
   const [selectedPackingSales, setSelectedPackingSales] = useState([]);
 
-  // State cho chỉnh sửa thông tin
   const [editModal, setEditModal] = useState({ visible: false, record: null, type: null });
   const [form] = Form.useForm();
 
-  // State cho phân trang
   const [deliveryPageSize, setDeliveryPageSize] = useState(10);
   const [packingPageSize, setPackingPageSize] = useState(10);
 

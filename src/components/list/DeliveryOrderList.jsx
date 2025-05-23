@@ -233,8 +233,29 @@ const DeliveryOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange
 
               {/* Thông tin phụ */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
-                <Text>Cont: {order.containerNumber || '--'}</Text>
-                <Text>Chủ vỏ: {order.owner}</Text>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Text>{order.containerNumber || '--'}</Text>
+                  {/* Hiển thị tag tình trạng vỏ nếu khác 0, hover sẽ show noteCS nếu có */}
+                  {order.containerStatus === 1 && (
+                    order.noteCS ? (
+                      <Tooltip title={order.noteCS}>
+                        <Tag color="green" style={{ marginLeft: 2, cursor: 'pointer' }}>OK</Tag>
+                      </Tooltip>
+                    ) : (
+                      <Tag color="green" style={{ marginLeft: 2 }}>OK</Tag>
+                    )
+                  )}
+                  {order.containerStatus === 2 && (
+                    order.noteCS ? (
+                      <Tooltip title={order.noteCS}>
+                        <Tag color="red" style={{ marginLeft: 2, cursor: 'pointer' }}>Không OK</Tag>
+                      </Tooltip>
+                    ) : (
+                      <Tag color="red" style={{ marginLeft: 2 }}>Không OK</Tag>
+                    )
+                  )}
+                </span>
+                <Text>Line: {order.owner}</Text>
                 {order.note && (
                   <Tooltip title={order.note}>
                     <InfoCircleOutlined style={{ color: '#8c8c8c' }} />
