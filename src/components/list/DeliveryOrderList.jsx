@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { DeleteOutlined, EnvironmentOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { getDeliveryOrdersByDate, getCostByOrderId, deleteDeliveryOrder, getVehicleByOrderId, getOrderPartnerConnectionByOrderId } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
-import { getCustomerById } from '../../services/CustomerService';
 
 const { Title, Text } = Typography;
 
@@ -27,8 +26,6 @@ const DeliveryOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange
             ? await fetchWardName(order.location.endPoint.wardCode)
             : null;
           const endLocationText = order.location.endPoint.locationText || '';
-
-          const customer = await getCustomerById(order.customer);
           const cost = await getCostByOrderId(order._id);
           const tripFare = cost ? cost.tripFare : 0;
 
@@ -72,7 +69,7 @@ const DeliveryOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange
             fuelCost,
             estimatedProfit,
             endLocation: `${endLocationText ? endLocationText + ', ' : ''}${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`,
-            shortName: customer.shortName,
+            shortName: order.customer.shortName,
             contType: order.contType === 0 ? "20" : "40",
             moocType: order.moocType === 0 ? "20" : "40",
             containerNumber: order.containerNumber,

@@ -12,7 +12,6 @@ import {
   getOrderConnectionsByDeliveryDate,
   getActiveOrders,
 } from '../../services/OrderService';
-import { getCustomerById } from '../../services/CustomerService';
 
 dayjs.extend(isBetween);
 const { RangePicker } = DatePicker;
@@ -59,24 +58,26 @@ const OrderTripListPage = () => {
         const response = await getActiveOrders();
         const { deliveryOrders, packingOrders, combinedOrders } = response.data;
 
-        const attachName = async (order) => {
-          const cust = await getCustomerById(order.customer);
-          return { ...order, customerName: cust.shortName };
-        };
-
-        const deliveryWithName = await Promise.all(
-          deliveryOrders.map((order) => attachName(order))
-        );
-        const packingWithName = await Promise.all(
-          packingOrders.map((order) => attachName(order))
-        );
-        const combinedWithName = await Promise.all(
-          combinedOrders.map(async (conn) => ({
-            ...conn,
-            deliveryOrderId: await attachName(conn.deliveryOrderId),
-            packingOrderId: await attachName(conn.packingOrderId),
-          }))
-        );
+        // KHÔNG GỌI API getCustomerById nữa, dùng trực tiếp customer.shortName
+        const deliveryWithName = deliveryOrders.map((order) => ({
+          ...order,
+          customerName: order.customer?.shortName || '',
+        }));
+        const packingWithName = packingOrders.map((order) => ({
+          ...order,
+          customerName: order.customer?.shortName || '',
+        }));
+        const combinedWithName = combinedOrders.map((conn) => ({
+          ...conn,
+          deliveryOrderId: {
+            ...conn.deliveryOrderId,
+            customerName: conn.deliveryOrderId?.customer?.shortName || '',
+          },
+          packingOrderId: {
+            ...conn.packingOrderId,
+            customerName: conn.packingOrderId?.customer?.shortName || '',
+          },
+        }));
 
         setSingleTrips([...deliveryWithName, ...packingWithName]);
         setCombinedTrips(combinedWithName);
@@ -140,20 +141,22 @@ const OrderTripListPage = () => {
         );
       }
 
-      const attachName = async (order) => {
-        const cust = await getCustomerById(order.customer);
-        return { ...order, customerName: cust.shortName };
-      };
-      const singlesWithName = await Promise.all(
-        (singles || []).map(async (o) => await attachName(o))
-      );
-      const combinedWithName = await Promise.all(
-        (combined || []).map(async (conn) => ({
-          ...conn,
-          deliveryOrderId: await attachName(conn.deliveryOrderId),
-          packingOrderId: await attachName(conn.packingOrderId),
-        }))
-      );
+      // KHÔNG GỌI API getCustomerById nữa, dùng trực tiếp customer.shortName
+      const singlesWithName = (singles || []).map((o) => ({
+        ...o,
+        customerName: o.customer?.shortName || '',
+      }));
+      const combinedWithName = (combined || []).map((conn) => ({
+        ...conn,
+        deliveryOrderId: {
+          ...conn.deliveryOrderId,
+          customerName: conn.deliveryOrderId?.customer?.shortName || '',
+        },
+        packingOrderId: {
+          ...conn.packingOrderId,
+          customerName: conn.packingOrderId?.customer?.shortName || '',
+        },
+      }));
 
       setSingleTrips(singlesWithName);
       setCombinedTrips(combinedWithName);

@@ -11,6 +11,7 @@ import {
   ProfileOutlined,
   ContainerOutlined,
   AppstoreOutlined,
+  MacCommandOutlined,
 } from '@ant-design/icons';
 
 const { SubMenu } = Menu;
@@ -53,10 +54,17 @@ const AdminMenu = () => {
       >
         <Link to='/order/list-trip'>Danh sách các chuyến </Link>
       </Menu.Item>
+      <Menu.Item
+        key='order/cont-status'
+        icon={<ContainerOutlined />}
+        style={{ fontSize: '18px' }}
+      >
+        <Link to='/order/cont-status'>Quản lý cont </Link>
+      </Menu.Item>
       <SubMenu
         key='partner-cost'
         title='Tuyến vận tải'
-        icon={<ContainerOutlined />}
+        icon={<MacCommandOutlined />}
         style={{ fontSize: '18px' }}
       >
         <Menu.Item key='transport-route-list' style={{ fontSize: '18px' }}>

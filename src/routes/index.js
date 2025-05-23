@@ -20,6 +20,7 @@ import PackingOrderDetailPage from '../pages/Order/PackingOrderDetailPage';
 import OrderTripListPage from '../pages/Order/OrderTripListPage';
 import AccountManagementPage from '../pages/System/AccountManagementPage';
 import EmptyDistance from '../pages/TransportRoute/Emptydistance';
+import ContStatus from '../pages/Order/ContStatus';
 export const routes = [
   {
     path: '/',
@@ -109,4 +110,8 @@ export const routes = [
     path : '/system/account-management',
     page : AccountManagementPage
   },
+  {
+    path : '/order/cont-status',
+    page : ContStatus
+  }
 ];
