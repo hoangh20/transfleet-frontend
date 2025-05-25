@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Form, Input, Flex, Image, Typography } from 'antd';
+import { Button, Checkbox, Form, Input, Flex, Image, Typography,message } from 'antd';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -20,23 +20,24 @@ const SigninPage = () => {
   const mutation = useMutation({
     mutationFn: (data) => UserService.SigninUser(data),
     onSuccess: (data) => {
-      // Kiểm tra nếu có access_token trong response
+      if (data?.status === 'ERR') {
+        message.error(data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu!');
+        return;
+      }
       const accessToken = data?.access_token;
-
       if (accessToken) {
         localStorage.setItem('access_token', JSON.stringify(accessToken));
-
         const decoded = jwtDecode(accessToken);
         localStorage.setItem('user', JSON.stringify(decoded));
         if (decoded?.id) {
           handleGetDetailsUser(decoded?.id, data?.access_token);
         }
       }
-
       navigate('/');
     },
     onError: (error) => {
       console.error('Đăng nhập thất bại:', error);
+      message.error('Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu!');
     },
   });
   const handleGetDetailsUser = async (id, token) => {
