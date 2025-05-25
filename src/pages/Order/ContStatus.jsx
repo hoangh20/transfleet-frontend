@@ -1,12 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
-import { DatePicker, message, Table, Tag, Typography, Card, Input, Checkbox, Modal, Form, Select } from 'antd';
+import { DatePicker, message, Table, Tag, Typography, Card, Input, Checkbox, Modal, Form, Select, Button, Tooltip } from 'antd';
+import { CopyOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { getPackingOrdersByDate, getDeliveryOrdersByDate, updateDeliveryOrder, updatePackingOrder,getOrderPartnerConnectionByOrderId } from '../../services/OrderService';
 
 const { RangePicker } = DatePicker;
 const { Title } = Typography;
 const { Search } = Input;
-
+  const handleCopy = (text) => {
+    navigator.clipboard.writeText(text);
+    message.success('Đã copy số cont!');
+  };
 const deliveryColumns = [
     {
         title: 'Ngày giao',
@@ -18,6 +22,22 @@ const deliveryColumns = [
         title: 'Số cont',
         dataIndex: 'containerNumber',
         key: 'containerNumber',
+        render: (text) => (
+          <span>
+            {text}{' '}
+            <Tooltip title="Copy số cont">
+              <Button
+                icon={<CopyOutlined />}
+                size="small"
+                type="text"
+                onClick={e => {
+                  e.stopPropagation();
+                  handleCopy(text);
+                }}
+              />
+            </Tooltip>
+          </span>
+        ),
     },
     {
         title: 'Loại cont',
@@ -88,6 +108,22 @@ const packingColumns = [
         title: 'Số cont',
         dataIndex: 'containerNumber',
         key: 'containerNumber',
+        render: (text) => (
+          <span>
+            {text}{' '}
+            <Tooltip title="Copy số cont">
+              <Button
+                icon={<CopyOutlined />}
+                size="small"
+                type="text"
+                onClick={e => {
+                  e.stopPropagation();
+                  handleCopy(text);
+                }}
+              />
+            </Tooltip>
+          </span>
+        ),
     },
     {
         title: 'Loại cont',
@@ -230,6 +266,8 @@ const ContStatus = () => {
       setLoading(false);
     }
   };
+
+
 
   const deliverySalesList = useMemo(
     () => [...new Set(deliveryOrders.map(d => d.salesPerson).filter(Boolean))],

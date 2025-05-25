@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Button, Steps, message, Typography } from 'antd';
+import { Card, Row, Col, Button, Steps, message, Typography, Tag, Tooltip } from 'antd';
 import {
   fetchProvinceName,
   fetchDistrictName,
@@ -135,50 +135,86 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
   };
 
   const titleContent = (
-    <Link onClick={() => onViewDetail(trip._id)} style={{ fontSize: 14 }}>
+    <Link onClick={() => onViewDetail(trip._id)} style={{ fontSize: 14, padding: 0, lineHeight: '16px' }}>
       {type === 'delivery' ? `Chuyến giao hàng: ${customerName}` : `Chuyến đóng hàng: ${customerName}`}
     </Link>
   );
 
-  const extraContent = (
-    trip.writeToSheet === 1 ? (
-      <span style={{ color: 'green', fontWeight: 'bold' }}>Đã hoàn thành</span>
-    ) : (
-      <Button
-        type="link"
-        onClick={() =>
-          (type === 'delivery' && trip.status === 6 && trip.writeToSheet === 0) ||
-          (type === 'packing' && trip.status === 7 && trip.writeToSheet === 0)
-            ? handleExportOrder(trip._id)
-            : handleUpdateStatusInternal(trip._id)
-        }
-        size="small"
-      >
-        {(type === 'delivery' && trip.status === 6 && trip.writeToSheet === 0) ||
-        (type === 'packing' && trip.status === 7 && trip.writeToSheet === 0)
-          ? 'Xuất vào file'
-          : 'Cập nhật trạng thái'}
-      </Button>
-    )
-  );
+  const extraContent = trip.writeToSheet === 1 ? (
+  <span style={{ color: 'green', fontWeight: 'bold', fontSize: 12, lineHeight: '16px' }}>
+    Đã hoàn thành
+  </span>
+) : (
+  <Button
+    type="link"
+    onClick={() =>
+      (type === 'delivery' && trip.status === 6 && trip.writeToSheet === 0) ||
+      (type === 'packing' && trip.status === 7 && trip.writeToSheet === 0)
+        ? handleExportOrder(trip._id)
+        : handleUpdateStatusInternal(trip._id)
+    }
+    size="small"
+    style={{ padding: 0, fontSize: 12, height: 'auto', lineHeight: '16px' }}
+  >
+    {(type === 'delivery' && trip.status === 6 && trip.writeToSheet === 0) ||
+    (type === 'packing' && trip.status === 7 && trip.writeToSheet === 0)
+      ? 'Xuất vào file'
+      : 'Cập nhật trạng thái'}
+  </Button>
+);
 
   return (
     <>
-      <Card key={trip._id} style={{ margin: 0, padding: 4 }} bodyStyle={{ padding: 4 }} title={titleContent} extra={extraContent}>
+      <Card key={trip._id} style={{ margin: 0, padding: 2 }} bodyStyle={{ padding: 2 }} title={titleContent} extra={extraContent}>
         <Row gutter={[4, 4]} justify="space-between">
           <Col span={12}>
-            <strong>Điểm đi:</strong>{' '}
+            <strong>Đi:</strong>{' '}
             {`${startLocationText ? startLocationText + ', ' : ''}${startWard ? startWard + ', ' : ''}${startDistrict}, ${startProvince}`}
           </Col>
           <Col span={12}>
-            <strong>Điểm đến:</strong>{' '}
+            <strong>Đến:</strong>{' '}
             {`${endLocationText ? endLocationText + ', ' : ''}${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`}
           </Col>
           <Col span={8}>
             <strong>Loại cont:</strong> {trip.contType === 0 ? "20" : "40"}
           </Col>
           <Col span={8}>
-            <strong>Số container:</strong> {trip.containerNumber} {`- ${trip.owner}` || ''}
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <strong>{trip.containerNumber || '--'}</strong>
+              <span>{`- ${trip.owner || ''}`}</span>
+              {type === 'delivery' && trip.containerStatus === 1 &&
+                (trip.noteCS ? (
+                  <Tooltip title={trip.noteCS}>
+                    <Tag color="green" style={{ marginLeft: 2, cursor: 'pointer' }}>OK</Tag>
+                  </Tooltip>
+                ) : (
+                  <Tag color="green" style={{ marginLeft: 2 }}>OK</Tag>
+                ))}
+              {type === 'delivery' && trip.containerStatus === 2 &&
+                (trip.noteCS ? (
+                  <Tooltip title={trip.noteCS}>
+                    <Tag color="red" style={{ marginLeft: 2, cursor: 'pointer' }}>Không OK</Tag>
+                  </Tooltip>
+                ) : (
+                  <Tag color="red" style={{ marginLeft: 2 }}>Không OK</Tag>
+                ))}
+              {type === 'packing' && trip.command === 1 &&
+                (trip.noteCS ? (
+                  <Tooltip title={trip.noteCS}>
+                    <Tag color="green" style={{ marginLeft: 2, cursor: 'pointer' }}>Hạ</Tag>
+                  </Tooltip>
+                ) : (
+                  <Tag color="green" style={{ marginLeft: 2 }}>Hạ</Tag>
+                ))}
+              {type === 'packing' && trip.command === 2 &&
+                (trip.noteCS ? (
+                  <Tooltip title={trip.noteCS}>
+                    <Tag color="red" style={{ marginLeft: 2, cursor: 'pointer' }}>Không hạ</Tag>
+                  </Tooltip>
+                ) : (
+                  <Tag color="red" style={{ marginLeft: 2 }}>Không hạ</Tag>
+                ))}
+            </span>
           </Col>
           <Col span={8}>
             {vehicleDetails && (

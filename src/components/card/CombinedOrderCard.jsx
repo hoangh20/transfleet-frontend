@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Button, Steps, message, Typography, Popconfirm } from 'antd';
+import { Card, Row, Col, Button, Steps, message, Typography, Popconfirm, Tag, Tooltip } from 'antd';
 import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 import { 
   updateCombinationOrderStatus,
@@ -221,25 +221,45 @@ const CombinedOrderCard = ({
           </Title>
           <Row gutter={[4, 2]}>
             <Col span={12}>
-              <Text style={labelStyle}>Điểm đi:</Text>
+              <Text style={labelStyle}>Đi:</Text>
               <Text>
                 {`${deliveryLocation.startLocationText ? deliveryLocation.startLocationText + ', ' : ''}${deliveryLocation.startWard ? deliveryLocation.startWard + ', ' : ''}${deliveryLocation.startDistrict}, ${deliveryLocation.startProvince}`}
               </Text>
             </Col>
             <Col span={12}>
-              <Text style={labelStyle}>Điểm đến:</Text>
+              <Text style={labelStyle}>Đến:</Text>
               <Text>
                 {`${deliveryLocation.endLocationText ? deliveryLocation.endLocationText + ', ' : ''}${deliveryLocation.endWard ? deliveryLocation.endWard + ', ' : ''}${deliveryLocation.endDistrict}, ${deliveryLocation.endProvince}`}
               </Text>
-            </Col>
-            <Col span={8}>
-              <Text style={labelStyle}>Số container:</Text>
-              <Text>{deliveryTrip.containerNumber} - {deliveryTrip.owner}</Text>
-            </Col>
+            </Col> 
             <Col span={8}>
               <Text style={labelStyle}>Loại cont:</Text>
               <Text>{deliveryTrip.contType === 0 ? "20" : "40"}</Text>
             </Col>
+            <Col span={8}>
+              <Text style={labelStyle}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Text>{deliveryTrip.containerNumber || '--'}</Text>
+                  <Text> - {deliveryTrip.owner}</Text>
+                  {deliveryTrip.containerStatus === 1 &&
+                    (deliveryTrip.noteCS ? (
+                      <Tooltip title={deliveryTrip.noteCS}>
+                        <Tag color="green" style={{ marginLeft: 2, cursor: 'pointer' }}>OK</Tag>
+                      </Tooltip>
+                    ) : (
+                      <Tag color="green" style={{ marginLeft: 2 }}>OK</Tag>
+                    ))}
+                  {deliveryTrip.containerStatus === 2 &&
+                    (deliveryTrip.noteCS ? (
+                      <Tooltip title={deliveryTrip.noteCS}>
+                        <Tag color="red" style={{ marginLeft: 2, cursor: 'pointer' }}>Không OK</Tag>
+                      </Tooltip>
+                    ) : (
+                      <Tag color="red" style={{ marginLeft: 2 }}>Không OK</Tag>
+                    ))}
+                </span>
+              </Text>
+            </Col> 
             <Col span={8}>
               {deliveryVehicleDetails && (
                 <Col span={24}>
@@ -276,7 +296,6 @@ const CombinedOrderCard = ({
           </Steps>
         </div>
 
-        {/* Đơn đóng hàng */}
         <div style={blockStyle}>
           <Row justify="space-between" align="middle">
             <Col>
@@ -315,13 +334,33 @@ const CombinedOrderCard = ({
               </Text>
             </Col>
             <Col span={8}>
-              <Text style={labelStyle}>Số container:</Text>
-              <Text>{packingTrip.containerNumber} - {packingTrip.owner}</Text>
-            </Col>
-            <Col span={8}>
               <Text style={labelStyle}>Loại cont:</Text>
               <Text>{packingTrip.contType === 0 ? "20" : "40"}</Text>
             </Col>
+            <Col span={8}>
+              <Text style={labelStyle}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Text>{packingTrip.containerNumber || '--'}</Text>
+                  <Text> - {packingTrip.owner}</Text>
+                  {packingTrip.command === 1 &&
+                    (packingTrip.noteCS ? (
+                      <Tooltip title={packingTrip.noteCS}>
+                        <Tag color='green' style={{ marginLeft: 2, cursor: 'pointer' }}>Hạ</Tag>
+                      </Tooltip>
+                    ) : (
+                      <Tag color='green' style={{ marginLeft: 2 }}>Hạ</Tag>
+                    ))}
+                  {packingTrip.command === 2 &&
+                    (packingTrip.noteCS ? (
+                      <Tooltip title={packingTrip.noteCS}>
+                        <Tag color='red' style={{ marginLeft: 2, cursor: 'pointer' }}>Không hạ</Tag>
+                      </Tooltip>
+                    ) : (
+                      <Tag color='red' style={{ marginLeft: 2 }}>Không hạ</Tag>
+                    ))}
+                </span>
+              </Text>
+            </Col> 
             <Col span={8}>
               {packingVehicleDetails && (
                 <Col span={24}>
