@@ -293,6 +293,14 @@ const DeliveryOrderForm = () => {
     setIsWarehouseModalVisible(false);
   };
 
+  // Khi chọn ngày giao hàng thì tự động set estimatedTime là 12h trưa ngày đó
+  const handleDeliveryDateChange = (date) => {
+    if (date) {
+      const estimated = dayjs(date).hour(12).minute(0).second(0);
+      form.setFieldsValue({ estimatedTime: estimated });
+    }
+  };
+
   return (
     <>
       <Card
@@ -422,7 +430,10 @@ const DeliveryOrderForm = () => {
                   { required: false, message: 'Vui lòng chọn ngày giao hàng' },
                 ]}
               >
-                <DatePicker style={{ width: '100%' }} />
+                <DatePicker
+                  style={{ width: '100%' }}
+                  onChange={handleDeliveryDateChange}
+                />
               </Form.Item>
             </Col>
             <Col span={6}>
@@ -466,8 +477,9 @@ const DeliveryOrderForm = () => {
                 label='Trọng Lượng (Tấn)'
                 name='weight'
                 rules={[
-                  { required: true, message: 'Vui lòng nhập trọng lượng' },
+                  { required: true, message: 'Vui lòng nhập trọng lượng'},
                 ]}
+                initialValue={28} 
               >
                 <Input type='number' placeholder='Nhập trọng lượng (tấn)' />
               </Form.Item>
@@ -483,7 +495,7 @@ const DeliveryOrderForm = () => {
                   },
                 ]}
               >
-                <DatePicker showTime placeholder='Chọn thời gian dự kiến' />
+                <DatePicker showTime placeholder='Chọn thời gian dự kiến' style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={6}>

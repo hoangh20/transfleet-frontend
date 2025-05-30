@@ -227,6 +227,14 @@ const PackingOrderForm = () => {
     },
   };
 
+  // Khi chọn ngày đóng hàng thì tự động set estimatedTime là 17h ngày đó
+  const handlePackingDateChange = (date) => {
+    if (date) {
+      const estimated = dayjs(date).hour(17).minute(0).second(0);
+      form.setFieldsValue({ estimatedTime: estimated });
+    }
+  };
+
   return (
     <>
       <Card title='Thông Tin Địa Điểm' bordered={false} style={{ marginBottom: 16 }}>
@@ -340,7 +348,10 @@ const PackingOrderForm = () => {
                 name='packingDate'
                 rules={[{ required: false, message: 'Vui lòng chọn ngày' }]}
               >
-                <DatePicker style={{ width: '100%' }} />
+                <DatePicker
+                  style={{ width: '100%' }}
+                  onChange={handlePackingDateChange}
+                />
               </Form.Item>
             </Col>
             <Col span={6}>
@@ -378,6 +389,7 @@ const PackingOrderForm = () => {
                 label='Trọng Lượng (Tấn)'
                 name='weight'
                 rules={[{ required: true, message: 'Vui lòng nhập trọng lượng' }]}
+                initialValue={28} // Giá trị mặc định là 28
               >
                 <Input type='number' placeholder='Nhập trọng lượng (Tấn)' />
               </Form.Item>
@@ -429,7 +441,7 @@ const PackingOrderForm = () => {
                 name='estimatedTime'
                 rules={[{ required: false, message: 'Vui lòng nhập thời gian dự kiến' }]}
               >
-                <DatePicker showTime placeholder='Chọn thời gian dự kiến' />
+                <DatePicker showTime placeholder='Chọn thời gian dự kiến' style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
