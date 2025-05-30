@@ -419,7 +419,7 @@ const DeliveryOrderForm = () => {
                 label='Ngày Giao Hàng'
                 name='deliveryDate'
                 rules={[
-                  { required: true, message: 'Vui lòng chọn ngày giao hàng' },
+                  { required: false, message: 'Vui lòng chọn ngày giao hàng' },
                 ]}
               >
                 <DatePicker style={{ width: '100%' }} />
@@ -441,7 +441,7 @@ const DeliveryOrderForm = () => {
                 label='Chủ Vỏ'
                 name='owner'
                 rules={[
-                  { required: true, message: 'Vui lòng nhập tên chủ sở hữu' },
+                  { required: false, message: 'Vui lòng nhập tên chủ sở hữu' },
                 ]}
               >
                 <Input placeholder='Nhập tên chủ sở hữu' />

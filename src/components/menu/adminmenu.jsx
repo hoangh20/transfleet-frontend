@@ -13,6 +13,7 @@ import {
   AppstoreOutlined,
   MacCommandOutlined,
   EnvironmentOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons';
 
 const { SubMenu } = Menu;
@@ -20,7 +21,7 @@ const { SubMenu } = Menu;
 const ROLE_MENU = {
   dev: [
     'overview', 'order', 'order/list', 'order/list-trip', 'order/cont-status',
-    'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route',
+    'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route','/pending-orders',
   ],
   admin: [
     'overview', 'order', 'order/list', 'order/list-trip', 'order/cont-status',
@@ -29,7 +30,7 @@ const ROLE_MENU = {
   CS: ['overview', 'order/cont-status','trip-route'],
   DHVT: [
     'overview', 'order/create', 'order/list', 'order/list-trip',
-    'partner-cost', 'vehicle', 'driver', 'partner', 'customer','trip-route',
+    'partner-cost', 'vehicle', 'driver', 'partner', 'customer','trip-route','/pending-orders',
   ],
   driver: ['overview'],
 };
@@ -67,6 +68,15 @@ const AdminMenu = () => {
           style={{ fontSize: '18px' }}
         >
           <Link to='/order/create'>Tạo đơn vận chuyển</Link>
+        </Menu.Item>
+      )}
+       {canView('/pending-orders') && (
+        <Menu.Item
+          key='/pending-orders'
+          icon={<ClockCircleOutlined />}
+          style={{ fontSize: '18px' }}
+        >
+          <Link to='/pending-orders'>Danh sách đơn chờ</Link>
         </Menu.Item>
       )}
 

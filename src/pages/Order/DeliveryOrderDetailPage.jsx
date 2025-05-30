@@ -187,17 +187,19 @@ const DeliveryOrderDetailPage = () => {
         cancelText="Hủy"
       >
         <Form form={form} layout="vertical">
-        <Form.Item
+          <Form.Item
             label="Ngày giao hàng"
             name="deliveryDate"
-            rules={[{ required: true, message: 'Vui lòng chọn ngày giao hàng' }]}
+            rules={[{ required: true, message: 'Vui lòng chọn ngày giao hàng' }]
+            }
           >
             <DatePicker style={{ width: '100%' }} placeholder="Chọn ngày giao hàng" format="DD/MM/YYYY" />
           </Form.Item>
           <Form.Item
             label="Thời gian dự kiến"
             name="estimatedTime"
-            rules={[{ required: true, message: 'Vui lòng chọn thời gian dự kiến' }]}
+            rules={[{ required: true, message: 'Vui lòng chọn thời gian dự kiến' }]
+            }
           >
             <DatePicker
               showTime={{ format: 'HH:mm:ss' }}
@@ -209,28 +211,40 @@ const DeliveryOrderDetailPage = () => {
           <Form.Item
             label="Số container"
             name="containerNumber"
-            rules={[{ required: false, message: 'Vui lòng nhập số container' }]}
+            rules={[{ required: false, message: 'Vui lòng nhập số container' }]
+            }
           >
             <Input placeholder="Nhập số container" />
           </Form.Item>
           <Form.Item
+            label="Chủ sở hữu"
+            name="owner"
+            rules={[{ required: false }]
+            }
+          >
+            <Input placeholder="Nhập chủ sở hữu" />
+          </Form.Item>
+          <Form.Item
             label="Ghi chú"
             name="note"
-            rules={[{ required: false }]}
+            rules={[{ required: false }]
+            }
           >
             <Input.TextArea placeholder="Nhập ghi chú" rows={4} />
           </Form.Item>
           <Form.Item
             label="Điểm đến"
             name="endPoint"
-            rules={[{ required: true, message: 'Vui lòng chọn điểm đến' }]}
+            rules={[{ required: true, message: 'Vui lòng chọn điểm đến' }]
+            }
           >
             <LocationSelector />
           </Form.Item>
           <Form.Item
             label="Địa chỉ chi tiết"
             name="locationText"
-            rules={[{ required: false, message: 'Vui lòng nhập địa chỉ chi tiết' }]}
+            rules={[{ required: false, message: 'Vui lòng nhập địa chỉ chi tiết' }]
+            }
           >
             <Input placeholder="Nhập địa chỉ" />
           </Form.Item>

@@ -338,7 +338,7 @@ const PackingOrderForm = () => {
               <Form.Item
                 label='Ngày'
                 name='packingDate'
-                rules={[{ required: true, message: 'Vui lòng chọn ngày' }]}
+                rules={[{ required: false, message: 'Vui lòng chọn ngày' }]}
               >
                 <DatePicker style={{ width: '100%' }} />
               </Form.Item>

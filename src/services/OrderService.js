@@ -412,3 +412,12 @@ export const unassignVehicleOrPartnerFromOrder = async ({ orderId, orderType }) 
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+export const getOrdersWithoutDate = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/orders/orders-without-date`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching orders without date:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
