@@ -24,6 +24,7 @@ const breadcrumbNameMap = {
   '/order/list': 'Danh sách đơn hàng',
   '/order/list-trip': 'Danh sách các chuyến',
   '/system': 'Hệ thống',
+  '/trip-route': 'Quản lý hành trình',
 };
 
 const nonClickablePaths = [

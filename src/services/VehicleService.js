@@ -111,3 +111,12 @@ export const updateVehicleStatus = async (id, status) => {
     );
   }
 };
+export const getTripInfoFromBK = async ({ vehicleId, datefrom, dateto }) => {
+  const res = await axios.get(
+    `${process.env.REACT_APP_API_URL}/vehicle/trip-info`,
+    {
+      params: { vehicleId, datefrom, dateto },
+    }
+  );
+  return res.data;
+};

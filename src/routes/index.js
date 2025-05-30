@@ -24,6 +24,7 @@ import OrderTripListPage from '../pages/Order/OrderTripListPage';
 import AccountManagementPage from '../pages/System/AccountManagementPage';
 import EmptyDistance from '../pages/TransportRoute/Emptydistance';
 import ContStatus from '../pages/Order/ContStatus';
+import TripRoute from '../pages/vehicle/TripRoute';
 
 const ROLE_MENU = {
   dev: [
@@ -31,21 +32,21 @@ const ROLE_MENU = {
     '/partner/list', '/customer/list', '/vehicle/create', '/vehicle/list', '/vehicle/detail/:id',
     '/driver/list', '/driver/wage', '/transport-route', '/transport-route/empty-distance',
     '/transport-route/packing/:id', '/transport-route/delivery/:id',
-    '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage'
+    '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route',
   ],
   admin: [
     '/', '/order/create', '/order/list', '/order/list-trip', '/order/cont-status',
     '/partner/list', '/customer/list', '/vehicle/create', '/vehicle/list', '/vehicle/detail/:id',
     '/driver/list', '/driver/wage', '/transport-route', '/transport-route/empty-distance',
     '/transport-route/packing/:id', '/transport-route/delivery/:id',
-    '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage'
+    '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route',
   ],
-  CS: ['/', '/order/cont-status', '/sign-in', '/sign-up', '/landingpage'],
+  CS: ['/', '/order/cont-status', '/sign-in', '/sign-up', '/landingpage','/trip-route',],
   DHVT: [
     '/', '/order/create', '/order/list', '/order/list-trip','/order', '/order/delivery-orders/:orderId', '/order/packing-orders/:orderId',
     '/partner/list', '/customer/list', '/vehicle/create', '/vehicle/list', '/vehicle/detail/:id',
     '/driver/list', '/driver/wage', '/transport-route', '/transport-route/empty-distance',
-    '/transport-route/packing/:id', '/transport-route/delivery/:id',
+    '/transport-route/packing/:id', '/transport-route/delivery/:id','/trip-route',
     '/sign-in', '/sign-up', '/landingpage'
   ],
   driver: ['/', '/sign-in', '/sign-up', '/landingpage'],
@@ -166,5 +167,9 @@ export const routes = [
   {
     path : '/order/cont-status',
     page : withRoleGuard(ContStatus, '/order/cont-status'),
+  },
+  {
+    path: '/trip-route',
+    page: withRoleGuard(TripRoute, '/trip-route'),
   }
 ];

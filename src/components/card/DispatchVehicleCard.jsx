@@ -6,6 +6,7 @@ import { getPartnerTransportCostsByTransportTrip } from '../../services/External
 import { assignPartnerToDeliveryOrder, assignPartnerToPackingOrder } from '../../services/OrderService';
 import { getOrderPartnerConnectionByOrderId, getVehicleByOrderId, updateOrderPartnerConnection } from '../../services/OrderService'; // Import API updateOrderPartnerConnection
 import CreatePartnerTransportCost from '../popup/CreatePartnerTransportCost';
+import { unassignVehicleOrPartnerFromOrder } from '../../services/OrderService'; // Thêm dòng này
 
 const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, hasVehicle, isCombinedTrip }) => {
   const [vehicleType, setVehicleType] = useState(null);
@@ -36,7 +37,6 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, has
         setAssignedData(null);
       }
     } catch (error) {
-      message.error('Không thể tải thông tin giao xe');
     } finally {
       setLoading(false);
     }
@@ -174,14 +174,56 @@ const DispatchVehicleCard = ({ orderId, delivery, contType, transportTripId, has
     }
   };
 
+  // Hàm bỏ giao xe/đối tác với xác nhận
+  const handleUnassign = async () => {
+    Modal.confirm({
+      title: 'Xác nhận',
+      content: 'Bạn có chắc chắn muốn bỏ giao xe/đối tác khỏi đơn hàng này?',
+      okText: 'Đồng ý',
+      cancelText: 'Hủy',
+      onOk: async () => {
+        try {
+          await unassignVehicleOrPartnerFromOrder({
+            orderId,
+            orderType: delivery ? 'delivery' : 'packing',
+          });
+          message.success('Bỏ giao xe/đối tác thành công');
+          fetchAssignedData();
+        } catch (error) {
+          message.error(error.message || 'Lỗi khi bỏ giao xe/đối tác');
+        }
+      },
+    });
+  };
+
   return (
     <Card title="Giao xe" bordered={false} loading={loading}>
       {assignedData && (
         <div style={{ marginBottom: '16px', color: '#1890ff' }}>
           {hasVehicle === 1 ? (
-            <p>Xe đã được giao: {assignedData.headPlate} - {assignedData.moocType === 0 ? "20" : "40"}</p>
+            <p>
+              Xe đã được giao: {assignedData.headPlate} - {assignedData.moocType === 0 ? "20" : "40"}
+              <Button
+                type="link"
+                danger
+                style={{ marginLeft: 8 }}
+                onClick={handleUnassign}
+              >
+                Bỏ giao xe
+              </Button>
+            </p>
           ) : hasVehicle === 2 ? (
-            <p>Đối tác đã được giao: {assignedData.partnerId?.shortName} - {Number(assignedData.partnerFee).toLocaleString()} VND</p>
+            <p>
+              Đối tác đã được giao: {assignedData.partnerId?.shortName} - {Number(assignedData.partnerFee).toLocaleString()} VND
+              <Button
+                type="link"
+                danger
+                style={{ marginLeft: 8 }}
+                onClick={handleUnassign}
+              >
+                Bỏ giao đối tác
+              </Button>
+            </p>
           ) : null}
         </div>
       )}

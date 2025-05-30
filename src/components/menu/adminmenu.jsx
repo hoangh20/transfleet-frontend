@@ -12,6 +12,7 @@ import {
   ContainerOutlined,
   AppstoreOutlined,
   MacCommandOutlined,
+  EnvironmentOutlined,
 } from '@ant-design/icons';
 
 const { SubMenu } = Menu;
@@ -19,16 +20,16 @@ const { SubMenu } = Menu;
 const ROLE_MENU = {
   dev: [
     'overview', 'order', 'order/list', 'order/list-trip', 'order/cont-status',
-    'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system'
+    'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route',
   ],
   admin: [
     'overview', 'order', 'order/list', 'order/list-trip', 'order/cont-status',
-    'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system'
+    'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route',
   ],
-  CS: ['overview', 'order/cont-status'],
+  CS: ['overview', 'order/cont-status','trip-route'],
   DHVT: [
     'overview', 'order/create', 'order/list', 'order/list-trip',
-    'partner-cost', 'vehicle', 'driver', 'partner', 'customer'
+    'partner-cost', 'vehicle', 'driver', 'partner', 'customer','trip-route',
   ],
   driver: ['overview'],
 };
@@ -94,6 +95,15 @@ const AdminMenu = () => {
           style={{ fontSize: '18px' }}
         >
           <Link to='/order/cont-status'>Quản lý cont </Link>
+        </Menu.Item>
+      )}
+      {canView('trip-route') && (
+        <Menu.Item
+          key='/trip-route'
+          icon={<EnvironmentOutlined />}
+          style={{ fontSize: '18px' }}
+        >
+          <Link to='/trip-route'>Quản lý hành trình </Link>
         </Menu.Item>
       )}
       {canView('partner-cost') && (

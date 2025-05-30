@@ -22,7 +22,6 @@ export const createDeliveryOrder = async (data) => {
   }
 };
 
-
 export const getPackingOrdersByDate = async (startDate, endDate) => {
   try {
     const response = await axios.get(`${API_URL}/orders/packing-orders`, {
@@ -399,5 +398,17 @@ export const reExportOrderToSheet = async ({ orderId, type }) => {
       throw new Error(error.response.data.message || 'Re-export failed');
     }
     throw error;
+  }
+};
+
+export const unassignVehicleOrPartnerFromOrder = async ({ orderId, orderType }) => {
+  try {
+    const res = await axios.post(`${API_URL}/orders/unassign-vehicle-or-partner`, {
+      orderId,
+      orderType, // 'delivery' hoặc 'packing'
+    });
+    return res.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Network Error');
   }
 };

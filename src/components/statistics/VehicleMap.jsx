@@ -42,7 +42,7 @@ const VehicleMap = ({ vehicles, loading, onPreview }) => {
                   <strong>Thời gian lái trong tuần:</strong> {vehicle.DriverTimeInWeek || 'Không xác định'} <br />
                   <strong>Địa chỉ:</strong> {vehicle.Address || 'Không xác định'}{' '}
                   <a
-                    href={`https://www.openstreetmap.org/search?lat=${vehicle.Lt}&lon=${vehicle.Ln}&zoom=14#map=11/${vehicle.Lt}/${vehicle.Ln}`}
+                    href={`https://www.google.com/maps/search/?api=1&query=${vehicle.Lt},${vehicle.Ln}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ marginLeft: '8px' }}
