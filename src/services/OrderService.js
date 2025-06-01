@@ -421,3 +421,19 @@ export const getOrdersWithoutDate = async () => {
     throw error.response ? error.response.data : new Error('Network Error');
   }
 };
+
+export const getOrdersByVehicleId = async (vehicleId, page , limit , fromDate, toDate) => {
+  try {
+    const params = { page, limit };
+    if (fromDate) params.fromDate = fromDate;
+    if (toDate) params.toDate = toDate;
+
+    const response = await axios.get(
+      `${API_URL}/orders/orders-by-vehicle/${vehicleId}`,
+      { params }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};

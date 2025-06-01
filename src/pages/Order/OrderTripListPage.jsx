@@ -57,8 +57,6 @@ const OrderTripListPage = () => {
       try {
         const response = await getActiveOrders();
         const { deliveryOrders, packingOrders, combinedOrders } = response.data;
-
-        // KHÔNG GỌI API getCustomerById nữa, dùng trực tiếp customer.shortName
         const deliveryWithName = deliveryOrders.map((order) => ({
           ...order,
           customerName: order.customer?.shortName || '',
@@ -140,8 +138,6 @@ const OrderTripListPage = () => {
           (c) => c.deliveryOrderId.hasVehicle !== 0 || c.packingOrderId.hasVehicle !== 0
         );
       }
-
-      // KHÔNG GỌI API getCustomerById nữa, dùng trực tiếp customer.shortName
       const singlesWithName = (singles || []).map((o) => ({
         ...o,
         customerName: o.customer?.shortName || '',
@@ -165,6 +161,14 @@ const OrderTripListPage = () => {
     }
   };
 
+  const totalDelivery = singleTrips.filter(t => t.type === 'delivery').length;
+  const totalPacking = singleTrips.filter(t => t.type === 'packing').length;
+  const totalCombined = combinedTrips.length;
+  const totalAll = singleTrips.length + combinedTrips.length;
+  const totalActive = selectedMenuItem === 'active'
+    ? singleTrips.length + combinedTrips.length
+    : 0;
+
   const singleToShow = singleTrips.filter((t) => {
     if (selectedMenuItem === 'all') return true;
     if (selectedMenuItem === 'active') return true; 
@@ -174,6 +178,28 @@ const OrderTripListPage = () => {
     ['all', 'combined', 'active'].includes(selectedMenuItem) 
       ? combinedTrips
       : [];
+
+  // Hàm so sánh owner (Line)
+  const compareOwner = (a, b) => {
+    const ownerA = (a.owner || '').toLowerCase();
+    const ownerB = (b.owner || '').toLowerCase();
+    if (ownerA < ownerB) return -1;
+    if (ownerA > ownerB) return 1;
+    return 0;
+  };
+
+  // Đơn lẻ: sort theo owner
+  const sortedSingleToShow = [...singleToShow].sort(compareOwner);
+
+  // Đơn ghép: sort theo owner của deliveryOrderId (ưu tiên), nếu không có thì lấy packingOrderId
+  const compareCombinedOwner = (a, b) => {
+    const ownerA = (a.deliveryOrderId?.owner || a.packingOrderId?.owner || '').toLowerCase();
+    const ownerB = (b.deliveryOrderId?.owner || b.packingOrderId?.owner || '').toLowerCase();
+    if (ownerA < ownerB) return -1;
+    if (ownerA > ownerB) return 1;
+    return 0;
+  };
+  const sortedCombinedToShow = [...combinedToShow].sort(compareCombinedOwner);
 
   return (
     <div style={{ padding: 16, overflowX: 'auto' }}>
@@ -189,16 +215,26 @@ const OrderTripListPage = () => {
           mode="horizontal"
           style={{ flex: 1, minWidth: 200 }}
         >
-          <Menu.Item key="all">Tất cả</Menu.Item>
-          <Menu.Item key="delivery">Chuyến giao hàng</Menu.Item>
-          <Menu.Item key="packing">Chuyến đóng hàng</Menu.Item>
-          <Menu.Item key="combined">Chuyến ghép</Menu.Item>
-          <Menu.Item key="active">Chuyến đang vận chuyển</Menu.Item> {/* New Menu Item */}
+          <Menu.Item key="all">
+            Tất cả <span style={{ color: '#1890ff' }}>({totalAll})</span>
+          </Menu.Item>
+          <Menu.Item key="delivery">
+            Chuyến giao hàng <span style={{ color: '#1890ff' }}>({totalDelivery})</span>
+          </Menu.Item>
+          <Menu.Item key="packing">
+            Chuyến đóng hàng <span style={{ color: '#1890ff' }}>({totalPacking})</span>
+          </Menu.Item>
+          <Menu.Item key="combined">
+            Chuyến ghép <span style={{ color: '#1890ff' }}>({totalCombined})</span>
+          </Menu.Item>
+          <Menu.Item key="active">
+            Chuyến đang vận chuyển <span style={{ color: '#1890ff' }}>({totalActive})</span>
+          </Menu.Item>
         </Menu>
       </div>
       <Row gutter={[16, 16]}>
         {/* Đơn lẻ */}
-        {singleToShow.map((trip) => (
+        {sortedSingleToShow.map((trip) => (
           <Col key={trip._id} xs={24} md={12}>
             <OrderTripCard
               trip={trip}
@@ -211,7 +247,7 @@ const OrderTripListPage = () => {
         ))}
 
         {/* Đơn ghép */}
-        {combinedToShow.map((conn) => (
+        {sortedCombinedToShow.map((conn) => (
           <Col key={conn._id} xs={24} md={12}>
             <CombinedOrderCard
               combinedStatus={conn.status}

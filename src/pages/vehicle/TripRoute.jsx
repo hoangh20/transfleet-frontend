@@ -6,6 +6,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { EnvironmentOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import TripDetailInfo from '../../components/popup/TripDetailInfo';
+import VehicleOrderList from '../../components/list/VehicleOrderList';
 
 const { RangePicker } = DatePicker;
 
@@ -36,8 +38,13 @@ const TripRoute = () => {
   const [filter, setFilter] = useState('');
   const [selectedPlate, setSelectedPlate] = useState(null);
   const [tripInfo, setTripInfo] = useState(null);
-  const [dateRange, setDateRange] = useState([dayjs().startOf('day'), dayjs().endOf('day')]);
+  const defaultDateRange = [dayjs().startOf('day'), dayjs().endOf('day')];
+  const defaultOrderDateRange = [dayjs().subtract(7, 'day').startOf('day'), dayjs().endOf('day')];
+
+  const [dateRange, setDateRange] = useState(defaultDateRange);
   const [tripLoading, setTripLoading] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
+  const [orderDateRange, setOrderDateRange] = useState(defaultOrderDateRange);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,12 +100,23 @@ const TripRoute = () => {
         selectedPlate.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
   );
 
-  const handleFetchTripInfo = async () => {
+  const handleSelectOrder = (order) => {
+    if (order.datefrom && order.dateto) {
+      const from = dayjs(order.datefrom);
+      const to = dayjs(order.dateto);
+      setDateRange([from, to]);
+      handleFetchTripInfo(from, to);
+    } else {
+      message.warning('Đơn hàng này chưa có thời gian hành trình!');
+    }
+  };
+
+  const handleFetchTripInfo = async (fromArg, toArg) => {
     if (!selectedVehicleObj) return;
     setTripLoading(true);
     try {
-      const datefrom = dateRange[0].format('HH-mm_DD-MM-YYYY');
-      const dateto = dateRange[1].format('HH-mm_DD-MM-YYYY');
+      const datefrom = fromArg ? fromArg.format('HH-mm_DD-MM-YYYY') : dateRange[0].format('HH-mm_DD-MM-YYYY');
+      const dateto = toArg ? toArg.format('HH-mm_DD-MM-YYYY') : dateRange[1].format('HH-mm_DD-MM-YYYY');
       const data = await getTripInfoFromBK({
         vehicleId: selectedVehicleObj._id,
         datefrom,
@@ -116,13 +134,49 @@ const TripRoute = () => {
   const handleBack = () => {
     setSelectedPlate(null);
     setTripInfo(null);
-    setDateRange([dayjs().startOf('day'), dayjs().endOf('day')]);
+    setDateRange(defaultDateRange);
+    setOrderDateRange(defaultOrderDateRange);
   };
 
   const tripPoints = Array.isArray(tripInfo?.data)
     ? tripInfo.data.filter(p => p.Lt && p.Ln)
     : [];
 
+  const calcDistance = () => {
+    let distance = 0;
+    for (let i = 1; i < tripPoints.length; i++) {
+      const toRad = (v) => (v * Math.PI) / 180;
+      const R = 6371;
+      const dLat = toRad(tripPoints[i].Lt - tripPoints[i - 1].Lt);
+      const dLon = toRad(tripPoints[i].Ln - tripPoints[i - 1].Ln);
+      const lat1 = toRad(tripPoints[i - 1].Lt);
+      const lat2 = toRad(tripPoints[i].Lt);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      distance += R * c;
+    }
+    return distance.toFixed(2) + ' km';
+  };
+
+  const calcMoveTime = () => {
+    let totalMove = 0;
+    for (let i = 1; i < tripPoints.length; i++) {
+      if (tripPoints[i - 1].CarStatus !== 'Đỗ' && tripPoints[i].CarStatus !== 'Đỗ') {
+        const t1 = dayjs(tripPoints[i - 1].Date, 'HH:mm:ss DD-MM-YYYY');
+        const t2 = dayjs(tripPoints[i].Date, 'HH:mm:ss DD-MM-YYYY');
+        totalMove += t2.diff(t1, 'second');
+      }
+    }
+    const hours = Math.floor(totalMove / 3600);
+    const minutes = Math.floor((totalMove % 3600) / 60);
+    const seconds = totalMove % 60;
+    return `${hours} giờ ${minutes} phút ${seconds} giây`;
+  };
+
+  const distance = calcDistance();
+  const moveTime = calcMoveTime();
 
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 64px)' }}>
@@ -222,8 +276,16 @@ const TripRoute = () => {
                             <strong>Biển số:</strong> {g.start.NumberPlate || 'Không xác định'} <br />
                             <strong>Tài xế:</strong> {g.start.DriverName || 'Không xác định'} <br />
                             <strong>Thời gian bắt đầu dừng:</strong> {g.start.Date || '--'} <br />
-                            <strong>Địa chỉ:</strong> {g.start.Address || '--'} <br />
-                            <strong>Số lần dừng liên tiếp:</strong> {g.count} <br />
+                            <strong>Địa chỉ:</strong> {g.start.Address || '--'}{' '}
+                            <a
+                              href={`https://www.google.com/maps/search/?api=1&query=${g.start.Lt},${g.start.Ln}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ marginLeft: 8 }}
+                            >
+                              <EnvironmentOutlined style={{ color: '#1890ff', fontSize: '16px' }} />
+                            </a>
+                            <br />
                             <strong>Thời gian dừng:</strong> {stopDuration} phút
                         </div>
                         </Popup>
@@ -303,7 +365,7 @@ const TripRoute = () => {
                   item.moocType === 0 ? (
                     <Tag color="blue">20</Tag>
                   ) : (
-                    <Tag color="geekblue">40</Tag>
+                    <Tag color="purple">40</Tag>
                   );
 
                 let statusTag;
@@ -346,23 +408,32 @@ const TripRoute = () => {
               <Button onClick={handleBack} style={{ marginBottom: 16 }}>
                 Quay lại danh sách xe
               </Button>
-              <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 8 }}>
                 <strong>Chọn khoảng thời gian:</strong>
                 <RangePicker
                   showTime
                   value={dateRange}
-                  onChange={(dates) => setDateRange(dates)}
+                  onChange={(dates) => setDateRange(dates || defaultDateRange)}
                   style={{ marginLeft: 8 }}
                   format="YYYY-MM-DD HH:mm:ss"
+                  allowClear={false}
+                  defaultValue={defaultDateRange}
                 />
                 <Button
                   type="primary"
-                  onClick={handleFetchTripInfo}
+                  onClick={() => handleFetchTripInfo()}
                   loading={tripLoading}
-                  style={{ marginLeft: 8 }}
+                  style={{ margin: 8 }}
                   disabled={!dateRange[0] || !dateRange[1]}
                 >
                   Xem lịch sử chuyến
+                </Button>
+                <Button
+                  onClick={() => setShowDetail(true)}
+                  style={{ margin: 8 }}
+                  disabled={!tripInfo || !tripInfo.data || tripInfo.data.length === 0}
+                >
+                  Xem chi tiết
                 </Button>
               </div>
               {tripLoading ? (
@@ -371,46 +442,36 @@ const TripRoute = () => {
                 <div>
                   <strong>Thông tin chuyến xe:</strong>
                   <div style={{ margin: '8px 0' }}>
-                    <b>Quãng đường đã đi:</b>{' '}
-                    {(() => {
-                      let distance = 0;
-                      for (let i = 1; i < tripPoints.length; i++) {
-                        const toRad = (v) => (v * Math.PI) / 180;
-                        const R = 6371; // km
-                        const dLat = toRad(tripPoints[i].Lt - tripPoints[i - 1].Lt);
-                        const dLon = toRad(tripPoints[i].Ln - tripPoints[i - 1].Ln);
-                        const lat1 = toRad(tripPoints[i - 1].Lt);
-                        const lat2 = toRad(tripPoints[i].Lt);
-                        const a =
-                          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                          Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-                        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                        distance += R * c;
-                      }
-                      return distance.toFixed(2) + ' km';
-                    })()}
+                    <b>Quãng đường đã đi:</b> {distance}
                   </div>
                   <div style={{ margin: '8px 0' }}>
-                    <b>Thời gian di chuyển:</b>{' '}
-                    {(() => {
-                      let totalMove = 0;
-                      for (let i = 1; i < tripPoints.length; i++) {
-                        if (tripPoints[i - 1].CarStatus !== 'Đỗ' && tripPoints[i].CarStatus !== 'Đỗ') {
-                          const t1 = dayjs(tripPoints[i - 1].Date, 'HH:mm:ss DD-MM-YYYY');
-                          const t2 = dayjs(tripPoints[i].Date, 'HH:mm:ss DD-MM-YYYY');
-                          totalMove += t2.diff(t1, 'second');
-                        }
-                      }
-                      const hours = Math.floor(totalMove / 3600);
-                      const minutes = Math.floor((totalMove % 3600) / 60);
-                      const seconds = totalMove % 60;
-                      return `${hours} giờ ${minutes} phút ${seconds} giây`;
-                    })()}
+                    <b>Thời gian di chuyển:</b> {moveTime}
                   </div>
-                  
                 </div>
               ) : (
                 <div>Chọn khoảng thời gian và nhấn "Xem lịch sử chuyến" để xem thông tin chuyến xe.</div>
+              )}
+              <VehicleOrderList
+                vehicleId={selectedVehicleObj?._id}
+                dateRange={orderDateRange}
+                onDateRangeChange={(dates) => setOrderDateRange(dates || defaultOrderDateRange)}
+                onSelectOrder={handleSelectOrder}
+              />
+              {showDetail && (
+                <TripDetailInfo
+                  data={tripInfo?.data}
+                  visible={showDetail}
+                  onClose={() => setShowDetail(false)}
+                  noDataMessage={
+                    tripInfo?.data &&
+                    !Array.isArray(tripInfo.data) &&
+                    tripInfo.data.Message === 'Không có dữ liệu hành trình'
+                      ? 'Không có dữ liệu hành trình cho khoảng thời gian này.'
+                      : undefined
+                  }
+                  distance={distance}
+                  moveTime={moveTime}
+                />
               )}
             </div>
           )}
