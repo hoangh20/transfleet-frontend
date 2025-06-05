@@ -15,18 +15,19 @@ const PackingOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange 
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const fuelPrice = parseFloat(localStorage.getItem('fuelPrice')) || 0; // Lấy giá trị fuelPrice từ localStorage
+        const fuelPrice = parseFloat(localStorage.getItem('fuelPrice')) || 0; 
         const packingOrders = await getPackingOrdersByDate(startDate, endDate);
         const filteredOrders = packingOrders.filter(order => order.isCombinedTrip === 0 && order.hasVehicle === 0);
         const ordersWithDetails = await Promise.all(filteredOrders.map(async (order) => {
-          const startProvince = await fetchProvinceName(order.location.startPoint.provinceCode);
-                    const startDistrict = await fetchDistrictName(order.location.startPoint.districtCode);
-                    const startWard = order.location.startPoint.wardCode
-                      ? await fetchWardName(order.location.startPoint.wardCode)
-                      : null;
-                    const startLocationText = order.location.startPoint.locationText || '';
-          
-          
+          const startProvinceRaw = await fetchProvinceName(order.location.startPoint.provinceCode);
+          const startDistrictRaw = await fetchDistrictName(order.location.startPoint.districtCode);
+          const startWard = order.location.startPoint.wardCode
+            ? await fetchWardName(order.location.startPoint.wardCode)
+            : null;
+          const startLocationText = order.location.startPoint.locationText || '';
+          const startProvince = startProvinceRaw.replace(/^(Tỉnh|Thành Phố)\s*/i, '');
+          const startDistrict = startDistrictRaw.replace(/^(Huyện|Thị Xã|Quận)\s*/i, '');
+
           const cost = await getCostByOrderId(order._id);
           const tripFare = cost ? cost.tripFare : 0;
 

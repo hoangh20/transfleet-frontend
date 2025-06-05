@@ -35,11 +35,11 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
     if (!trip.location) return;
     const fetchLocationNames = async () => {
       const [
-        startProvinceName,
-        startDistrictName,
+        startProvinceNameRaw,
+        startDistrictNameRaw,
         startWardName,
-        endProvinceName,
-        endDistrictName,
+        endProvinceNameRaw,
+        endDistrictNameRaw,
         endWardName,
       ] = await Promise.all([
         fetchProvinceName(trip.location.startPoint.provinceCode),
@@ -53,6 +53,18 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
           ? fetchWardName(trip.location.endPoint.wardCode)
           : null,
       ]);
+      const startProvinceName = startProvinceNameRaw
+        ? startProvinceNameRaw.replace(/^(Tỉnh|Thành Phố)\s*/i, '')
+        : '';
+      const startDistrictName = startDistrictNameRaw
+        ? startDistrictNameRaw.replace(/^(Huyện|Thị Xã|Quận)\s*/i, '')
+        : '';
+      const endProvinceName = endProvinceNameRaw
+        ? endProvinceNameRaw.replace(/^(Tỉnh|Thành Phố)\s*/i, '')
+        : '';
+      const endDistrictName = endDistrictNameRaw
+        ? endDistrictNameRaw.replace(/^(Huyện|Thị Xã|Quận)\s*/i, '')
+        : '';
 
       setStartProvince(startProvinceName);
       setStartDistrict(startDistrictName);

@@ -34,12 +34,12 @@ const CombinedOrderCard = ({
     const fetchLocations = async () => {
       if (deliveryTrip.location) {
         const [
-          startProvince,
-          startDistrict,
+          startProvinceRaw,
+          startDistrictRaw,
           startWard,
           startLocationText,
-          endProvince,
-          endDistrict,
+          endProvinceRaw,
+          endDistrictRaw,
           endWard,
           endLocationText,
         ] = await Promise.all([
@@ -56,6 +56,10 @@ const CombinedOrderCard = ({
             : null,
           deliveryTrip.location.endPoint.locationText || '',
         ]);
+        const startProvince = startProvinceRaw ? startProvinceRaw.replace(/^(Tỉnh|Thành Phố)\s*/i, '') : '';
+        const startDistrict = startDistrictRaw ? startDistrictRaw.replace(/^(Huyện|Thị Xã|Quận)\s*/i, '') : '';
+        const endProvince = endProvinceRaw ? endProvinceRaw.replace(/^(Tỉnh|Thành Phố)\s*/i, '') : '';
+        const endDistrict = endDistrictRaw ? endDistrictRaw.replace(/^(Huyện|Thị Xã|Quận)\s*/i, '') : '';
         setDeliveryLocation({
           startProvince,
           startDistrict,
@@ -69,12 +73,12 @@ const CombinedOrderCard = ({
       }
       if (packingTrip.location) {
         const [
-          startProvince,
-          startDistrict,
+          startProvinceRaw,
+          startDistrictRaw,
           startWard,
           startLocationText,
-          endProvince,
-          endDistrict,
+          endProvinceRaw,
+          endDistrictRaw,
           endWard,
           endLocationText,
         ] = await Promise.all([
@@ -91,6 +95,10 @@ const CombinedOrderCard = ({
             : null,
           packingTrip.location.endPoint.locationText || '',
         ]);
+        const startProvince = startProvinceRaw ? startProvinceRaw.replace(/^(Tỉnh|Thành Phố)\s*/i, '') : '';
+        const startDistrict = startDistrictRaw ? startDistrictRaw.replace(/^(Huyện|Thị Xã|Quận)\s*/i, '') : '';
+        const endProvince = endProvinceRaw ? endProvinceRaw.replace(/^(Tỉnh|Thành Phố)\s*/i, '') : '';
+        const endDistrict = endDistrictRaw ? endDistrictRaw.replace(/^(Huyện|Thị Xã|Quận)\s*/i, '') : '';
         setPackingLocation({
           startProvince,
           startDistrict,
@@ -176,7 +184,7 @@ const CombinedOrderCard = ({
 
   const handleStatusClick = (statusIndex) => {
     if (statusIndex !== undefined && statusIndex !== null) {
-      setSelectedStatus({ statusIndex }); // Ensure statusIndex is wrapped in an object
+      setSelectedStatus({ statusIndex }); 
       setStatusModalVisible(true);
     } else {
       console.error('Invalid statusIndex:', statusIndex);
@@ -191,7 +199,7 @@ const CombinedOrderCard = ({
   const blockStyle = { marginBottom: 4 };
   const labelStyle = { fontWeight: 'bold', marginRight: 2 };
   const noteStyle = { color: '#8c8c8c' };
-  const stepsStyle = { marginTop: 4, fontSize: '10px' };
+  const stepsStyle = { marginTop: 0, marginBottom: 0, fontSize: '10px' }; 
   const topRightButtonStyle = {
     position: 'absolute',
     top: 2,
@@ -200,7 +208,6 @@ const CombinedOrderCard = ({
 
   return (
     <Card style={containerStyle} bodyStyle={{ padding: 4 }}>
-      {/* Nút cập nhật trạng thái ở góc trên bên phải */}
       <div style={topRightButtonStyle}>
         {updateAction ? (
           <Button type="link" onClick={updateAction} size="small">
@@ -262,14 +269,14 @@ const CombinedOrderCard = ({
             </Col> 
             <Col span={8}>
               {deliveryVehicleDetails && (
-                <Col span={24}>
+                <>
                   <Text style={labelStyle}>Thông tin xe:</Text>
                   <Text>
                     {deliveryTrip.hasVehicle === 1
                       ? `${deliveryVehicleDetails.headPlate || 'N/A'} - ${deliveryVehicleDetails.moocType === 0 ? "20" : "40"}`
                       : deliveryVehicleDetails.shortName || 'Không xác định'}
                   </Text>
-                </Col>
+                </>
               )}
             </Col>
             {deliveryTrip.note && (
@@ -333,14 +340,14 @@ const CombinedOrderCard = ({
                 {`${packingLocation.endLocationText ? packingLocation.endLocationText + ', ' : ''}${packingLocation.endWard ? packingLocation.endWard + ', ' : ''}${packingLocation.endDistrict}, ${packingLocation.endProvince}`}
               </Text>
             </Col>
-            <Col span={8}>
+            <Col span={8} style={{ paddingTop: 0, paddingBottom: 0 }}>
               <Text style={labelStyle}>Loại cont:</Text>
               <Text>{packingTrip.contType === 0 ? "20" : "40"}</Text>
             </Col>
-            <Col span={8}>
+            <Col span={8} style={{ paddingTop: 0, paddingBottom: 0 }}>
               <Text style={labelStyle}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Text>{packingTrip.containerNumber || '--'}</Text>
+                  <Text >{packingTrip.containerNumber || '--'}</Text>
                   <Text> - {packingTrip.owner}</Text>
                   {packingTrip.command === 1 &&
                     (packingTrip.noteCS ? (
@@ -361,23 +368,23 @@ const CombinedOrderCard = ({
                 </span>
               </Text>
             </Col> 
-            <Col span={8}>
+            <Col span={8} style={{ paddingTop: 0, paddingBottom: 0 }}>
               {packingVehicleDetails && (
-                <Col span={24}>
+                <>
                   <Text style={labelStyle}>Thông tin xe:</Text>
                   <Text>
                     {packingTrip.hasVehicle === 1
                       ? `${packingVehicleDetails.headPlate || 'N/A'} - ${packingVehicleDetails.moocType === 0 ? "20" : "40"}`
                       : packingVehicleDetails.shortName || 'Không xác định'}
                   </Text>
-                </Col>
+                </>
               )}
             </Col>
             {packingTrip.note && (
-              <Col span={24}>
+              <>
                 <Text style={labelStyle}>Ghi chú:</Text>
                 <Text style={noteStyle}>{packingTrip.note}</Text>
-              </Col>
+              </>
             )}
           </Row>
           <Steps current={currentPackingStep} size="small" style={stepsStyle}>

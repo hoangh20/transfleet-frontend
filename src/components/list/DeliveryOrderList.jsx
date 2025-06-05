@@ -26,6 +26,8 @@ const DeliveryOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange
             ? await fetchWardName(order.location.endPoint.wardCode)
             : null;
           const endLocationText = order.location.endPoint.locationText || '';
+          const endProvinceName = endProvince.replace(/^(Tỉnh|Thành Phố)\s*/i, '');
+          const endDistrictName = endDistrict.replace(/^(Huyện|Thị Xã|Quận)\s*/i, '');
           const cost = await getCostByOrderId(order._id);
           const tripFare = cost ? cost.tripFare : 0;
 
