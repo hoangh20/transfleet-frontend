@@ -293,7 +293,7 @@ const CombinedOrderCard = ({
                 title={
                   <span
                     style={{ fontSize: '10px', padding: '0 2px', cursor: 'pointer' }}
-                    onClick={() => handleStatusClick(index + 2)}
+                    onClick={() => handleStatusClick(index + 1)}
                   >
                     {step}
                   </span>
@@ -394,7 +394,7 @@ const CombinedOrderCard = ({
                 title={
                   <span
                     style={{ fontSize: '10px', padding: '0 2px', cursor: 'pointer' }}
-                    onClick={() => handleStatusClick(index + 6)}
+                    onClick={() => handleStatusClick(index + 5)}
                   >
                     {step}
                   </span>

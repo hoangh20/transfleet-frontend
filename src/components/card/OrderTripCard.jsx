@@ -109,7 +109,7 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
   const currentStep = trip.status - 1 <= steps.length ? trip.status - 1 : 0;
 
   const handleStatusClick = (status) => {
-    setSelectedStatus(status);
+    setSelectedStatus(status - 1);
     setStatusModalVisible(true);
   };
 
