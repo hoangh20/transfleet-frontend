@@ -353,7 +353,7 @@ const DeliveryOrderForm = () => {
                   <Form.Item
                     label='Địa Chỉ Điểm Đến'
                     name={['location', 'endPoint', 'locationText']}
-                    style={{ marginBottom: 0 }} // để không tạo khoảng trắng dư
+                    style={{ marginBottom: 0 }} 
                   >
                     <Input placeholder='Nhập địa chỉ điểm kết thúc' />
                   </Form.Item>
@@ -387,7 +387,7 @@ const DeliveryOrderForm = () => {
             loading={loading}
             rowKey='_id'
             rowSelection={rowSelection}
-            pagination={false}
+            pagination={{ pageSize: 5 }}
           />
         </Card>
       ) : (

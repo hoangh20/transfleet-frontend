@@ -310,7 +310,7 @@ const PackingOrderForm = () => {
             loading={loading}
             rowKey='_id'
             rowSelection={rowSelection}
-            pagination={false}
+            pagination={{ pageSize: 5 }}
           />
         </Card>
       ) : (

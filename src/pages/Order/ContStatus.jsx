@@ -133,9 +133,9 @@ const packingColumns = [
     },
     {
         title: 'Kết hợp',
-        dataIndex: 'isCombinedTrip',
-        key: 'isCombinedTrip',
-        render: (v) => v ? <Tag color="green">Có</Tag> : <Tag color="default">Không</Tag>,
+        dataIndex: 'closeCombination',
+        key: 'closeCombination',
+        render: (v) => v ? <Tag color="blue">Gắp vỏ</Tag> : <Tag color="green">Kết hợp</Tag>,
     },
     {
         title: 'Line',

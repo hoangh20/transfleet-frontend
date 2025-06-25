@@ -8,6 +8,7 @@ const breadcrumbNameMap = {
   '/vehicle': 'Quản lý xe',
   '/vehicle/create': 'Thêm mới xe',
   '/vehicle/list': 'Danh sách xe',
+  '/vehicle/repair': 'Sửa chữa xe',
   '/driver': 'Quản lý lái xe',
   '/driver/create': 'Thêm mới lái xe',
   '/driver/list': 'Danh sách lái xe',
@@ -26,6 +27,7 @@ const breadcrumbNameMap = {
   '/system': 'Hệ thống',
   '/trip-route': 'Quản lý hành trình',
   '/pending-orders': 'Đơn hàng chờ',
+  '/incidental-cost': 'Chi phí phát sinh',
 };
 
 const nonClickablePaths = [

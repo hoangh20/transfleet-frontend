@@ -14,6 +14,7 @@ import {
   MacCommandOutlined,
   EnvironmentOutlined,
   ClockCircleOutlined,
+  AccountBookOutlined,
 } from '@ant-design/icons';
 
 const { SubMenu } = Menu;
@@ -21,16 +22,16 @@ const { SubMenu } = Menu;
 const ROLE_MENU = {
   dev: [
     'overview', 'order', 'order/list', 'order/list-trip', 'order/cont-status',
-    'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route','/pending-orders',
+    'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route','/pending-orders','/incidental-cost',
   ],
   admin: [
     'overview', 'order', 'order/list', 'order/list-trip', 'order/cont-status',
-    'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route',
+    'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route','/incidental-cost',
   ],
   CS: ['overview', 'order/cont-status','trip-route'],
   DHVT: [
     'overview', 'order/create', 'order/list', 'order/list-trip',
-    'partner-cost', 'vehicle', 'driver', 'partner', 'customer','trip-route','/pending-orders',
+    'partner-cost', 'vehicle', 'driver', 'partner', 'customer','trip-route','/pending-orders','/incidental-cost',
   ],
   driver: ['overview'],
 };
@@ -98,6 +99,15 @@ const AdminMenu = () => {
           <Link to='/order/list-trip'>Danh sách các chuyến </Link>
         </Menu.Item>
       )}
+      {canView('/incidental-cost') && (
+        <Menu.Item
+          key='/incidental-cost'
+          icon={<AccountBookOutlined />}
+          style={{ fontSize: '18px' }}
+        >
+          <Link to='/incidental-cost'>Chi phí phát sinh</Link>
+        </Menu.Item>
+      )}
       {canView('order/cont-status') && (
         <Menu.Item
           key='order/cont-status'
@@ -143,6 +153,9 @@ const AdminMenu = () => {
           </Menu.Item>
           <Menu.Item key='vehicle-list' style={{ fontSize: '18px' }}>
             <Link to='/vehicle/list'>Danh sách</Link>
+          </Menu.Item>
+          <Menu.Item key='/vehicle/repair' style={{ fontSize: '18px' }}>
+            <Link to='/vehicle/repair'>Sửa chữa</Link>
           </Menu.Item>
         </SubMenu>
       )}

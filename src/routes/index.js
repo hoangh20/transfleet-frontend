@@ -26,28 +26,30 @@ import EmptyDistance from '../pages/TransportRoute/Emptydistance';
 import ContStatus from '../pages/Order/ContStatus';
 import TripRoute from '../pages/vehicle/TripRoute';
 import PendingOrders from '../pages/Order/PendingOrders';
+import IncidentalCost from '../pages/Order/IncidentalCost';
+import RepairPage from '../pages/vehicle/repair';
 
 const ROLE_MENU = {
   dev: [
     '/', '/order/create', '/order/list', '/order/list-trip', '/order/cont-status', '/order/delivery-orders/:orderId', '/order/packing-orders/:orderId',
-    '/partner/list', '/customer/list', '/vehicle/create', '/vehicle/list', '/vehicle/detail/:id',
+    '/partner/list', '/customer/list', '/vehicle/create', '/vehicle/list', '/vehicle/detail/:id','/vehicle/repair',
     '/driver/list', '/driver/wage', '/transport-route', '/transport-route/empty-distance',
     '/transport-route/packing/:id', '/transport-route/delivery/:id',
-    '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route','/pending-orders',
+    '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route','/pending-orders','/incidental-cost',
   ],
   admin: [
     '/', '/order/create', '/order/list', '/order/list-trip', '/order/cont-status',
     '/partner/list', '/customer/list', '/vehicle/create', '/vehicle/list', '/vehicle/detail/:id',
     '/driver/list', '/driver/wage', '/transport-route', '/transport-route/empty-distance',
     '/transport-route/packing/:id', '/transport-route/delivery/:id',
-    '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route',
+    '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route','/incidental-cost',
   ],
   CS: ['/', '/order/cont-status', '/sign-in', '/sign-up', '/landingpage','/trip-route',],
   DHVT: [
     '/', '/order/create', '/order/list', '/order/list-trip','/order', '/order/delivery-orders/:orderId', '/order/packing-orders/:orderId',
     '/partner/list', '/customer/list', '/vehicle/create', '/vehicle/list', '/vehicle/detail/:id',
     '/driver/list', '/driver/wage', '/transport-route', '/transport-route/empty-distance',
-    '/transport-route/packing/:id', '/transport-route/delivery/:id','/trip-route','/pending-orders',
+    '/transport-route/packing/:id', '/transport-route/delivery/:id','/trip-route','/pending-orders','/incidental-cost',
     '/sign-in', '/sign-up', '/landingpage'
   ],
   driver: ['/', '/sign-in', '/sign-up', '/landingpage'],
@@ -104,6 +106,10 @@ export const routes = [
   {
     path: '/vehicle/detail/:id',
     page: withRoleGuard(VehicleDetailPage, '/vehicle/detail/:id'),
+  },
+  {
+    path: '/vehicle/repair',
+    page: withRoleGuard(RepairPage, '/vehicle/repair'),
   },
   {
     path: '/driver/list',
@@ -176,5 +182,9 @@ export const routes = [
   {
     path: '/pending-orders',
     page: withRoleGuard(PendingOrders, '/pending-orders'),
+  },
+  {
+    path:'/incidental-cost',
+    page: withRoleGuard(IncidentalCost, '/incidental-cost'),
   }
 ];
