@@ -10,7 +10,7 @@ import {
 
 const { Option } = Select;
 
-const CustomerTripFareList = ({ externalFleetCostId, fetchCostDetails }) => {
+const CustomerTripFareList = ({ externalFleetCostId, fetchCostDetails, pagination = false }) => {
   const [customerTripFares, setCustomerTripFares] = useState([]);
   const [filteredCustomerTripFares, setFilteredCustomerTripFares] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -153,7 +153,7 @@ const CustomerTripFareList = ({ externalFleetCostId, fetchCostDetails }) => {
   ];
 
   return (
-    <Card title="Danh sách cước chuyến của khách hàng" bordered={false} style={{ marginTop: 24 }}>
+    <Card title="Danh sách cước chuyến khách hàng" style={{ marginTop: 16 }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col span={16}>
           <AutoComplete
@@ -175,7 +175,7 @@ const CustomerTripFareList = ({ externalFleetCostId, fetchCostDetails }) => {
           columns={columns}
           dataSource={Array.isArray(filteredCustomerTripFares) ? filteredCustomerTripFares : []} 
           rowKey="_id"
-          pagination={false}
+          pagination={pagination}
         />
       )}
       <Modal

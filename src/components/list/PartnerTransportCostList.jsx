@@ -4,7 +4,12 @@ import { getPartnerById } from '../../services/PartnerService';
 import { updatePartnerTransportCost, deletePartnerTransportCost } from '../../services/ExternalFleetCostService';
 import CreatePartnerTransportCost from '../popup/CreatePartnerTransportCost';
 
-const PartnerTransportCostList = ({ transportTripId, partnerTransportCosts, fetchCostDetails }) => {
+const PartnerTransportCostList = ({ 
+  transportTripId, 
+  partnerTransportCosts, 
+  fetchCostDetails, 
+  pagination = false 
+}) => {
   const [partnerCostsWithNames, setPartnerCostsWithNames] = useState([]);
   const [filteredPartnerTransportCosts, setFilteredPartnerTransportCosts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -135,7 +140,7 @@ const PartnerTransportCostList = ({ transportTripId, partnerTransportCosts, fetc
   ];
 
   return (
-    <Card title="Danh sách đối tác chạy tuyến vận tải" bordered={false} style={{ marginTop: 24 }}>
+    <Card title="Danh sách chi phí đối tác vận chuyển" style={{ marginTop: 16 }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col span={16}>
           <AutoComplete
@@ -157,7 +162,7 @@ const PartnerTransportCostList = ({ transportTripId, partnerTransportCosts, fetc
           columns={columns}
           dataSource={filteredPartnerTransportCosts}
           rowKey="_id"
-          pagination={false}
+          pagination={pagination}
         />
       )}
       <CreatePartnerTransportCost
