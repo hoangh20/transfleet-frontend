@@ -11,6 +11,7 @@ import {
   Select,
   Table,
   Alert,
+  Checkbox,
 } from 'antd';
 import dayjs from 'dayjs';
 import { createPackingOrder } from '../../services/OrderService';
@@ -454,6 +455,18 @@ const PackingOrderForm = () => {
             <Col span={6}>
               <Form.Item label='Ghi chú' name='note'>
                 <Input placeholder='Nhập ghi chú' />
+              </Form.Item>
+            </Col>
+            <Col span={3}>
+              <Form.Item
+                label="Hợp đồng"
+                name="contract"
+                valuePropName="checked"
+                initialValue={false}
+              >
+                <Checkbox>
+                  Hợp đồng
+                </Checkbox>
               </Form.Item>
             </Col>
             <Col span={4}>
