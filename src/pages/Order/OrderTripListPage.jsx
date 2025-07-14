@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { DatePicker, Row, Col, Menu, message } from 'antd';
+import { DatePicker, Row, Col, Menu, message, Button, Modal } from 'antd';
+import { ExportOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
@@ -11,6 +12,9 @@ import {
   getDeliveryOrdersByDate,
   getOrderConnectionsByDeliveryDate,
   getActiveOrders,
+  exportDeliveryOrderToSheet,
+  exportPackingOrderToSheet,
+  exportOrderConnectionsToSheet,
 } from '../../services/OrderService';
 
 dayjs.extend(isBetween);
@@ -29,6 +33,9 @@ const OrderTripListPage = () => {
     return [dayjs(), dayjs()];
   });
   const [selectedMenuItem, setSelectedMenuItem] = useState('all');
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportModalVisible, setExportModalVisible] = useState(false);
+  const [exportResults, setExportResults] = useState(null);
 
   useEffect(() => {
     filterTrips();
@@ -161,6 +168,96 @@ const OrderTripListPage = () => {
     }
   };
 
+  const handleExportAll = async () => {
+    setIsExporting(true);
+    setExportModalVisible(true);
+    setExportResults(null);
+
+    let successCount = 0;
+    let failureCount = 0;
+    const failedOrders = [];
+
+    try {
+      // Xuất đơn lẻ
+      const exportableTrips = sortedSingleToShow.filter(trip => 
+        (trip.type === 'delivery' && trip.status === 6 && trip.writeToSheet === 0) ||
+        (trip.type === 'packing' && trip.status === 7 && trip.writeToSheet === 0)
+      );
+
+      for (const trip of exportableTrips) {
+        try {
+          if (trip.type === 'delivery') {
+            await exportDeliveryOrderToSheet(trip._id);
+          } else {
+            await exportPackingOrderToSheet(trip._id);
+          }
+          successCount++;
+        } catch (error) {
+          failureCount++;
+          failedOrders.push({
+            id: trip._id,
+            type: trip.type,
+            customer: trip.customerName,
+            error: error.message
+          });
+        }
+      }
+
+      // Xuất đơn ghép
+      const exportableCombined = sortedCombinedToShow.filter(conn => 
+        conn.status === 9 && conn.packingOrderId.writeToSheet === 0
+      );
+
+      for (const conn of exportableCombined) {
+        try {
+          await exportOrderConnectionsToSheet(conn._id);
+          successCount++;
+        } catch (error) {
+          failureCount++;
+          failedOrders.push({
+            id: conn._id,
+            type: 'combined',
+            customer: `${conn.deliveryOrderId.customerName} - ${conn.packingOrderId.customerName}`,
+            error: error.message
+          });
+        }
+      }
+
+      setExportResults({
+        total: exportableTrips.length + exportableCombined.length,
+        success: successCount,
+        failure: failureCount,
+        failedOrders
+      });
+
+      if (failureCount === 0) {
+        message.success(`Xuất thành công ${successCount} đơn hàng!`);
+        // Refresh data sau khi xuất
+        await filterTrips();
+      } else {
+        message.warning(`Xuất thành công ${successCount} đơn, thất bại ${failureCount} đơn`);
+      }
+
+    } catch (error) {
+      message.error('Lỗi khi xuất file');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const getExportableCount = () => {
+    const exportableTrips = sortedSingleToShow.filter(trip => 
+      (trip.type === 'delivery' && trip.status === 6 && trip.writeToSheet === 0) ||
+      (trip.type === 'packing' && trip.status === 7 && trip.writeToSheet === 0)
+    ).length;
+
+    const exportableCombined = sortedCombinedToShow.filter(conn => 
+      conn.status === 9 && conn.packingOrderId.writeToSheet === 0
+    ).length;
+
+    return exportableTrips + exportableCombined;
+  };
+
   const totalDelivery = singleTrips.filter(t => t.type === 'delivery').length;
   const totalPacking = singleTrips.filter(t => t.type === 'packing').length;
   const totalCombined = combinedTrips.length;
@@ -203,7 +300,7 @@ const OrderTripListPage = () => {
 
   return (
     <div style={{ padding: 16, overflowX: 'auto' }}>
-      <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
         <RangePicker
           value={selectedDateRange}
           onChange={handleDateChange}
@@ -231,7 +328,17 @@ const OrderTripListPage = () => {
             Chuyến đang vận chuyển <span style={{ color: '#1890ff' }}>({totalActive})</span>
           </Menu.Item>
         </Menu>
+        <Button
+          type="primary"
+          icon={<ExportOutlined />}
+          onClick={handleExportAll}
+          loading={isExporting}
+          disabled={getExportableCount() === 0}
+        >
+          Xuất tất cả ({getExportableCount()})
+        </Button>
       </div>
+      
       <Row gutter={[16, 16]}>
         {/* Đơn lẻ */}
         {sortedSingleToShow.map((trip) => (
@@ -265,6 +372,42 @@ const OrderTripListPage = () => {
           </Col>
         ))}
       </Row>
+
+      {/* Modal hiển thị kết quả xuất */}
+      <Modal
+        title="Kết quả xuất file"
+        visible={exportModalVisible}
+        onCancel={() => setExportModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setExportModalVisible(false)}>
+            Đóng
+          </Button>
+        ]}
+        width={600}
+      >
+        {isExporting ? (
+          <div style={{ textAlign: 'center', padding: 20 }}>
+            <div>Đang xuất file...</div>
+            <div style={{ marginTop: 8, color: '#666' }}>
+              Vui lòng chờ trong giây lát
+            </div>
+          </div>
+        ) : exportResults && (
+          <div>
+            <div style={{ marginBottom: 16 }}>
+              <div><strong>Tổng số đơn cần xuất:</strong> {exportResults.total}</div>
+              <div style={{ color: 'green' }}>
+                <strong>Xuất thành công:</strong> {exportResults.success}
+              </div>
+              {exportResults.failure > 0 && (
+                <div style={{ color: 'red' }}>
+                  <strong>Xuất thất bại:</strong> {exportResults.failure}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
