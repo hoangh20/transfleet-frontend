@@ -106,7 +106,9 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
   };
 
   const steps = statusMap[type] || [];
-  const currentStep = trip.status - 1 <= steps.length ? trip.status - 1 : 0;
+    const currentStep = trip.hasVehicle === 2 && trip.status > 1
+    ? steps.length   
+    : (trip.status - 1 <= steps.length ? trip.status - 1 : 0);
 
   const handleStatusClick = (status) => {
     setSelectedStatus(status - 1);

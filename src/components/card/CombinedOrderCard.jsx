@@ -149,8 +149,14 @@ const CombinedOrderCard = ({
 
   const deliverySteps = ['Giao hàng', 'Đã giao hàng', 'Đang lên kho', 'Đã đến kho'];
   const packingSteps = ['Đang đóng hàng', 'Đã đóng hàng', 'Đang về cảng', 'Hoàn thành'];
-  const currentDeliveryStep = combinedStatus >= 0 && combinedStatus <= 5 ? combinedStatus - 1 : 4;
-  const currentPackingStep = combinedStatus >= 6 && combinedStatus <= 9 ? combinedStatus - 5 : -1; 
+
+  const currentDeliveryStep = deliveryTrip.hasVehicle === 2 && deliveryTrip.status > 0
+    ? deliverySteps.length 
+    : (combinedStatus >= 0 && combinedStatus <= 5 ? combinedStatus - 1 : 4);
+
+  const currentPackingStep = packingTrip.hasVehicle === 2 && packingTrip.status > 0
+    ? packingSteps.length 
+    : (combinedStatus >= 6 && combinedStatus <= 9 ? combinedStatus - 5 : -1); 
 
 
   let updateButtonLabel = 'Cập nhật trạng thái';

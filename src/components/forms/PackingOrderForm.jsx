@@ -459,13 +459,13 @@ const PackingOrderForm = () => {
             </Col>
             <Col span={3}>
               <Form.Item
-                label="Hợp đồng"
-                name="contract"
+                label="Hóa đơn"
+                name="bill"
                 valuePropName="checked"
                 initialValue={false}
               >
                 <Checkbox>
-                  Hợp đồng
+                  Hóa đơn
                 </Checkbox>
               </Form.Item>
             </Col>
