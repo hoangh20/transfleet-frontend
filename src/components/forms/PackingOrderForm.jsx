@@ -12,6 +12,7 @@ import {
   Table,
   Alert,
   Checkbox,
+  Modal,
 } from 'antd';
 import dayjs from 'dayjs';
 import { createPackingOrder } from '../../services/OrderService';
@@ -27,6 +28,8 @@ import CreateExternalFleetCost from '../location/CreateExternalFleetCost';
 import AddSalesPersonModal from '../popup/AddSalesPersonModal';
 import SystemService from '../../services/SystemService';
 import WarehouseSelector from '../popup/WarehouseSelector'; 
+import { PlusOutlined } from '@ant-design/icons';
+import { updateCustomer } from '../../services/CustomerService';
 
 const { Option } = Select;
 
@@ -42,6 +45,10 @@ const PackingOrderForm = () => {
   const [salesPersonList, setSalesPersonList] = useState([]); 
   const [isAddSalesPersonModalVisible, setIsAddSalesPersonModalVisible] = useState(false);
   const [isWarehouseModalVisible, setIsWarehouseModalVisible] = useState(false); 
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedCustomerItems, setSelectedCustomerItems] = useState([]);
+  const [isAddItemModalVisible, setIsAddItemModalVisible] = useState(false);
+  const [newItemForm] = Form.useForm();
 
   useEffect(() => {
     fetchCustomers(); 
@@ -59,6 +66,7 @@ const PackingOrderForm = () => {
             _id: customer._id,
             name: customer.name,
             shortName: customer.shortName,
+            items: customer.items || [], // Đảm bảo có field items
           }))
         );
       } else {
@@ -236,6 +244,69 @@ const PackingOrderForm = () => {
     }
   };
 
+  const handleCustomerChange = (customerId) => {
+    const customer = customers.find(c => c._id === customerId);
+    if (customer) {
+      setSelectedCustomer(customer);
+      setSelectedCustomerItems(customer.items || []);
+      
+      // Tự động chọn item đầu tiên nếu có
+      if (customer.items && customer.items.length > 0) {
+        form.setFieldsValue({ item: customer.items[0] });
+      } else {
+        form.setFieldsValue({ item: undefined });
+      }
+    } else {
+      setSelectedCustomer(null);
+      setSelectedCustomerItems([]);
+      form.setFieldsValue({ item: undefined });
+    }
+  };
+
+  const handleAddItem = async () => {
+    try {
+      const values = await newItemForm.validateFields();
+      const newItem = values.item.trim();
+      
+      if (!newItem) {
+        message.error('Vui lòng nhập tên mặt hàng');
+        return;
+      }
+
+      if (selectedCustomerItems.includes(newItem)) {
+        message.error('Mặt hàng này đã tồn tại');
+        return;
+      }
+
+      const updatedItems = [...selectedCustomerItems, newItem];
+      
+      // Cập nhật customer trong database
+      await updateCustomer(selectedCustomer._id, {
+        ...selectedCustomer,
+        items: updatedItems
+      });
+
+      // Cập nhật state local
+      setSelectedCustomerItems(updatedItems);
+      
+      // Cập nhật customer trong danh sách customers
+      setCustomers(prev => prev.map(customer => 
+        customer._id === selectedCustomer._id 
+          ? { ...customer, items: updatedItems }
+          : customer
+      ));
+
+      // Tự động chọn item vừa thêm
+      form.setFieldsValue({ item: newItem });
+      
+      setIsAddItemModalVisible(false);
+      newItemForm.resetFields();
+      message.success('Thêm mặt hàng thành công');
+    } catch (error) {
+      message.error('Lỗi khi thêm mặt hàng');
+    }
+  };
+
   return (
     <>
       <Card title='Thông Tin Địa Điểm' bordered={false} style={{ marginBottom: 16 }}>
@@ -356,11 +427,6 @@ const PackingOrderForm = () => {
               </Form.Item>
             </Col>
             <Col span={6}>
-              <Form.Item label='Mặt Hàng' name='item'>
-                <Input placeholder='Nhập mặt hàng' />
-              </Form.Item>
-            </Col>
-            <Col span={6}>
               <Form.Item
                 label='Loại Cont'
                 name='contType'
@@ -390,18 +456,19 @@ const PackingOrderForm = () => {
                 label='Trọng Lượng (Tấn)'
                 name='weight'
                 rules={[{ required: true, message: 'Vui lòng nhập trọng lượng' }]}
-                initialValue={28} // Giá trị mặc định là 28
+                initialValue={28}
               >
                 <Input type='number' placeholder='Nhập trọng lượng (Tấn)' />
               </Form.Item>
             </Col>
-          </Row>
-          <Row gutter={16}>
             <Col span={6}>
               <Form.Item label='Tàu Dự Kiến' name='expectedShip'>
                 <Input placeholder='Nhập tàu dự kiến' />
               </Form.Item>
             </Col>
+          </Row>
+          
+          <Row gutter={16}>
             <Col span={6}>
               <Form.Item
                 label='Loại Đóng Hàng'
@@ -445,13 +512,14 @@ const PackingOrderForm = () => {
                 <DatePicker showTime placeholder='Chọn thời gian dự kiến' style={{ width: '100%' }} />
               </Form.Item>
             </Col>
-          </Row>
-          <Row gutter={16}>
             <Col span={6}>
               <Form.Item label='Chủ vỏ' name='owner'>
                 <Input placeholder='Nhập chủ vỏ' />
               </Form.Item>
             </Col>
+          </Row>
+
+          <Row gutter={16}>
             <Col span={6}>
               <Form.Item label='Ghi chú' name='note'>
                 <Input placeholder='Nhập ghi chú' />
@@ -501,8 +569,10 @@ const PackingOrderForm = () => {
               </Button>
             </Col>
           </Row>
+
+          {/* Khách hàng và Mặt hàng */}
           <Row gutter={16}>
-            <Col span={24}>
+            <Col span={8}>
               {customers.length > 0 ? (
                 <Form.Item
                   label="Khách Hàng"
@@ -513,6 +583,7 @@ const PackingOrderForm = () => {
                     showSearch
                     placeholder="Chọn khách hàng"
                     optionFilterProp="children"
+                    onChange={handleCustomerChange}
                     filterOption={(input, option) => {
                       const children = option.children;
                       if (typeof children === 'string') {
@@ -537,8 +608,40 @@ const PackingOrderForm = () => {
                 />
               )}
             </Col>
-          </Row>
-          <Row gutter={16} align="middle">
+            
+            <Col span={6}>
+              <Form.Item label='Mặt Hàng' name='item'>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  <Select
+                    placeholder='Chọn mặt hàng'
+                    style={{ flex: 1 }}
+                    disabled={!selectedCustomer}
+                    allowClear
+                    showSearch
+                    optionFilterProp="children"
+                    value={form.getFieldValue('item')}
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                  >
+                    {selectedCustomerItems.map((item) => (
+                      <Option key={item} value={item}>
+                        {item}
+                      </Option>
+                    ))}
+                  </Select>
+                  <Button
+                    type="dashed"
+                    icon={<PlusOutlined />}
+                    onClick={() => setIsAddItemModalVisible(true)}
+                    disabled={!selectedCustomer}
+                    title="Thêm mặt hàng mới"
+                    size="small"
+                  >
+                  </Button>
+                </div>
+              </Form.Item>
+            </Col>
             <Col span={6}>
               <Form.Item label="Số Lượng Đơn" name="quantity">
                 <Input
@@ -551,6 +654,9 @@ const PackingOrderForm = () => {
                 />
               </Form.Item>
             </Col>
+          </Row>
+
+          <Row gutter={16} align="middle">
             <Col>
               <Button type='primary' htmlType='submit'>
                 Tạo Đơn Đóng Hàng Mới
@@ -559,6 +665,65 @@ const PackingOrderForm = () => {
           </Row>
         </Form>
       </Card>
+
+      {/* Modal thêm mặt hàng */}
+      <Modal
+        title="Thêm mặt hàng mới"
+        visible={isAddItemModalVisible}
+        onCancel={() => {
+          setIsAddItemModalVisible(false);
+          newItemForm.resetFields();
+        }}
+        footer={[
+          <Button key="cancel" onClick={() => {
+            setIsAddItemModalVisible(false);
+            newItemForm.resetFields();
+          }}>
+            Hủy
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleAddItem}>
+            Thêm
+          </Button>,
+        ]}
+      >
+        <Form form={newItemForm} layout="vertical">
+          <Form.Item
+            label="Tên mặt hàng"
+            name="item"
+            rules={[{ required: true, message: 'Vui lòng nhập tên mặt hàng' }]}
+          >
+            <Input placeholder="Nhập tên mặt hàng" />
+          </Form.Item>
+          {selectedCustomer && (
+            <div>
+              <p style={{ marginBottom: 8 }}>
+                <strong>Khách hàng:</strong> {selectedCustomer.name}
+              </p>
+              {selectedCustomerItems.length > 0 && (
+                <div>
+                  <p style={{ marginBottom: 4 }}>
+                    <strong>Mặt hàng hiện có:</strong>
+                  </p>
+                  <div style={{ 
+                    maxHeight: 100, 
+                    overflowY: 'auto', 
+                    border: '1px solid #d9d9d9', 
+                    borderRadius: 4, 
+                    padding: 8 
+                  }}>
+                    {selectedCustomerItems.map((item, index) => (
+                      <div key={index} style={{ padding: '2px 0' }}>
+                        • {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </Form>
+      </Modal>
+
       <CreateExternalFleetCost
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
