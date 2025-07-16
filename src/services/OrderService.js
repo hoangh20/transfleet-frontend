@@ -437,3 +437,29 @@ export const getOrdersByVehicleId = async (vehicleId, page , limit , fromDate, t
     throw error.response?.data || error;
   }
 };
+
+export const getAllIncidentalCostsWithOrderInfo = async (page = 1, limit = 10, containerNumber, type) => {
+  try {
+    const params = { page, limit };
+    if (containerNumber) params.containerNumber = containerNumber;
+    if (type) params.type = type;
+
+    const response = await axios.get(`${API_URL}/orders/incidental-costs`, { params });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching all incidental costs with order info:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
+
+export const getOrdersByContainerNumber = async (containerNumber) => {
+  try {
+    const response = await axios.get(`${API_URL}/orders/orders-by-container`, {
+      params: { containerNumber }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching orders by container number:', error);
+    throw error.response ? error.response.data : new Error('Network Error');
+  }
+};
