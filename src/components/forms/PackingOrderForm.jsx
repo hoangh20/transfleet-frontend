@@ -513,18 +513,17 @@ const PackingOrderForm = () => {
               </Form.Item>
             </Col>
             <Col span={6}>
-              <Form.Item label='Chủ vỏ' name='owner'>
-                <Input placeholder='Nhập chủ vỏ' />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={6}>
               <Form.Item label='Ghi chú' name='note'>
                 <Input placeholder='Nhập ghi chú' />
               </Form.Item>
             </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={6}>
+              <Form.Item label='Chủ vỏ' name='owner'>
+                <Input placeholder='Nhập chủ vỏ' />
+              </Form.Item>
+            </Col>      
             <Col span={3}>
               <Form.Item
                 label="Hóa đơn"
