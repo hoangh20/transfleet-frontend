@@ -250,12 +250,15 @@ const PackingOrderForm = () => {
       setSelectedCustomer(customer);
       setSelectedCustomerItems(customer.items || []);
       
-      // Tự động chọn item đầu tiên nếu có
-      if (customer.items && customer.items.length > 0) {
-        form.setFieldsValue({ item: customer.items[0] });
-      } else {
-        form.setFieldsValue({ item: undefined });
-      }
+      // Clear item trước, sau đó set lại
+      form.setFieldsValue({ item: undefined });
+      
+      // Sử dụng setTimeout để đảm bảo state được cập nhật
+      setTimeout(() => {
+        if (customer.items && customer.items.length > 0) {
+          form.setFieldsValue({ item: customer.items[0] });
+        }
+      }, 0);
     } else {
       setSelectedCustomer(null);
       setSelectedCustomerItems([]);
@@ -612,13 +615,13 @@ const PackingOrderForm = () => {
               <Form.Item label='Mặt Hàng' name='item'>
                 <div style={{ display: 'flex', gap: 4 }}>
                   <Select
+                    key={selectedCustomer?._id} 
                     placeholder='Chọn mặt hàng'
                     style={{ flex: 1 }}
                     disabled={!selectedCustomer}
                     allowClear
                     showSearch
                     optionFilterProp="children"
-                    value={form.getFieldValue('item')}
                     filterOption={(input, option) =>
                       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
