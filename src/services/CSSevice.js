@@ -189,3 +189,30 @@ export const bulkUpdateShipSchedules = async (updates) => {
         throw error.response ? error.response.data : new Error('Network Error');
     }
 };
+
+// Lấy tất cả containers kèm thông tin chi phí
+export const getAllContainersWithCosts = async (page = 1, limit = 10, filters = {}) => {
+    try {
+        const params = {
+            page,
+            limit,
+            ...filters
+        };
+        const response = await axios.get(`${API_URL}/cs/containers-with-costs`, { params });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching containers with costs:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Cập nhật chi phí container
+export const updateContainerCost = async (containerId, costData) => {
+    try {
+        const response = await axios.put(`${API_URL}/cs/container-costs/${containerId}`, costData);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating container cost:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
