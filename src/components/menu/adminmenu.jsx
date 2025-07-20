@@ -23,12 +23,13 @@ const ROLE_MENU = {
   dev: [
     'overview', 'order', 'order/list', 'order/list-trip', 'order/cont-status',
     'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route','/pending-orders','/incidental-cost',
+    '/cs','cs', 'cs/ship-schedules',
   ],
   admin: [
     'overview', 'order', 'order/list', 'order/list-trip', 'order/cont-status',
-    'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route','/incidental-cost',
+    'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route','/incidental-cost','/cs','cs', 'cs/ship-schedules'
   ],
-  CS: ['overview', 'order/cont-status','trip-route'],
+  CS: ['overview', 'order/cont-status','trip-route','/cs','cs', 'cs/ship-schedules'],
   DHVT: [
     'overview', 'order/create', 'order/list', 'order/list-trip',
     'partner-cost', 'vehicle', 'driver', 'partner', 'customer','trip-route','/pending-orders','/incidental-cost',
@@ -117,6 +118,25 @@ const AdminMenu = () => {
           <Link to='/order/cont-status'>Quản lý cont </Link>
         </Menu.Item>
       )}
+      {canView('cs') && (
+        <SubMenu
+          key='cs'
+          title='Container'
+          icon={<ContainerOutlined />}
+          style={{ fontSize: '18px' }}
+        >
+          <Menu.Item key='cs' style={{ fontSize: '18px' }}>
+            <Link to='/cs'>Tổng hợp</Link>
+          </Menu.Item>
+          <Menu.Item key='cs/cost' style={{ fontSize: '18px' }}>
+            <Link to='/cs/cost'>Quản lý chi phí</Link>
+          </Menu.Item>
+          <Menu.Item key='cs/ship-schedules' style={{ fontSize: '18px' }}>
+            <Link to='/cs/ship-schedules'>Quản lý chuyến tàu</Link>
+          </Menu.Item>
+        </SubMenu>
+      )}
+
       {canView('trip-route') && (
         <Menu.Item
           key='/trip-route'

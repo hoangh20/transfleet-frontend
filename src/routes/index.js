@@ -28,6 +28,8 @@ import TripRoute from '../pages/vehicle/TripRoute';
 import PendingOrders from '../pages/Order/PendingOrders';
 import IncidentalCost from '../pages/Order/IncidentalCost';
 import RepairPage from '../pages/vehicle/repair';
+import ContainerPage from '../pages/CS/ContainerPage';
+import ShipSchedule from '../pages/CS/ShipSchedule';
 
 const ROLE_MENU = {
   dev: [
@@ -36,6 +38,7 @@ const ROLE_MENU = {
     '/driver/list', '/driver/wage', '/transport-route', '/transport-route/empty-distance',
     '/transport-route/packing/:id', '/transport-route/delivery/:id',
     '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route','/pending-orders','/incidental-cost',
+    '/cs', '/cs/ship-schedules'
   ],
   admin: [
     '/', '/order/create', '/order/list', '/order/list-trip', '/order/cont-status',
@@ -43,8 +46,9 @@ const ROLE_MENU = {
     '/driver/list', '/driver/wage', '/transport-route', '/transport-route/empty-distance',
     '/transport-route/packing/:id', '/transport-route/delivery/:id',
     '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route','/incidental-cost',
+    '/cs', '/cs/ship-schedules'
   ],
-  CS: ['/', '/order/cont-status', '/sign-in', '/sign-up', '/landingpage','/trip-route',],
+  CS: ['/', '/order/cont-status', '/sign-in', '/sign-up', '/landingpage','/trip-route','/cs', '/cs/ship-schedules'],
   DHVT: [
     '/', '/order/create', '/order/list', '/order/list-trip','/order', '/order/delivery-orders/:orderId', '/order/packing-orders/:orderId',
     '/partner/list', '/customer/list', '/vehicle/create', '/vehicle/list', '/vehicle/detail/:id',
@@ -186,5 +190,13 @@ export const routes = [
   {
     path:'/incidental-cost',
     page: withRoleGuard(IncidentalCost, '/incidental-cost'),
+  },
+  {
+    path: '/cs',
+    page: withRoleGuard(ContainerPage, '/cs'),
+  },
+  {
+    path: '/cs/ship-schedules',
+    page: withRoleGuard(ShipSchedule, '/cs/ship-schedules'),
   }
 ];
