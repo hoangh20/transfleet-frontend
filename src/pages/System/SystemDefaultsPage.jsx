@@ -114,7 +114,7 @@ const SystemDefaultsPage = () => {
         initialValues={fixedCosts}
       >
         <Card
-          title="Chi phí cố định"
+          title="Các thông số hệ thống"
           bordered={false}
           extra={
             !isEditing && (
@@ -125,7 +125,7 @@ const SystemDefaultsPage = () => {
           }
         >
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Chi phí đăng kiểm"
                 name="registrationFee"
@@ -143,7 +143,7 @@ const SystemDefaultsPage = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Chi phí bảo hiểm"
                 name="insurance"
@@ -161,7 +161,7 @@ const SystemDefaultsPage = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Lương đoàn kỹ thuật xe"
                 name="technicalTeamSalary"
@@ -179,7 +179,7 @@ const SystemDefaultsPage = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Chi phí vay lãi ngân hàng"
                 name="bankLoanInterest"
@@ -197,7 +197,7 @@ const SystemDefaultsPage = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Chi phí sửa chữa"
                 name="repairCost"
@@ -215,7 +215,7 @@ const SystemDefaultsPage = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Chi phí vé tháng"
                 name="monthlyTicket"
@@ -233,7 +233,7 @@ const SystemDefaultsPage = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Định mức cấp dầu <8T"
                 name="rate8"
@@ -251,7 +251,7 @@ const SystemDefaultsPage = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Định mức cấp dầu < 15T"
                 name="rate15"
@@ -270,7 +270,7 @@ const SystemDefaultsPage = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Định mức cấp dầu 15-->26T"
                 name="rate26"
@@ -288,7 +288,7 @@ const SystemDefaultsPage = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Định mức cấp dầu > 26T"
                 name="rate27"
@@ -306,10 +306,10 @@ const SystemDefaultsPage = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Định mức rỗng cho cấp dầu"
-                name="emtyRate"
+                name="emptyRate"
                 rules={[{ required: true, message: 'Vui lòng nhập định mức rỗng' }]}
               >
                 <NumberInput
@@ -317,6 +317,24 @@ const SystemDefaultsPage = () => {
                   suffix={
                     <HistoryOutlined
                       onClick={() => showHistoryModal('Lịch sử thay đổi định mức rỗng', 'emtyRate')}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  }
+                  disabled={!isEditing}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label="Tỷ lệ VAT"
+                name="rateVAT"
+                rules={[{ required: true, message: 'Vui lòng nhập tỷ lệ VAT' }]}
+              >
+                <NumberInput
+                  placeholder="Nhập tỷ lệ VAT"
+                  suffix={
+                    <HistoryOutlined
+                      onClick={() => showHistoryModal('Lịch sử thay đổi tỷ lệ VAT', 'rateVAT')}
                       style={{ cursor: 'pointer' }}
                     />
                   }
