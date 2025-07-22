@@ -33,6 +33,7 @@ import {
   containerFilters,
   getAllShipSchedulesNoPagination,
   bulkUpdateContainers,
+  getContainerFilterOptions, // Thêm import này
 } from '../../services/CSSevice';
 import { getAllCustomersWithoutPagination } from '../../services/CustomerService';
 
@@ -52,7 +53,7 @@ const ContainerPage = () => {
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 25, // Thay đổi từ 20 thành 25
+    pageSize: 25,
     total: 0,
   });
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -63,6 +64,15 @@ const ContainerPage = () => {
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
   const [filters, setFilters] = useState({});
+  
+  // Thêm state cho filter options từ API
+  const [filterOptions, setFilterOptions] = useState({
+    lines: [],
+    items: [],
+    salesPersons: [],
+    trainTrips: [],
+    PTVCs: []
+  });
   
   // Thêm state cho popup thông báo kết quả
   const [isResultModalVisible, setIsResultModalVisible] = useState(false);
@@ -92,9 +102,21 @@ const ContainerPage = () => {
     fetchContainers();
     fetchCustomers();
     fetchShipSchedules('');
+    fetchFilterOptions(); // Thêm gọi API filter options
   }, []);
 
-  const fetchContainers = async (page = 1, pageSize = 25, filterParams = {}) => { // Thay đổi từ 10 thành 25
+  // Thêm function fetch filter options
+  const fetchFilterOptions = async () => {
+    try {
+      const response = await getContainerFilterOptions();
+      setFilterOptions(response.data);
+    } catch (error) {
+      console.error('Lỗi khi tải filter options:', error);
+      message.error('Lỗi khi tải danh sách bộ lọc');
+    }
+  };
+
+  const fetchContainers = async (page = 1, pageSize = 25, filterParams = {}) => {
     setLoading(true);
     try {
       const response = await getAllContainers(page, pageSize, filterParams);
@@ -187,8 +209,8 @@ const ContainerPage = () => {
           // Không cần xử lý vì backend sẽ search theo customer text
           apiFilters['customer'] = tableFilters[key][0];
         } else {
-          // Với các filter khác, gửi giá trị đầu tiên
-          apiFilters[key] = Array.isArray(tableFilters[key]) ? tableFilters[key][0] : tableFilters[key];
+          // Gửi mảng cho các field hỗ trợ multiple selection
+          apiFilters[key] = tableFilters[key];
         }
       }
     });
@@ -216,6 +238,81 @@ const ContainerPage = () => {
   const handleReset = (clearFilters, dataIndex) => {
     clearFilters();
     setSearchText('');
+    
+    const newFilters = { ...filters };
+    delete newFilters[dataIndex];
+    
+    setFilters(newFilters);
+    fetchContainers(pagination.current, pagination.pageSize, newFilters);
+  };
+
+  // Tạo dropdown filter cho các field có nhiều options
+  const getColumnMultiSelectProps = (dataIndex, options, placeholder = '') => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      <div style={{ padding: 8, minWidth: 220 }} onKeyDown={(e) => e.stopPropagation()}>
+        <Select
+          mode="multiple"
+          placeholder={placeholder || `Chọn ${dataIndex}`}
+          style={{ width: '100%', marginBottom: 8 }}
+          value={selectedKeys}
+          onChange={(values) => {
+            setSelectedKeys(values || []);
+          }}
+          allowClear
+          showSearch
+          optionFilterProp="children"
+          maxTagCount="responsive"
+        >
+          {options.map(option => (
+            <Option key={option} value={option}>
+              {option === 'empty' ? '(Trống)' : option}
+            </Option>
+          ))}
+        </Select>
+        <div>
+          <Space>
+            <Button
+              type="primary"
+              onClick={() => handleMultiSelectSearch(selectedKeys, confirm, dataIndex)}
+              icon={<SearchOutlined />}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Tìm
+            </Button>
+            <Button
+              onClick={() => clearFilters && handleMultiSelectReset(clearFilters, dataIndex)}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Xóa
+            </Button>
+          </Space>
+        </div>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+    ),
+    onFilter: () => true,
+  });
+
+  const handleMultiSelectSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    
+    const newFilters = { ...filters };
+    if (selectedKeys && selectedKeys.length > 0) {
+      newFilters[dataIndex] = selectedKeys;
+    } else {
+      delete newFilters[dataIndex];
+    }
+    
+    setFilters(newFilters);
+    fetchContainers(pagination.current, pagination.pageSize, newFilters);
+  };
+
+  const handleMultiSelectReset = (clearFilters, dataIndex) => {
+    clearFilters();
     
     const newFilters = { ...filters };
     delete newFilters[dataIndex];
@@ -569,11 +666,9 @@ const ContainerPage = () => {
   const handleBulkUpdateToggle = () => {
     setBulkUpdateMode(!bulkUpdateMode);
     setSelectedContainers([]);
-    // Reset selection khi chuyển mode
     setSelectedRowKeys([]);
     setSelectionType(bulkUpdateMode ? 'radio' : 'checkbox');
   };
-
 
   const handleBulkUpdate = () => {
     if (selectedContainers.length === 0) {
@@ -685,7 +780,7 @@ const ContainerPage = () => {
             {text || 'N/A'}
           </span>
         ),
-        ...getColumnSearchProps('line', 'Tìm Line'),
+        ...getColumnMultiSelectProps('line', filterOptions.lines, 'Chọn Line'), // Thay đổi từ search thành multi-select
       },
       {
         title: 'PTVC',
@@ -693,7 +788,7 @@ const ContainerPage = () => {
         key: 'PTVC',
         width: 100,
         render: (text) => (
-          <Tooltip title={text}>
+          <Tooltip title={text || 'N/A'}>
             <div style={{ 
               maxWidth: 90, 
               overflow: 'hidden', 
@@ -704,7 +799,7 @@ const ContainerPage = () => {
             </div>
           </Tooltip>
         ),
-        ...getColumnSearchProps('PTVC', 'Tìm PTVC'),
+        ...getColumnMultiSelectProps('PTVC', filterOptions.PTVCs, 'Chọn PTVC'), // Thay đổi từ search thành multi-select
       },
       {
         title: 'Kết hợp',
@@ -736,7 +831,7 @@ const ContainerPage = () => {
         key: 'item',
         width: 100,
         render: (text) => (
-          <Tooltip title={text}>
+          <Tooltip title={text || 'N/A'}>
             <div style={{ 
               maxWidth: 90, 
               overflow: 'hidden', 
@@ -747,7 +842,7 @@ const ContainerPage = () => {
             </div>
           </Tooltip>
         ),
-        ...getColumnSearchProps('item', 'Tìm mặt hàng'),
+        ...getColumnMultiSelectProps('item', filterOptions.items, 'Chọn mặt hàng'), // Thay đổi từ search thành multi-select
       },
       {
         title: 'Khách hàng',
@@ -779,15 +874,26 @@ const ContainerPage = () => {
             {text || 'N/A'}
           </span>
         ),
-        ...getColumnSearchProps('salesPerson', 'Tìm KD'),
+        ...getColumnMultiSelectProps('salesPerson', filterOptions.salesPersons, 'Chọn KD'), // Thay đổi từ search thành multi-select
       },
       {
-      title: 'Điểm đóng',
-      dataIndex: 'closingPoint',
-      key: 'closingPoint',
-      width: 120,
-      ellipsis: true, 
-      ...getColumnSearchProps('closingPoint', 'Tìm điểm đóng'),
+        title: 'Điểm đóng',
+        dataIndex: 'closingPoint',
+        key: 'closingPoint',
+        width: 120,
+        render: (text) => (
+          <Tooltip title={text || 'N/A'}>
+            <div style={{ 
+              maxWidth: 110, 
+              overflow: 'hidden', 
+              textOverflow: 'ellipsis', 
+              whiteSpace: 'nowrap'
+            }}>
+              {text || 'N/A'}
+            </div>
+          </Tooltip>
+        ),
+        ...getColumnSearchProps('closingPoint', 'Tìm điểm đóng'),
       },
       {
         title: 'Đội xe đóng',
@@ -814,12 +920,23 @@ const ContainerPage = () => {
         ...getColumnSearchProps('soXeDong', 'Tìm số xe đóng'),
       },
       {
-      title: 'Điểm trả',
-      dataIndex: 'returnPoint',
-      key: 'returnPoint',
-      width: 120,
-      ellipsis: true, 
-      ...getColumnSearchProps('returnPoint', 'Tìm điểm trả'),
+        title: 'Điểm trả',
+        dataIndex: 'returnPoint',
+        key: 'returnPoint',
+        width: 120,
+        render: (text) => (
+          <Tooltip title={text || 'N/A'}>
+            <div style={{ 
+              maxWidth: 110, 
+              overflow: 'hidden', 
+              textOverflow: 'ellipsis', 
+              whiteSpace: 'nowrap'
+            }}>
+              {text || 'N/A'}
+            </div>
+          </Tooltip>
+        ),
+        ...getColumnSearchProps('returnPoint', 'Tìm điểm trả'),
       },
       {
         title: 'Đội xe trả',
@@ -855,7 +972,7 @@ const ContainerPage = () => {
             {text || 'N/A'}
           </span>
         ),
-        ...getColumnSearchProps('trainTrip', 'Tìm chuyến tàu'),
+        ...getColumnMultiSelectProps('trainTrip', filterOptions.trainTrips, 'Chọn chuyến tàu'), // Thay đổi từ search thành multi-select
       },
       {
         title: 'ETD',
@@ -1098,6 +1215,7 @@ const ContainerPage = () => {
         </Row>
       </Card>
 
+
       {/* Table */}
       <Card>
         <div className="container-table">
@@ -1112,9 +1230,18 @@ const ContainerPage = () => {
               ...pagination,
               showSizeChanger: true,
               showQuickJumper: true,
-              pageSizeOptions: ['15', '25', '35', '50', '100'], // Thêm prop này
+              pageSizeOptions: ['15', '25', '35', '50', '100'],
               showTotal: (total, range) =>
                 `${range[0]}-${range[1]} của ${total} container`,
+              style: {
+                position: 'sticky',
+                bottom: 0,
+                backgroundColor: '#fff',
+                zIndex: 1000,
+                padding: '16px',
+                borderTop: '1px solid #f0f0f0',
+                margin: 0,
+              }
             }}
             onChange={handleTableChange}
             scroll={{ x: 1600 }}
@@ -1169,6 +1296,42 @@ const ContainerPage = () => {
         onCancel={() => setIsResultModalVisible(false)}
         createResult={createResult}
       />
+
+      {/* CSS for selected row highlighting */}
+      <style>{`
+        .selected-row {
+          background-color: #e6f7ff !important;
+          border-left: 3px solid #1890ff !important;
+        }
+        .selected-row:hover {
+          background-color: #bae7ff !important;
+        }
+        .selected-row td {
+          background-color: #e6f7ff !important;
+          border-color: #91d5ff !important;
+        }
+        .selected-row:hover td {
+          background-color: #bae7ff !important;
+        }
+        
+        /* Sticky pagination */
+        .ant-pagination {
+          position: sticky !important;
+          bottom: 0 !important;
+          background-color: #fff !important;
+          z-index: 1000 !important;
+          padding: 16px !important;
+          border-top: 1px solid #f0f0f0 !important;
+          margin: 0 !important;
+          box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Đảm bảo container có chiều cao phù hợp */
+        .container-table {
+          max-height: calc(100vh - 200px);
+          overflow: auto;
+        }
+      `}</style>
     </div>
   );
 };

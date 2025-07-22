@@ -216,3 +216,13 @@ export const updateContainerCost = async (containerId, costData) => {
         throw error.response ? error.response.data : new Error('Network Error');
     }
 };
+
+export const getContainerFilterOptions = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/cs/filter-options`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching container filter options:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};

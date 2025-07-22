@@ -23,6 +23,7 @@ import {
   getAllContainersWithCosts,
   updateContainerCost,
   containerFilters,
+  getContainerFilterOptions, // Thêm import này
 } from '../../services/CSSevice';
 import { getAllCustomersWithoutPagination } from '../../services/CustomerService';
 import ContainerCostFormModal from '../../components/CS/ContainerCostFormModal';
@@ -35,7 +36,7 @@ const ContainerCostPage = () => {
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 25, // Thay đổi từ 10 thành 25
+    pageSize: 25,
     total: 0,
   });
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -47,16 +48,37 @@ const ContainerCostPage = () => {
   const searchInput = useRef(null);
   const [filters, setFilters] = useState({});
 
-  // Thêm state cho selection type và selected keys
+  // Thêm state cho filter options từ API
+  const [filterOptions, setFilterOptions] = useState({
+    lines: [],
+    items: [],
+    salesPersons: [],
+    trainTrips: [],
+    PTVCs: []
+  });
+
+  // State cho selection type và selected keys
   const [selectionType,] = useState('radio');
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   useEffect(() => {
     fetchContainers();
     fetchCustomers();
+    fetchFilterOptions(); // Thêm gọi API filter options
   }, []);
 
-  const fetchContainers = async (page = 1, pageSize = 25, filterParams = {}) => { // Thay đổi từ 10 thành 25
+  // Thêm function fetch filter options
+  const fetchFilterOptions = async () => {
+    try {
+      const response = await getContainerFilterOptions();
+      setFilterOptions(response.data);
+    } catch (error) {
+      console.error('Lỗi khi tải filter options:', error);
+      message.error('Lỗi khi tải danh sách bộ lọc');
+    }
+  };
+
+  const fetchContainers = async (page = 1, pageSize = 25, filterParams = {}) => {
     setLoading(true);
     try {
       const response = await getAllContainersWithCosts(page, pageSize, filterParams);
@@ -87,6 +109,82 @@ const ContainerCostPage = () => {
     if (!amount) return '0';
     return new Intl.NumberFormat('vi-VN').format(amount);
   };
+
+  // Thêm function cho multi-select dropdown filter
+  const getColumnMultiSelectProps = (dataIndex, options, placeholder = '') => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      <div style={{ padding: 8, minWidth: 220 }} onKeyDown={(e) => e.stopPropagation()}>
+        <Select
+          mode="multiple"
+          placeholder={placeholder || `Chọn ${dataIndex}`}
+          style={{ width: '100%', marginBottom: 8 }}
+          value={selectedKeys}
+          onChange={(values) => {
+            setSelectedKeys(values || []);
+          }}
+          allowClear
+          showSearch
+          optionFilterProp="children"
+          maxTagCount="responsive"
+        >
+          {options.map(option => (
+            <Option key={option} value={option}>
+              {option === 'empty' ? '(Trống)' : option}
+            </Option>
+          ))}
+        </Select>
+        <div>
+          <Space>
+            <Button
+              type="primary"
+              onClick={() => handleMultiSelectSearch(selectedKeys, confirm, dataIndex)}
+              icon={<SearchOutlined />}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Tìm
+            </Button>
+            <Button
+              onClick={() => clearFilters && handleMultiSelectReset(clearFilters, dataIndex)}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Xóa
+            </Button>
+          </Space>
+        </div>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+    ),
+    onFilter: () => true,
+  });
+
+  const handleMultiSelectSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    
+    const newFilters = { ...filters };
+    if (selectedKeys && selectedKeys.length > 0) {
+      newFilters[dataIndex] = selectedKeys;
+    } else {
+      delete newFilters[dataIndex];
+    }
+    
+    setFilters(newFilters);
+    fetchContainers(pagination.current, pagination.pageSize, newFilters);
+  };
+
+  const handleMultiSelectReset = (clearFilters, dataIndex) => {
+    clearFilters();
+    
+    const newFilters = { ...filters };
+    delete newFilters[dataIndex];
+    
+    setFilters(newFilters);
+    fetchContainers(pagination.current, pagination.pageSize, newFilters);
+  };
+
   const getColumnCustomerSelectProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
@@ -196,7 +294,8 @@ const ContainerCostPage = () => {
         if (key === 'customer.shortName') {
           apiFilters['customer'] = tableFilters[key][0];
         } else {
-          apiFilters[key] = Array.isArray(tableFilters[key]) ? tableFilters[key][0] : tableFilters[key];
+          // Gửi mảng cho các field hỗ trợ multiple selection
+          apiFilters[key] = tableFilters[key];
         }
       }
     });
@@ -370,7 +469,7 @@ const ContainerCostPage = () => {
       key: 'line',
       width: 90,
       render: (text) => text || 'N/A',
-      ...getColumnSearchProps('line', 'Tìm Line'),
+      ...getColumnMultiSelectProps('line', filterOptions.lines, 'Chọn Line'), // Thay đổi từ search thành multi-select
     },
     {
       title: 'KH/KV',
@@ -390,7 +489,7 @@ const ContainerCostPage = () => {
       key: 'PTVC',
       width: 100,
       render: (text) => (
-        <Tooltip title={text}>
+        <Tooltip title={text || 'N/A'}>
           <div style={{ 
             maxWidth: 90, 
             overflow: 'hidden', 
@@ -401,7 +500,7 @@ const ContainerCostPage = () => {
           </div>
         </Tooltip>
       ),
-      ...getColumnSearchProps('PTVC', 'Tìm PTVC'),
+      ...getColumnMultiSelectProps('PTVC', filterOptions.PTVCs, 'Chọn PTVC'), // Thay đổi từ search thành multi-select
     },
     {
       title: 'Mặt hàng',
@@ -409,7 +508,7 @@ const ContainerCostPage = () => {
       key: 'item',
       width: 100,
       render: (text) => (
-        <Tooltip title={text}>
+        <Tooltip title={text || 'N/A'}>
           <div style={{ 
             maxWidth: 90, 
             overflow: 'hidden', 
@@ -420,7 +519,7 @@ const ContainerCostPage = () => {
           </div>
         </Tooltip>
       ),
-      ...getColumnSearchProps('item', 'Tìm mặt hàng'),
+      ...getColumnMultiSelectProps('item', filterOptions.items, 'Chọn mặt hàng'), // Thay đổi từ search thành multi-select
     },
     {
       title: 'Khách hàng',
@@ -440,7 +539,7 @@ const ContainerCostPage = () => {
           </div>
         </Tooltip>
       ),
-      ...getColumnCustomerSelectProps('customer'), // Thêm bộ lọc khách hàng
+      ...getColumnCustomerSelectProps('customer'),
     },
     {
       title: 'KD',
@@ -448,14 +547,25 @@ const ContainerCostPage = () => {
       key: 'salesPerson',
       width: 100,
       render: (text) => text || 'N/A',
-      ...getColumnSearchProps('salesPerson', 'Tìm KD'),
+      ...getColumnMultiSelectProps('salesPerson', filterOptions.salesPersons, 'Chọn KD'), // Thay đổi từ search thành multi-select
     },
     {
       title: 'Điểm đóng',
       dataIndex: 'closingPoint',
       key: 'closingPoint',
       width: 120,
-      ellipsis: true, 
+      render: (text) => (
+        <Tooltip title={text || 'N/A'}>
+          <div style={{ 
+            maxWidth: 110, 
+            overflow: 'hidden', 
+            textOverflow: 'ellipsis', 
+            whiteSpace: 'nowrap'
+          }}>
+            {text || 'N/A'}
+          </div>
+        </Tooltip>
+      ),
       ...getColumnSearchProps('closingPoint', 'Tìm điểm đóng'),
     },
     {
@@ -463,7 +573,18 @@ const ContainerCostPage = () => {
       dataIndex: 'returnPoint',
       key: 'returnPoint',
       width: 120,
-      ellipsis: true, 
+      render: (text) => (
+        <Tooltip title={text || 'N/A'}>
+          <div style={{ 
+            maxWidth: 110, 
+            overflow: 'hidden', 
+            textOverflow: 'ellipsis', 
+            whiteSpace: 'nowrap'
+          }}>
+            {text || 'N/A'}
+          </div>
+        </Tooltip>
+      ),
       ...getColumnSearchProps('returnPoint', 'Tìm điểm trả'),
     },
     {
@@ -471,7 +592,19 @@ const ContainerCostPage = () => {
       dataIndex: 'trainTrip',
       key: 'trainTrip',
       width: 150,
-      ...getColumnSearchProps('trainTrip', 'Tìm chuyến tàu'),
+      render: (text) => (
+        <Tooltip title={text || 'N/A'}>
+          <div style={{ 
+            maxWidth: 140, 
+            overflow: 'hidden', 
+            textOverflow: 'ellipsis', 
+            whiteSpace: 'nowrap'
+          }}>
+            {text || 'N/A'}
+          </div>
+        </Tooltip>
+      ),
+      ...getColumnMultiSelectProps('trainTrip', filterOptions.trainTrips, 'Chọn chuyến tàu'), // Thay đổi từ search thành multi-select
     },
     {
       title: 'Đội xe đóng',
@@ -777,29 +910,38 @@ const ContainerCostPage = () => {
         </Row>
       </Card>
 
-
-
       {/* Table */}
       <Card>
-        <Table
-          columns={getColumns()}
-          dataSource={containers}
-          loading={loading}
-          rowKey="_id"
-          rowSelection={rowSelection}
-          rowClassName={getRowClassName}
-          pagination={{
-            ...pagination,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            pageSizeOptions: ['15', '25', '35', '50', '100'], // Thêm pageSizeOptions
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} của ${total} container`,
-          }}
-          onChange={handleTableChange}
-          scroll={{ x: 3000 }}
-          size="small"
-        />
+        <div className="container-table">
+          <Table
+            columns={getColumns()}
+            dataSource={containers}
+            loading={loading}
+            rowKey="_id"
+            rowSelection={rowSelection}
+            rowClassName={getRowClassName}
+            pagination={{
+              ...pagination,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              pageSizeOptions: ['15', '25', '35', '50', '100'],
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} của ${total} container`,
+              style: {
+                position: 'sticky',
+                bottom: 0,
+                backgroundColor: '#fff',
+                zIndex: 1000,
+                padding: '16px',
+                borderTop: '1px solid #f0f0f0',
+                margin: 0,
+              }
+            }}
+            onChange={handleTableChange}
+            scroll={{ x: 3000 }}
+            size="small"
+          />
+        </div>
       </Card>
 
       {/* Cost Form Modal */}
@@ -810,6 +952,42 @@ const ContainerCostPage = () => {
         editingRecord={editingRecord}
         loading={loading}
       />
+
+      {/* CSS for selected row highlighting and sticky pagination */}
+      <style>{`
+        .selected-row {
+          background-color: #e6f7ff !important;
+          border-left: 3px solid #1890ff !important;
+        }
+        .selected-row:hover {
+          background-color: #bae7ff !important;
+        }
+        .selected-row td {
+          background-color: #e6f7ff !important;
+          border-color: #91d5ff !important;
+        }
+        .selected-row:hover td {
+          background-color: #bae7ff !important;
+        }
+        
+        /* Sticky pagination */
+        .ant-pagination {
+          position: sticky !important;
+          bottom: 0 !important;
+          background-color: #fff !important;
+          z-index: 1000 !important;
+          padding: 16px !important;
+          border-top: 1px solid #f0f0f0 !important;
+          margin: 0 !important;
+          box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Đảm bảo container có chiều cao phù hợp */
+        .container-table {
+          max-height: calc(100vh - 200px);
+          overflow: auto;
+        }
+      `}</style>
     </div>
   );
 };
