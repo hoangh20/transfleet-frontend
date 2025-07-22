@@ -1215,40 +1215,34 @@ const ContainerPage = () => {
         </Row>
       </Card>
 
-
-      {/* Table */}
-      <Card>
-        <div className="container-table">
-          <Table
-            columns={getColumns()}
-            dataSource={containers}
-            loading={loading}
-            rowKey="_id"
-            rowSelection={rowSelection}
-            rowClassName={getRowClassName}
-            pagination={{
-              ...pagination,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              pageSizeOptions: ['15', '25', '35', '50', '100'],
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} của ${total} container`,
-              style: {
-                position: 'sticky',
-                bottom: 0,
-                backgroundColor: '#fff',
-                zIndex: 1000,
-                padding: '16px',
-                borderTop: '1px solid #f0f0f0',
-                margin: 0,
-              }
-            }}
-            onChange={handleTableChange}
-            scroll={{ x: 1600 }}
-            size="small"
-          />
-        </div>
-      </Card>
+      {/* Table với container có scroll ngang */}
+      <div className="table-container-wrapper">
+        <Table
+          columns={getColumns()}
+          dataSource={containers}
+          loading={loading}
+          rowKey="_id"
+          rowSelection={rowSelection}
+          rowClassName={getRowClassName}
+          pagination={{
+            ...pagination,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            pageSizeOptions: ['15', '25', '35', '50', '100'],
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} của ${total} container`,
+          }}
+          onChange={handleTableChange}
+          scroll={{ 
+            x: 2400, // Tổng width của tất cả columns
+            y: 'calc(130vh - 550px)'
+          }}
+          size="small"
+          sticky={{
+            offsetHeader: 0, // Sticky header
+          }}
+        />
+      </div>
 
       {/* Container Form Modal */}
       <ContainerFormModal
@@ -1297,7 +1291,7 @@ const ContainerPage = () => {
         createResult={createResult}
       />
 
-      {/* CSS for selected row highlighting */}
+       {/* CSS cho styling */}
       <style>{`
         .selected-row {
           background-color: #e6f7ff !important;
@@ -1314,22 +1308,109 @@ const ContainerPage = () => {
           background-color: #bae7ff !important;
         }
         
-        /* Sticky pagination */
-        .ant-pagination {
-          position: sticky !important;
-          bottom: 0 !important;
-          background-color: #fff !important;
-          z-index: 1000 !important;
-          padding: 16px !important;
-          border-top: 1px solid #f0f0f0 !important;
-          margin: 0 !important;
-          box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1) !important;
+        /* Container wrapper cho table với scroll ngang */
+        .table-container-wrapper {
+          background: white;
+          border-radius: 6px;
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+          overflow: hidden;
         }
         
-        /* Đảm bảo container có chiều cao phù hợp */
-        .container-table {
-          max-height: calc(100vh - 200px);
-          overflow: auto;
+        /* Sticky header styling - Z-index cao hơn để đè lên fixed columns */
+        .ant-table-thead > tr > th {
+          position: sticky !important;
+          top: 0 !important;
+          z-index: 15 !important;
+          background: #fafafa !important;
+          border-bottom: 1px solid #f0f0f0 !important;
+        }
+        
+        /* Fixed columns styling - Z-index thấp hơn sticky header */
+        .ant-table-cell-fix-left,
+        .ant-table-cell-fix-right {
+          z-index: 12 !important;
+        }
+        
+        /* Fixed left columns header - Z-index cao nhất */
+        .ant-table-thead .ant-table-cell-fix-left {
+          z-index: 16 !important;
+          background: #fafafa !important;
+        }
+        
+        /* Fixed right columns header */
+        .ant-table-thead .ant-table-cell-fix-right {
+          z-index: 16 !important;
+          background: #fafafa !important;
+        }
+        
+        /* Body fixed columns */
+        .ant-table-tbody .ant-table-cell-fix-left {
+          background: #fff !important;
+          z-index: 12 !important;
+        }
+        
+        .ant-table-tbody .ant-table-cell-fix-right {
+          background: #fff !important;
+          z-index: 12 !important;
+        }
+        
+        /* Selected row fixed columns */
+        .selected-row .ant-table-cell-fix-left {
+          background: #e6f7ff !important;
+          z-index: 12 !important;
+        }
+        
+        .selected-row .ant-table-cell-fix-right {
+          background: #e6f7ff !important;
+          z-index: 12 !important;
+        }
+        
+        /* Hover effect for fixed columns */
+        .ant-table-tbody > tr:hover .ant-table-cell-fix-left {
+          background-color: #f5f5f5 !important;
+        }
+        
+        .ant-table-tbody > tr:hover .ant-table-cell-fix-right {
+          background-color: #f5f5f5 !important;
+        }
+        
+        .selected-row:hover .ant-table-cell-fix-left {
+          background-color: #bae7ff !important;
+        }
+        
+        .selected-row:hover .ant-table-cell-fix-right {
+          background-color: #bae7ff !important;
+        }
+        
+        /* Scroll container */
+        .ant-table-body {
+          overflow-x: auto !important;
+          overflow-y: auto !important;
+        }
+        
+        /* Pagination styling */
+        .ant-pagination {
+          padding: 16px !important;
+          border-top: 1px solid #f0f0f0 !important;
+          background: #fafafa !important;
+          margin: 0 !important;
+        }
+        
+        /* Table hover effect */
+        .ant-table-tbody > tr:hover > td {
+          background-color: #f5f5f5 !important;
+        }
+        
+        /* Filter dropdown styling */
+        .ant-table-filter-dropdown {
+          border-radius: 6px !important;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Fix shadow overlap for fixed columns */
+        .ant-table-cell-fix-left-last::after,
+        .ant-table-cell-fix-right-first::after {
+          z-index: 11 !important;
         }
       `}</style>
     </div>
