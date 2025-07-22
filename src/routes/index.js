@@ -31,6 +31,7 @@ import RepairPage from '../pages/vehicle/repair';
 import ContainerPage from '../pages/CS/ContainerPage';
 import ShipSchedule from '../pages/CS/ShipSchedule';
 import ContainerCostPage from '../pages/CS/ContainerCostPage';
+import ContainerIncidentalCost from '../pages/CS/ContainerIncidentalCost';
 
 const ROLE_MENU = {
   dev: [
@@ -38,7 +39,7 @@ const ROLE_MENU = {
     '/partner/list', '/customer/list', '/vehicle/create', '/vehicle/list', '/vehicle/detail/:id','/vehicle/repair',
     '/driver/list', '/driver/wage', '/transport-route', '/transport-route/empty-distance',
     '/transport-route/packing/:id', '/transport-route/delivery/:id',
-    '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route','/pending-orders','/incidental-cost',
+    '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route','/pending-orders','/incidental-cost','/cs/container-incidental-costs',
     '/cs', '/cs/ship-schedules','/cs/container-costs'
   ],
   admin: [
@@ -47,9 +48,9 @@ const ROLE_MENU = {
     '/driver/list', '/driver/wage', '/transport-route', '/transport-route/empty-distance',
     '/transport-route/packing/:id', '/transport-route/delivery/:id',
     '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route','/incidental-cost',
-    '/cs', '/cs/ship-schedules'
+    '/cs', '/cs/ship-schedules','/cs/container-incidental-costs'
   ],
-  CS: ['/', '/order/cont-status', '/sign-in', '/sign-up', '/landingpage','/trip-route','/cs', '/cs/ship-schedules','/cs/container-costs'],
+  CS: ['/', '/order/cont-status', '/sign-in', '/sign-up', '/landingpage','/trip-route','/cs', '/cs/ship-schedules','/cs/container-costs','/cs/container-incidental-costs'],
   DHVT: [
     '/', '/order/create', '/order/list', '/order/list-trip','/order', '/order/delivery-orders/:orderId', '/order/packing-orders/:orderId',
     '/partner/list', '/customer/list', '/vehicle/create', '/vehicle/list', '/vehicle/detail/:id',
@@ -203,5 +204,9 @@ export const routes = [
   {
     path: '/cs/container-costs',
     page: withRoleGuard(ContainerCostPage, '/cs/container-costs'),
+  },
+  {
+    path: '/cs/container-incidental-costs',
+    page: withRoleGuard(ContainerIncidentalCost, '/cs/container-incidental-costs'),
   }
 ];

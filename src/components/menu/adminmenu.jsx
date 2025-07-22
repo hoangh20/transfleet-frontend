@@ -29,7 +29,7 @@ const ROLE_MENU = {
     'overview', 'order', 'order/list', 'order/list-trip', 'order/cont-status',
     'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route','/incidental-cost','/cs','cs', 'cs/ship-schedules'
   ],
-  CS: ['overview', 'order/cont-status','trip-route','/cs','cs', 'cs/ship-schedules','/cs/container-costs'],
+  CS: ['overview', 'order/cont-status','trip-route','/cs','cs', 'cs/ship-schedules','/cs/container-costs','customer'],
   DHVT: [
     'overview', 'order/create', 'order/list', 'order/list-trip',
     'partner-cost', 'vehicle', 'driver', 'partner', 'customer','trip-route','/pending-orders','/incidental-cost',
@@ -130,6 +130,9 @@ const AdminMenu = () => {
           </Menu.Item>
           <Menu.Item key='/cs/container-costs' style={{ fontSize: '18px' }}>
             <Link to='/cs/container-costs'>Quản lý chi phí</Link>
+          </Menu.Item>
+          <Menu.Item key='/cs/container-incidental-costs' style={{ fontSize: '18px' }}>
+            <Link to='/cs/container-incidental-costs'>Chi phí phát sinh</Link>
           </Menu.Item>
           <Menu.Item key='cs/ship-schedules' style={{ fontSize: '18px' }}>
             <Link to='/cs/ship-schedules'>Quản lý chuyến tàu</Link>

@@ -552,41 +552,29 @@ const ContainerCostPage = () => {
       ...getColumnMultiSelectProps('salesPerson', filterOptions.salesPersons, 'Chọn KD'), // Thay đổi từ search thành multi-select
     },
     {
-      title: 'Điểm đóng',
-      dataIndex: 'closingPoint',
-      key: 'closingPoint',
-      width: 120,
-      render: (text) => (
-        <Tooltip title={text || 'N/A'}>
-          <div style={{ 
-            maxWidth: 110, 
-            overflow: 'hidden', 
-            textOverflow: 'ellipsis', 
-            whiteSpace: 'nowrap'
-          }}>
-            {text || 'N/A'}
-          </div>
-        </Tooltip>
-      ),
-      ...getColumnSearchProps('closingPoint', 'Tìm điểm đóng'),
+        title: 'Điểm đóng',
+        dataIndex: 'closingPoint',
+        key: 'closingPoint',
+        width: 120,
+        ellipsis: true,
+        render: (closingPoint) => (
+          <span style={{ whiteSpace: 'nowrap' }}>
+              {closingPoint || 'N/A'}
+          </span>
+        ),
+        ...getColumnSearchProps('closingPoint', 'Tìm điểm đóng'),
     },
     {
       title: 'Điểm trả',
       dataIndex: 'returnPoint',
       key: 'returnPoint',
       width: 120,
-      render: (text) => (
-        <Tooltip title={text || 'N/A'}>
-          <div style={{ 
-            maxWidth: 110, 
-            overflow: 'hidden', 
-            textOverflow: 'ellipsis', 
-            whiteSpace: 'nowrap'
-          }}>
-            {text || 'N/A'}
-          </div>
-        </Tooltip>
-      ),
+      ellipsis: true,
+      render: (returnPoint) => (
+        <span style={{ whiteSpace: 'nowrap' }}>
+            {returnPoint || 'N/A'}
+          </span>
+        ),
       ...getColumnSearchProps('returnPoint', 'Tìm điểm trả'),
     },
     {

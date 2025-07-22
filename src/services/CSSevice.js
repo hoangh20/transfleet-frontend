@@ -226,3 +226,74 @@ export const getContainerFilterOptions = async () => {
         throw error.response ? error.response.data : new Error('Network Error');
     }
 };
+
+// Container Incidental Cost APIs
+export const createContainerIncidentalCost = async (incidentalCostData) => {
+    try {
+        const response = await axios.post(`${API_URL}/cs/incidental-costs`, incidentalCostData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating container incidental cost:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+export const getAllContainerIncidentalCosts = async (page = 1, limit = 10, filters = {}) => {
+    try {
+        const params = {
+            page,
+            limit,
+            ...filters
+        };
+        const response = await axios.get(`${API_URL}/cs/incidental-costs`, { params });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching container incidental costs:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+export const getContainerIncidentalCostById = async (id) => {
+    try {
+        const response = await axios.get(`${API_URL}/cs/incidental-costs/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching container incidental cost by ID:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+export const updateContainerIncidentalCost = async (id, updateData) => {
+    try {
+        const response = await axios.put(`${API_URL}/cs/incidental-costs/${id}`, updateData);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating container incidental cost:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+export const deleteContainerIncidentalCost = async (id) => {
+    try {
+        const response = await axios.delete(`${API_URL}/cs/incidental-costs/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error deleting container incidental cost:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+export const getContainersForDropdown = async (search = '') => {
+    try {
+        const params = {};
+        if (search && search.trim() !== '') {
+            params.search = search.trim();
+        }
+        
+        const response = await axios.get(`${API_URL}/cs/containers/dropdown`, { params });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching containers for dropdown:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
