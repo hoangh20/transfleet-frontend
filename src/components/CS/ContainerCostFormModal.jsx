@@ -247,25 +247,7 @@ const ContainerCostFormModal = ({
                 />
               </Form.Item>
             </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={24}>
-              <Form.Item
-                label="Com"
-                name="com"
-              >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  placeholder="Nhập com"
-                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                  addonAfter="VNĐ"
-                  min={0}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
+          </Row> 
         </Card>
 
         {/* Chi phí không VAT */}
@@ -327,6 +309,23 @@ const ContainerCostFormModal = ({
                 <InputNumber
                   style={{ width: '100%' }}
                   placeholder="Nhập chi phí phát sinh"
+                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                  addonAfter="VNĐ"
+                  min={0}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item
+                label="Com"
+                name="com"
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="Nhập com"
                   formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={value => value.replace(/\$\s?|(,*)/g, '')}
                   addonAfter="VNĐ"

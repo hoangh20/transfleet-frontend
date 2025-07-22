@@ -89,17 +89,17 @@ const ContainerFormModal = ({
       >
         <Row gutter={16}>
           <Col span={8}>
-            <Form.Item label="Ngày đóng" name="date">
+            <Form.Item label="Ngày đóng" name="date" rules={[{ required: true, message: 'Vui lòng chọn ngày đóng' }]}>
               <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item label="Số Container" name="containerNumber">
+            <Form.Item label="Số Container" name="containerNumber" rules={[{ required: true, message: 'Vui lòng nhập số container' }]}>
               <Input placeholder="Nhập số container" />
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item label="Loại Container" name="contType">
+            <Form.Item label="Loại Container" name="contType" rules={[{ required: true, message: 'Vui lòng chọn loại container' }]}>
               <Select placeholder="Chọn loại container">
                 {containerFilters.contType.map(option => (
                   <Option key={option.value} value={option.value}>
@@ -113,7 +113,7 @@ const ContainerFormModal = ({
 
         <Row gutter={16}>
           <Col span={8}>
-            <Form.Item label="Line" name="line">
+            <Form.Item label="Line" name="line" rules={[{ required: true, message: 'Vui lòng nhập Line' }]}>
               <Input placeholder="Nhập Line" />
             </Form.Item>
           </Col>
@@ -144,7 +144,7 @@ const ContainerFormModal = ({
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item label="Nhân Viên KD" name="salesPerson">
+            <Form.Item label="Nhân Viên KD" name="salesPerson" rules={[{ required: true, message: 'Vui lòng nhập nhân viên kinh doanh' }]}>
               <Input placeholder="Nhập nhân viên kinh doanh" />
             </Form.Item>
           </Col>
@@ -152,7 +152,7 @@ const ContainerFormModal = ({
 
         <Row gutter={16}>
           <Col span={8}>
-            <Form.Item label="Loại Đóng Hàng" name="closeCombination">
+            <Form.Item label="Loại Đóng Hàng" name="closeCombination" rules={[{ required: true, message: 'Vui lòng chọn loại đóng hàng' }]}>
               <Select placeholder="Chọn loại đóng hàng">
                 {containerFilters.closeCombination.map(option => (
                   <Option key={option.value} value={option.value}>
@@ -163,12 +163,12 @@ const ContainerFormModal = ({
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item label="Mặt Hàng" name="item">
+            <Form.Item label="Mặt Hàng" name="item" rules={[{ required: true, message: 'Vui lòng nhập mặt hàng' }]}>
               <Input placeholder="Nhập mặt hàng" />
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item label="Chiều Vận Chuyển" name="transportDirection">
+            <Form.Item label="Chiều Vận Chuyển" name="transportDirection" rules={[{ required: true, message: 'Vui lòng chọn chiều vận chuyển' }]}>
               <Select placeholder="Chọn chiều vận chuyển">
                 {containerFilters.transportDirection.map(option => (
                   <Option key={option.value} value={option.value}>

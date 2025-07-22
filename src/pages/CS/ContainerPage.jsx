@@ -32,7 +32,7 @@ import {
   createContainersFromPackingOrders,
   containerFilters,
   getAllShipSchedulesNoPagination,
-  bulkUpdateContainers, // Thêm import này
+  bulkUpdateContainers,
 } from '../../services/CSSevice';
 import { getAllCustomersWithoutPagination } from '../../services/CustomerService';
 
@@ -40,7 +40,7 @@ import { getAllCustomersWithoutPagination } from '../../services/CustomerService
 import ContainerFormModal from '../../components/CS/ContainerFormModal';
 import DateRangeModal from '../../components/CS/DateRangeModal';
 import ResultModal from '../../components/CS/ResultModal';
-import BulkUpdateModal from '../../components/CS/BulkUpdateModal'; // Thêm import này
+import BulkUpdateModal from '../../components/CS/BulkUpdateModal';
 
 const { Option } = Select;
 
@@ -52,7 +52,7 @@ const ContainerPage = () => {
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 25, // Thay đổi từ 20 thành 25
     total: 0,
   });
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -84,13 +84,17 @@ const ContainerPage = () => {
   const [selectedContainers, setSelectedContainers] = useState([]);
   const [isBulkUpdateModalVisible, setIsBulkUpdateModalVisible] = useState(false);
 
+  // Thêm state cho selection type và selected keys
+  const [selectionType, setSelectionType] = useState('radio');
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
   useEffect(() => {
     fetchContainers();
     fetchCustomers();
-    fetchShipSchedules(''); // Load tất cả chuyến tàu ban đầu
+    fetchShipSchedules('');
   }, []);
 
-  const fetchContainers = async (page = 1, pageSize = 10, filterParams = {}) => {
+  const fetchContainers = async (page = 1, pageSize = 25, filterParams = {}) => { // Thay đổi từ 10 thành 25
     setLoading(true);
     try {
       const response = await getAllContainers(page, pageSize, filterParams);
@@ -116,15 +120,14 @@ const ContainerPage = () => {
     }
   };
 
-  // Cập nhật hàm fetchShipSchedules để nhận search parameter
   const fetchShipSchedules = async (searchTerm = '') => {
     try {
       const filters = searchTerm ? { shipName: searchTerm } : {};
       const response = await getAllShipSchedulesNoPagination(filters);
-      console.log('Ship schedules response:', response); // Debug log
+      console.log('Ship schedules response:', response);
       
       const schedules = response.data || [];
-      console.log('Schedules data:', schedules); // Debug log
+      console.log('Schedules data:', schedules);
       
       setShipSchedules(schedules);
       setFilteredShipSchedules(schedules);
@@ -134,9 +137,8 @@ const ContainerPage = () => {
     }
   };
 
-  // Sửa lại hàm handleShipSearch để gọi API
   const handleShipSearch = async (value) => {
-    console.log('Search value:', value); // Debug log
+    console.log('Search value:', value);
     setShipSearchText(value);
     
     if (!value || value.trim() === '') {
@@ -149,7 +151,6 @@ const ContainerPage = () => {
     await fetchShipSchedules(value.trim());
   };
 
-  // Hàm xử lý khi chọn chuyến tàu - cập nhật để nhận form parameter
   const handleShipSelect = (value, option, form) => {
     console.log('Selected ship ID:', value);
     
@@ -173,7 +174,6 @@ const ContainerPage = () => {
     }
   };
 
-  // Hàm xử lý thay đổi date range
   const handleDateRangeChange = (field, date) => {
     setDateRange(prev => ({ ...prev, [field]: date }));
   };
@@ -197,13 +197,11 @@ const ContainerPage = () => {
     fetchContainers(paginationConfig.current, paginationConfig.pageSize, apiFilters);
   };
 
-  // Hàm search trong bảng
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
     
-    // Gọi API với filter search
     const newFilters = { ...filters };
     if (selectedKeys[0]) {
       newFilters[dataIndex] = selectedKeys[0];
@@ -219,7 +217,6 @@ const ContainerPage = () => {
     clearFilters();
     setSearchText('');
     
-    // Remove filter và gọi lại API
     const newFilters = { ...filters };
     delete newFilters[dataIndex];
     
@@ -227,7 +224,6 @@ const ContainerPage = () => {
     fetchContainers(pagination.current, pagination.pageSize, newFilters);
   };
 
-  // Hàm tạo search props cho các cột text
   const getColumnSearchProps = (dataIndex, placeholder = '') => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
@@ -283,9 +279,6 @@ const ContainerPage = () => {
       ),
   });
 
-  
-
-  // Hàm tạo filter cho Select
   const getColumnSelectProps = (dataIndex, options, optionValueKey = 'value', optionLabelKey = 'label') => ({
     filters: options.map(option => ({
       text: option[optionLabelKey],
@@ -298,9 +291,8 @@ const ContainerPage = () => {
     setEditingRecord(null);
     form.resetFields();
     
-    // Reset ship search states
     setShipSearchText('');
-    fetchShipSchedules(''); // Load lại tất cả chuyến tàu
+    fetchShipSchedules('');
     
     setIsModalVisible(true);
   };
@@ -318,9 +310,8 @@ const ContainerPage = () => {
       billingDate: record.billingDate ? dayjs(record.billingDate) : null,
     });
     
-    // Reset ship search states khi edit
     setShipSearchText('');
-    fetchShipSchedules(''); // Load lại tất cả chuyến tàu
+    fetchShipSchedules('');
     
     setIsModalVisible(true);
   };
@@ -335,7 +326,6 @@ const ContainerPage = () => {
     }
   };
 
-  // Hàm xử lý submit form
   const handleFormSubmit = async (submitData) => {
     try {
       if (editingRecord) {
@@ -353,14 +343,12 @@ const ContainerPage = () => {
     }
   };
 
-  // Hàm xử lý đóng modal form
   const handleFormModalCancel = () => {
     setIsModalVisible(false);
     setShipSearchText('');
     fetchShipSchedules('');
   };
 
-  // Hàm xử lý đóng modal date range
   const handleDateRangeModalCancel = () => {
     setIsDateRangeModalVisible(false);
     setDateRange({ startDate: null, endDate: null });
@@ -370,7 +358,6 @@ const ContainerPage = () => {
     setIsDateRangeModalVisible(true);
   };
 
-  // Hàm xử lý confirm date range và tạo containers
   const handleConfirmDateRange = async () => {
     setLoading(true);
     setIsDateRangeModalVisible(false);
@@ -394,10 +381,8 @@ const ContainerPage = () => {
     }
   };
 
-  // Hàm tạo date range search props
   const getColumnDateRangeSearchProps = (dataIndex, placeholder = '') => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => {
-      // selectedKeys[0] sẽ là object {start: date, end: date}
       const dateRange = selectedKeys[0] || {};
       
       return (
@@ -466,11 +451,9 @@ const ContainerPage = () => {
     },
   });
 
-  // Hàm xử lý search date range
   const handleDateRangeSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     
-    // Gọi API với filter date range
     const newFilters = { ...filters };
     
     if (selectedKeys[0] && Object.keys(selectedKeys[0]).length > 0) {
@@ -482,7 +465,6 @@ const ContainerPage = () => {
         newFilters[`${dataIndex}End`] = dateRange.end;
       }
     } else {
-      // Xóa cả start và end nếu không có giá trị
       delete newFilters[`${dataIndex}Start`];
       delete newFilters[`${dataIndex}End`];
     }
@@ -491,11 +473,9 @@ const ContainerPage = () => {
     fetchContainers(pagination.current, pagination.pageSize, newFilters);
   };
 
-  // Hàm reset date range search
   const handleDateRangeReset = (clearFilters, dataIndex) => {
     clearFilters();
     
-    // Remove filter và gọi lại API
     const newFilters = { ...filters };
     delete newFilters[`${dataIndex}Start`];
     delete newFilters[`${dataIndex}End`];
@@ -504,7 +484,6 @@ const ContainerPage = () => {
     fetchContainers(pagination.current, pagination.pageSize, newFilters);
   };
 
-  // Hàm tạo customer select filter props
   const getColumnCustomerSelectProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
@@ -518,7 +497,6 @@ const ContainerPage = () => {
           }}
           allowClear
           filterOption={(input, option) => {
-            // Fix: Sử dụng option.label thay vì option.children
             const searchText = `${option.label}`.toLowerCase();
             return searchText.includes(input.toLowerCase());
           }}
@@ -564,14 +542,12 @@ const ContainerPage = () => {
     },
   });
 
-  // Hàm xử lý search customer
   const handleCustomerSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     
-    // Gọi API với customer ID
     const newFilters = { ...filters };
     if (selectedKeys[0]) {
-      newFilters[dataIndex] = selectedKeys[0]; // Gửi ID thay vì text
+      newFilters[dataIndex] = selectedKeys[0];
     } else {
       delete newFilters[dataIndex];
     }
@@ -580,11 +556,9 @@ const ContainerPage = () => {
     fetchContainers(pagination.current, pagination.pageSize, newFilters);
   };
 
-  // Hàm reset customer search
   const handleCustomerReset = (clearFilters, dataIndex) => {
     clearFilters();
     
-    // Remove filter và gọi lại API
     const newFilters = { ...filters };
     delete newFilters[dataIndex];
     
@@ -592,15 +566,14 @@ const ContainerPage = () => {
     fetchContainers(pagination.current, pagination.pageSize, newFilters);
   };
 
-  // Thêm các function mới cho bulk update
   const handleBulkUpdateToggle = () => {
     setBulkUpdateMode(!bulkUpdateMode);
     setSelectedContainers([]);
+    // Reset selection khi chuyển mode
+    setSelectedRowKeys([]);
+    setSelectionType(bulkUpdateMode ? 'radio' : 'checkbox');
   };
 
-  const handleContainerSelect = (selectedRowKeys) => {
-    setSelectedContainers(selectedRowKeys);
-  };
 
   const handleBulkUpdate = () => {
     if (selectedContainers.length === 0) {
@@ -614,7 +587,6 @@ const ContainerPage = () => {
     try {
       setLoading(true);
       
-      // bulkUpdatePayload đã có format đúng từ BulkUpdateModal
       await bulkUpdateContainers(bulkUpdatePayload);
       
       message.success(`Cập nhật thành công ${selectedContainers.length} container`);
@@ -629,7 +601,37 @@ const ContainerPage = () => {
     }
   };
 
-  // Cập nhật columns để thêm selection khi ở bulk update mode
+  // Handle selection change
+  const handleSelectionChange = (selectedRowKeys, selectedRows) => {
+    console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+    
+    if (bulkUpdateMode) {
+      setSelectedContainers(selectedRowKeys);
+    } else {
+      setSelectedRowKeys(selectedRowKeys);
+      if (selectedRows.length > 0) {
+        const selectedContainer = selectedRows[0];
+        message.success(`Đã chọn container: ${selectedContainer.containerNumber || 'N/A'}`);
+      }
+    }
+  };
+
+  // Clear selection
+  const handleClearSelection = () => {
+    setSelectedRowKeys([]);
+    setSelectedContainers([]);
+    message.info('Đã bỏ chọn container');
+  };
+
+  // Row class name for highlighting selected rows
+  const getRowClassName = (record) => {
+    const isSelected = bulkUpdateMode 
+      ? selectedContainers.includes(record._id)
+      : selectedRowKeys.includes(record._id);
+    
+    return isSelected ? 'selected-row' : '';
+  };
+
   const getColumns = () => {
     let baseColumns = [
       {
@@ -654,7 +656,7 @@ const ContainerPage = () => {
         key: 'containerNumber',
         width: 140,
         fixed: 'left',
-        render: (text) => (
+        render: (text, record) => (
           <span style={{ whiteSpace: 'nowrap', fontWeight: '500' }}>
             {text || 'N/A'}
           </span>
@@ -780,23 +782,12 @@ const ContainerPage = () => {
         ...getColumnSearchProps('salesPerson', 'Tìm KD'),
       },
       {
-        title: 'Điểm đóng',
-        dataIndex: 'closingPoint',
-        key: 'closingPoint',
-        width: 160,
-        render: (text) => (
-          <Tooltip title={text}>
-            <div style={{ 
-              maxWidth: 150, 
-              overflow: 'hidden', 
-              textOverflow: 'ellipsis', 
-              whiteSpace: 'nowrap' 
-            }}>
-              {text || 'N/A'}
-            </div>
-          </Tooltip>
-        ),
-        ...getColumnSearchProps('closingPoint', 'Tìm điểm đóng'),
+      title: 'Điểm đóng',
+      dataIndex: 'closingPoint',
+      key: 'closingPoint',
+      width: 120,
+      ellipsis: true, 
+      ...getColumnSearchProps('closingPoint', 'Tìm điểm đóng'),
       },
       {
         title: 'Đội xe đóng',
@@ -823,23 +814,12 @@ const ContainerPage = () => {
         ...getColumnSearchProps('soXeDong', 'Tìm số xe đóng'),
       },
       {
-        title: 'Điểm trả',
-        dataIndex: 'returnPoint',
-        key: 'returnPoint',
-        width: 160,
-        render: (text) => (
-          <Tooltip title={text}>
-            <div style={{ 
-              maxWidth: 150, 
-              overflow: 'hidden', 
-              textOverflow: 'ellipsis', 
-              whiteSpace: 'nowrap' 
-            }}>
-              {text || 'N/A'}
-            </div>
-          </Tooltip>
-        ),
-        ...getColumnSearchProps('returnPoint', 'Tìm điểm trả'),
+      title: 'Điểm trả',
+      dataIndex: 'returnPoint',
+      key: 'returnPoint',
+      width: 120,
+      ellipsis: true, 
+      ...getColumnSearchProps('returnPoint', 'Tìm điểm trả'),
       },
       {
         title: 'Đội xe trả',
@@ -1031,14 +1011,15 @@ const ContainerPage = () => {
     return baseColumns;
   };
 
-  // Cấu hình row selection cho bulk update
-  const rowSelection = bulkUpdateMode ? {
-    selectedRowKeys: selectedContainers,
-    onChange: handleContainerSelect,
+  // Row selection configuration
+  const rowSelection = {
+    type: selectionType,
+    selectedRowKeys: bulkUpdateMode ? selectedContainers : selectedRowKeys,
+    onChange: handleSelectionChange,
     getCheckboxProps: (record) => ({
       name: record.containerNumber,
     }),
-  } : null;
+  };
 
   return (
     <div style={{ padding: 24 }}>
@@ -1047,6 +1028,28 @@ const ContainerPage = () => {
         <Row justify="space-between" align="middle">
           <Col>
             <h2 style={{ margin: 0 }}>Quản Lý Container</h2>
+            {/* Hiển thị thông tin container được chọn */}
+            {(selectedRowKeys.length > 0 || selectedContainers.length > 0) && (
+              <div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
+                {bulkUpdateMode ? (
+                  `Đã chọn ${selectedContainers.length} container`
+                ) : (
+                  selectedRowKeys.length > 0 && (
+                    <>
+                      Đang chọn: {containers.find(c => c._id === selectedRowKeys[0])?.containerNumber || 'N/A'}
+                      <Button 
+                        type="link" 
+                        size="small" 
+                        onClick={handleClearSelection}
+                        style={{ padding: '0 8px', fontSize: '12px' }}
+                      >
+                        (Bỏ chọn)
+                      </Button>
+                    </>
+                  )
+                )}
+              </div>
+            )}
           </Col>
           <Col>
             <Space>
@@ -1093,36 +1096,31 @@ const ContainerPage = () => {
             </Space>
           </Col>
         </Row>
-        {bulkUpdateMode && (
-          <Row style={{ marginTop: 8 }}>
-            <Col>
-              <span style={{ color: '#666' }}>
-                Đã chọn {selectedContainers.length} container
-              </span>
-            </Col>
-          </Row>
-        )}
       </Card>
 
       {/* Table */}
       <Card>
-        <Table
-          columns={getColumns()}
-          dataSource={containers}
-          loading={loading}
-          rowKey="_id"
-          rowSelection={rowSelection}
-          pagination={{
-            ...pagination,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} của ${total} container`,
-          }}
-          onChange={handleTableChange}
-          scroll={{ x: 1600 }}
-          size="small"
-        />
+        <div className="container-table">
+          <Table
+            columns={getColumns()}
+            dataSource={containers}
+            loading={loading}
+            rowKey="_id"
+            rowSelection={rowSelection}
+            rowClassName={getRowClassName}
+            pagination={{
+              ...pagination,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              pageSizeOptions: ['15', '25', '35', '50', '100'], // Thêm prop này
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} của ${total} container`,
+            }}
+            onChange={handleTableChange}
+            scroll={{ x: 1600 }}
+            size="small"
+          />
+        </div>
       </Card>
 
       {/* Container Form Modal */}
@@ -1148,10 +1146,11 @@ const ContainerPage = () => {
         loading={loading}
         shipSchedules={filteredShipSchedules}
         onShipSearch={handleShipSearch}
-        onShipSelect={(value, option, form) => handleShipSelect(value, option, form)}
+        onShipSelect={handleShipSelect}
         shipSearchText={shipSearchText}
         selectedCount={selectedContainers.length}
-        selectedContainerIds={selectedContainers} // Thêm prop này
+        selectedContainerIds={selectedContainers}
+        customers={customers}
       />
 
       {/* Date Range Modal */}

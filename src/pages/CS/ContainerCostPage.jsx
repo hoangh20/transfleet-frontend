@@ -10,6 +10,7 @@ import {
   message,
   Tag,
   Tooltip,
+  Select,
 } from 'antd';
 import {
   EditOutlined,
@@ -26,13 +27,15 @@ import {
 import { getAllCustomersWithoutPagination } from '../../services/CustomerService';
 import ContainerCostFormModal from '../../components/CS/ContainerCostFormModal';
 
+const { Option } = Select; 
+
 const ContainerCostPage = () => {
   const [containers, setContainers] = useState([]);
-  const [, setCustomers] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 25, // Thay đổi từ 10 thành 25
     total: 0,
   });
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -44,12 +47,16 @@ const ContainerCostPage = () => {
   const searchInput = useRef(null);
   const [filters, setFilters] = useState({});
 
+  // Thêm state cho selection type và selected keys
+  const [selectionType,] = useState('radio');
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
   useEffect(() => {
     fetchContainers();
     fetchCustomers();
   }, []);
 
-  const fetchContainers = async (page = 1, pageSize = 10, filterParams = {}) => {
+  const fetchContainers = async (page = 1, pageSize = 25, filterParams = {}) => { // Thay đổi từ 10 thành 25
     setLoading(true);
     try {
       const response = await getAllContainersWithCosts(page, pageSize, filterParams);
@@ -80,22 +87,102 @@ const ContainerCostPage = () => {
     if (!amount) return '0';
     return new Intl.NumberFormat('vi-VN').format(amount);
   };
+  const getColumnCustomerSelectProps = (dataIndex) => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+      <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+        <Select
+          showSearch
+          placeholder="Chọn khách hàng"
+          style={{ width: 250, marginBottom: 8 }}
+          value={selectedKeys[0]}
+          onChange={(value) => {
+            setSelectedKeys(value ? [value] : []);
+          }}
+          allowClear
+          filterOption={(input, option) => {
+            const searchText = `${option.label}`.toLowerCase();
+            return searchText.includes(input.toLowerCase());
+          }}
+        >
+          {customers.map(customer => (
+            <Option key={customer._id} value={customer._id} label={`${customer.shortName} - ${customer.name}`}>
+              {customer.shortName} - {customer.name}
+            </Option>
+          ))}
+        </Select>
+        <div>
+          <Space>
+            <Button
+              type="primary"
+              onClick={() => handleCustomerSearch(selectedKeys, confirm, dataIndex)}
+              icon={<SearchOutlined />}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Tìm
+            </Button>
+            <Button
+              onClick={() => clearFilters && handleCustomerReset(clearFilters, dataIndex)}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Xóa
+            </Button>
+          </Space>
+        </div>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+    ),
+    onFilter: () => true,
+    filterDropdownProps: {
+      onOpenChange(open) {
+        if (open) {
+          setTimeout(() => searchInput.current?.select(), 100);
+        }
+      },
+    },
+  });
 
+  const handleCustomerSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    
+    const newFilters = { ...filters };
+    if (selectedKeys[0]) {
+      newFilters[dataIndex] = selectedKeys[0];
+    } else {
+      delete newFilters[dataIndex];
+    }
+    
+    setFilters(newFilters);
+    fetchContainers(pagination.current, pagination.pageSize, newFilters);
+  };
+
+  const handleCustomerReset = (clearFilters, dataIndex) => {
+    clearFilters();
+    
+    const newFilters = { ...filters };
+    delete newFilters[dataIndex];
+    
+    setFilters(newFilters);
+    fetchContainers(pagination.current, pagination.pageSize, newFilters);
+  };
   // Currency column render with tooltip
   const renderCurrencyWithTooltip = (noVATAmount, vatAmount, label) => {
-    if (!noVATAmount && !vatAmount) return '0 VNĐ';
+    if (!noVATAmount && !vatAmount) return '0 ';
     
     return (
       <Tooltip
         title={
           <div>
-            <div>{label} (có VAT): {formatCurrency(vatAmount)} VNĐ</div>
-            <div>{label} (không VAT): {formatCurrency(noVATAmount)} VNĐ</div>
+            <div>{label} (có VAT): {formatCurrency(vatAmount)}</div>
+            <div>{label} (không VAT): {formatCurrency(noVATAmount)}</div>
           </div>
         }
       >
         <span style={{ cursor: 'help', whiteSpace: 'nowrap' }}>
-          {formatCurrency(noVATAmount || vatAmount)} VNĐ
+          {formatCurrency(noVATAmount || vatAmount)}
         </span>
       </Tooltip>
     );
@@ -225,6 +312,29 @@ const ContainerCostPage = () => {
     }
   };
 
+  // Handle selection change
+  const handleSelectionChange = (selectedRowKeys, selectedRows) => {
+    console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+    setSelectedRowKeys(selectedRowKeys);
+    
+    if (selectedRows.length > 0) {
+      const selectedContainer = selectedRows[0];
+      message.success(`Đã chọn container: ${selectedContainer.containerNumber || 'N/A'}`);
+    }
+  };
+
+  // Clear selection
+  const handleClearSelection = () => {
+    setSelectedRowKeys([]);
+    message.info('Đã bỏ chọn container');
+  };
+
+  // Row class name for highlighting selected rows
+  const getRowClassName = (record) => {
+    const isSelected = selectedRowKeys.includes(record._id);
+    return isSelected ? 'selected-row' : '';
+  };
+
   const getColumns = () => [
     {
       title: 'Ngày',
@@ -330,6 +440,7 @@ const ContainerCostPage = () => {
           </div>
         </Tooltip>
       ),
+      ...getColumnCustomerSelectProps('customer'), // Thêm bộ lọc khách hàng
     },
     {
       title: 'KD',
@@ -343,38 +454,16 @@ const ContainerCostPage = () => {
       title: 'Điểm đóng',
       dataIndex: 'closingPoint',
       key: 'closingPoint',
-      width: 160,
-      render: (text) => (
-        <Tooltip title={text}>
-          <div style={{ 
-            maxWidth: 150, 
-            overflow: 'hidden', 
-            textOverflow: 'ellipsis', 
-            whiteSpace: 'nowrap' 
-          }}>
-            {text || 'N/A'}
-          </div>
-        </Tooltip>
-      ),
+      width: 120,
+      ellipsis: true, 
       ...getColumnSearchProps('closingPoint', 'Tìm điểm đóng'),
     },
     {
       title: 'Điểm trả',
       dataIndex: 'returnPoint',
       key: 'returnPoint',
-      width: 160,
-      render: (text) => (
-        <Tooltip title={text}>
-          <div style={{ 
-            maxWidth: 150, 
-            overflow: 'hidden', 
-            textOverflow: 'ellipsis', 
-            whiteSpace: 'nowrap' 
-          }}>
-            {text || 'N/A'}
-          </div>
-        </Tooltip>
-      ),
+      width: 120,
+      ellipsis: true, 
       ...getColumnSearchProps('returnPoint', 'Tìm điểm trả'),
     },
     {
@@ -382,7 +471,6 @@ const ContainerCostPage = () => {
       dataIndex: 'trainTrip',
       key: 'trainTrip',
       width: 150,
-      render: (text) => text || 'N/A',
       ...getColumnSearchProps('trainTrip', 'Tìm chuyến tàu'),
     },
     {
@@ -521,10 +609,10 @@ const ContainerCostPage = () => {
       dataIndex: ['containerCost', 'com'],
       key: 'com',
       width: 100,
-      render: (amount, record) => renderCurrencyWithTooltip(
-        record.containerCost?.comNoVAT,
-        amount,
-        'Com'
+       render: (amount) => (
+        <span style={{ whiteSpace: 'nowrap' }}>
+          {formatCurrency(amount)} 
+        </span>
       ),
     },
     {
@@ -642,6 +730,16 @@ const ContainerCostPage = () => {
     },
   ];
 
+  // Row selection configuration
+  const rowSelection = {
+    type: selectionType,
+    selectedRowKeys: selectedRowKeys,
+    onChange: handleSelectionChange,
+    getCheckboxProps: (record) => ({
+      name: record.containerNumber,
+    }),
+  };
+
   return (
     <div style={{ padding: 24 }}>
       {/* Header */}
@@ -649,6 +747,20 @@ const ContainerCostPage = () => {
         <Row justify="space-between" align="middle">
           <Col>
             <h2 style={{ margin: 0 }}>Quản Lý Chi Phí Container</h2>
+            {/* Hiển thị thông tin container được chọn */}
+            {selectedRowKeys.length > 0 && (
+              <div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
+                Đang chọn: {containers.find(c => c._id === selectedRowKeys[0])?.containerNumber || 'N/A'}
+                <Button 
+                  type="link" 
+                  size="small" 
+                  onClick={handleClearSelection}
+                  style={{ padding: '0 8px', fontSize: '12px' }}
+                >
+                  (Bỏ chọn)
+                </Button>
+              </div>
+            )}
           </Col>
           <Col>
             <Space>
@@ -665,6 +777,8 @@ const ContainerCostPage = () => {
         </Row>
       </Card>
 
+
+
       {/* Table */}
       <Card>
         <Table
@@ -672,10 +786,13 @@ const ContainerCostPage = () => {
           dataSource={containers}
           loading={loading}
           rowKey="_id"
+          rowSelection={rowSelection}
+          rowClassName={getRowClassName}
           pagination={{
             ...pagination,
             showSizeChanger: true,
             showQuickJumper: true,
+            pageSizeOptions: ['15', '25', '35', '50', '100'], // Thêm pageSizeOptions
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} của ${total} container`,
           }}
