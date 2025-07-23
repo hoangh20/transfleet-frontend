@@ -297,3 +297,46 @@ export const getContainersForDropdown = async (search = '') => {
         throw error.response ? error.response.data : new Error('Network Error');
     }
 };
+
+
+// Bulk cost update validation
+export const validateBulkCostUpdate = async (requestData) => {
+    try {
+        const response = await axios.post(`${API_URL}/cs/validate-bulk-cost-update`, requestData);
+        return response.data;
+    } catch (error) {
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Execute bulk cost update
+export const executeBulkCostUpdate = async (requestData, forceUpdate = false) => {
+    try {
+        const params = forceUpdate ? { forceUpdate: 'true' } : {};
+        const response = await axios.post(`${API_URL}/cs/execute-bulk-cost-update`, requestData, { params });
+        return response.data;
+    } catch (error) {
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Validate bulk delivery update
+export const validateBulkDeliveryUpdate = async (requestData) => {
+    try {
+        const response = await axios.post(`${API_URL}/cs/validate-bulk-delivery-update`, requestData);
+        return response.data;
+    } catch (error) {
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Execute bulk delivery update
+export const executeBulkDeliveryUpdate = async (requestData, forceUpdate = false) => {
+    try {
+        const params = forceUpdate ? { forceUpdate: 'true' } : {};
+        const response = await axios.post(`${API_URL}/cs/execute-bulk-delivery-update`, requestData, { params });
+        return response.data;
+    } catch (error) {
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};

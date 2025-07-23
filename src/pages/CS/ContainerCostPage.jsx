@@ -17,6 +17,7 @@ import {
   EditOutlined,
   SearchOutlined,
   SyncOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import Highlighter from 'react-highlight-words';
@@ -28,6 +29,7 @@ import {
 } from '../../services/CSSevice';
 import { getAllCustomersWithoutPagination } from '../../services/CustomerService';
 import ContainerCostFormModal from '../../components/CS/ContainerCostFormModal';
+import ExcelUploadModal from '../../components/CS/ExcelUploadModal';
 
 const { Option } = Select; 
 
@@ -61,6 +63,9 @@ const ContainerCostPage = () => {
   // State cho selection type và selected keys
   const [selectionType, ] = useState('radio');
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
+  // Add state for upload modal
+  const [isUploadModalVisible, setIsUploadModalVisible] = useState(false);
 
   useEffect(() => {
     fetchContainers();
@@ -413,6 +418,12 @@ const ContainerCostPage = () => {
     }
   };
 
+  const handleUploadSuccess = () => {
+    // Refresh data after successful upload
+    fetchContainers(pagination.current, pagination.pageSize, filters);
+    message.success('Dữ liệu đã được cập nhật');
+  };
+
   // Handle selection change
   const handleSelectionChange = (selectedRowKeys, selectedRows) => {
     console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
@@ -502,7 +513,7 @@ const ContainerCostPage = () => {
           </div>
         </Tooltip>
       ),
-      ...getColumnMultiSelectProps('PTVC', filterOptions.PTVCs, 'Chọn PTVC'), // Thay đổi từ search thành multi-select
+      ...getColumnMultiSelectProps('PTVC', filterOptions.PTVCs, 'Chọn PTVC'), 
     },
     {
       title: 'Mặt hàng',
@@ -521,7 +532,7 @@ const ContainerCostPage = () => {
           </div>
         </Tooltip>
       ),
-      ...getColumnMultiSelectProps('item', filterOptions.items, 'Chọn mặt hàng'), // Thay đổi từ search thành multi-select
+      ...getColumnMultiSelectProps('item', filterOptions.items, 'Chọn mặt hàng'), 
     },
     {
       title: 'Khách hàng',
@@ -549,7 +560,7 @@ const ContainerCostPage = () => {
       key: 'salesPerson',
       width: 100,
       render: (text) => text || 'N/A',
-      ...getColumnMultiSelectProps('salesPerson', filterOptions.salesPersons, 'Chọn KD'), // Thay đổi từ search thành multi-select
+      ...getColumnMultiSelectProps('salesPerson', filterOptions.salesPersons, 'Chọn KD'), 
     },
     {
         title: 'Điểm đóng',
@@ -594,7 +605,7 @@ const ContainerCostPage = () => {
           </div>
         </Tooltip>
       ),
-      ...getColumnMultiSelectProps('trainTrip', filterOptions.trainTrips, 'Chọn chuyến tàu'), // Thay đổi từ search thành multi-select
+      ...getColumnMultiSelectProps('trainTrip', filterOptions.trainTrips, 'Chọn chuyến tàu'), 
     },
     {
       title: 'Đội xe đóng',
@@ -888,6 +899,13 @@ const ContainerCostPage = () => {
           <Col>
             <Space>
               <Button
+                type="default"
+                icon={<UploadOutlined />}
+                onClick={() => setIsUploadModalVisible(true)}
+              >
+                Tải dữ liệu lên
+              </Button>
+              <Button
                 type="primary"
                 icon={<SyncOutlined />}
                 onClick={() => fetchContainers(pagination.current, pagination.pageSize, filters)}
@@ -937,6 +955,13 @@ const ContainerCostPage = () => {
         onSubmit={handleFormSubmit}
         editingRecord={editingRecord}
         loading={loading}
+      />
+
+      {/* Excel Upload Modal */}
+      <ExcelUploadModal
+        visible={isUploadModalVisible}
+        onCancel={() => setIsUploadModalVisible(false)}
+        onSuccess={handleUploadSuccess}
       />
 
       {/* CSS cho styling */}
