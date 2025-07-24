@@ -340,3 +340,26 @@ export const executeBulkDeliveryUpdate = async (requestData, forceUpdate = false
         throw error.response ? error.response.data : new Error('Network Error');
     }
 };
+
+export const exportContainerToSheets = async (containerId, forceReExport = false) => {
+    try {
+        const params = forceReExport ? { forceReExport: 'true' } : {};
+        const response = await axios.post(`${API_URL}/cs/export-to-sheets/${containerId}`, {}, { params });
+        return response.data;
+    } catch (error) {
+        console.error('Error exporting container to sheets:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Bulk export containers to sheets
+export const bulkExportContainersToSheets = async (containerIds, forceReExport = false) => {
+    try {
+        const params = forceReExport ? { forceReExport: 'true' } : {};
+        const response = await axios.post(`${API_URL}/cs/bulk-export-to-sheets`, { containerIds }, { params });
+        return response.data;
+    } catch (error) {
+        console.error('Error bulk exporting containers to sheets:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};

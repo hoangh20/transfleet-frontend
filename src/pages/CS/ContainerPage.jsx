@@ -14,6 +14,7 @@ import {
   Popconfirm,
   Tag,
   Tooltip,
+  Modal,
 } from 'antd';
 import {
   PlusOutlined,
@@ -21,6 +22,8 @@ import {
   DeleteOutlined,
   SearchOutlined,
   SyncOutlined,
+  ExportOutlined,
+  LinkOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import Highlighter from 'react-highlight-words';
@@ -33,7 +36,9 @@ import {
   containerFilters,
   getAllShipSchedulesNoPagination,
   bulkUpdateContainers,
-  getContainerFilterOptions, // Thêm import này
+  getContainerFilterOptions,
+  exportContainerToSheets,
+  bulkExportContainersToSheets,
 } from '../../services/CSSevice';
 import { getAllCustomersWithoutPagination } from '../../services/CustomerService';
 
@@ -97,6 +102,11 @@ const ContainerPage = () => {
   // Thêm state cho selection type và selected keys
   const [selectionType, setSelectionType] = useState('radio');
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
+  // Thêm state cho export
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportResult, setExportResult] = useState(null);
+  const [isExportResultModalVisible, setIsExportResultModalVisible] = useState(false);
 
   useEffect(() => {
     fetchContainers();
@@ -727,6 +737,164 @@ const ContainerPage = () => {
     return isSelected ? 'selected-row' : '';
   };
 
+  // Handle single container export
+  const handleExportContainer = async (container, forceReExport = false) => {
+    try {
+      setIsExporting(true);
+      const result = await exportContainerToSheets(container._id, forceReExport);
+      
+      message.success(`Container ${container.containerNumber} đã được export thành công`);
+      
+      // Refresh container data to update writeToSheet status
+      fetchContainers(pagination.current, pagination.pageSize, filters);
+      
+      return result;
+    } catch (error) {
+      message.error(`Lỗi khi export container: ${error.message}`);
+      throw error;
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Handle bulk export with confirmation
+  const handleBulkExport = () => {
+    if (selectedContainers.length === 0) {
+      message.warning('Vui lòng chọn ít nhất một container để export');
+      return;
+    }
+
+    // Check how many containers already exported
+    const selectedContainerData = containers.filter(c => selectedContainers.includes(c._id));
+    const alreadyExported = selectedContainerData.filter(c => c.writeToSheet === 1);
+    const notExported = selectedContainerData.filter(c => c.writeToSheet !== 1);
+
+    let content;
+    if (alreadyExported.length === 0) {
+      content = (
+        <div>
+          <p>Bạn có chắc chắn muốn export <strong>{selectedContainers.length} container</strong> vào Google Sheets?</p>
+          <p>Các containers sẽ được export vào 2 sheet:</p>
+          <ul>
+            <li>Tổng hợp đóng trả</li>
+            <li>Chi phí chi tiết</li>
+          </ul>
+        </div>
+      );
+    } else {
+      content = (
+        <div>
+          <p>Trong <strong>{selectedContainers.length} container</strong> đã chọn:</p>
+          <ul>
+            <li style={{ color: '#52c41a' }}><strong>{notExported.length}</strong> container chưa export</li>
+            <li style={{ color: '#fa8c16' }}><strong>{alreadyExported.length}</strong> container đã export trước đó</li>
+          </ul>
+          <p>Bạn muốn:</p>
+          <div style={{ marginTop: 16 }}>
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Button 
+                type="primary" 
+                block 
+                onClick={() => executeBulkExport(false)}
+                style={{ textAlign: 'left' }}
+              >
+                Chỉ export {notExported.length} container chưa export
+              </Button>
+              <Button 
+                type="primary" 
+                danger 
+                block 
+                onClick={() => executeBulkExport(true)}
+                style={{ textAlign: 'left' }}
+              >
+                Export lại tất cả {selectedContainers.length} container
+              </Button>
+            </Space>
+          </div>
+        </div>
+      );
+    }
+
+    if (alreadyExported.length === 0) {
+      Modal.confirm({
+        title: 'Xác nhận Export vào Google Sheets',
+        content,
+        okText: 'Export',
+        cancelText: 'Hủy',
+        onOk: () => executeBulkExport(false),
+        width: 500,
+      });
+    } else {
+      Modal.confirm({
+        title: 'Xác nhận Export vào Google Sheets',
+        content,
+        footer: null,
+        width: 500,
+        closable: true,
+      });
+    }
+  };
+
+  // Execute bulk export
+  const executeBulkExport = async (forceReExport = false) => {
+    try {
+      setIsExporting(true);
+      Modal.destroyAll(); // Close all modals
+      
+      const result = await bulkExportContainersToSheets(selectedContainers, forceReExport);
+      
+      setExportResult(result);
+      setIsExportResultModalVisible(true);
+      
+      // Refresh container data
+      fetchContainers(pagination.current, pagination.pageSize, filters);
+      
+      // Reset selection
+      setSelectedContainers([]);
+      setBulkUpdateMode(false);
+      
+    } catch (error) {
+      message.error(`Lỗi khi bulk export: ${error.message}`);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Handle single export with confirmation
+  const showExportConfirm = (record) => {
+    const isAlreadyExported = record.writeToSheet === 1;
+    
+    const content = isAlreadyExported ? (
+      <div>
+        <p>Container <strong>{record.containerNumber}</strong> đã được export trước đó.</p>
+        <p>Bạn có muốn export lại (tạo dữ liệu mới trong sheet)?</p>
+        <p style={{ color: '#fa8c16', fontSize: '12px' }}>
+          <strong>Lưu ý:</strong> Dữ liệu cũ trên Google Sheets sẽ không bị ghi đè mà sẽ được thêm mới vào cuối danh sách.
+        </p>
+      </div>
+    ) : (
+      <div>
+        <p>Export container <strong>{record.containerNumber}</strong> vào Google Sheets?</p>
+        <p>Container sẽ được thêm vào 2 sheet:</p>
+        <ul>
+          <li>Tổng hợp đóng trả</li>
+          <li>Chi phí chi tiết</li>
+        </ul>
+      </div>
+    );
+
+    Modal.confirm({
+      title: isAlreadyExported ? 'Export lại Container' : 'Export Container',
+      content,
+      okText: isAlreadyExported ? 'Export lại' : 'Export',
+      okType: isAlreadyExported ? 'danger' : 'primary',
+      cancelText: 'Hủy',
+      onOk: () => handleExportContainer(record, isAlreadyExported),
+      width: 450,
+    });
+  };
+
+  // Update getColumns function to add export action
   const getColumns = () => {
     let baseColumns = [
       {
@@ -1081,10 +1249,23 @@ const ContainerPage = () => {
       {
         title: 'Hành Động',
         key: 'actions',
-        width: 110,
+        width: 150,
         fixed: 'right',
         render: (_, record) => (
           <Space size="small">
+            <Tooltip title="Export vào Google Sheets">
+              <Button
+                type="default"
+                icon={<ExportOutlined />}
+                size="small"
+                onClick={() => showExportConfirm(record)}
+                loading={isExporting}
+                style={{ 
+                  color: record.writeToSheet === 1 ? '#fa8c16' : '#52c41a',
+                  borderColor: record.writeToSheet === 1 ? '#fa8c16' : '#52c41a'
+                }}
+              />
+            </Tooltip>
             <Tooltip title="Chỉnh sửa">
               <Button
                 type="primary"
@@ -1126,6 +1307,12 @@ const ContainerPage = () => {
     }),
   };
 
+  // Hàm mở Google Sheets
+  const handleOpenGoogleSheets = () => {
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/10iaQdl-N1DcO3TV_yUWOTenei_7UVEGAz46WuKXr708/edit?usp=sharing';
+    window.open(sheetUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div style={{ padding: 24 }}>
       {/* Header */}
@@ -1158,6 +1345,22 @@ const ContainerPage = () => {
           </Col>
           <Col>
             <Space>
+              {/* Nút truy cập Google Sheets - luôn hiển thị */}
+              <Tooltip title="Mở Google Sheets để xem dữ liệu đã export">
+                <Button
+                  type="default"
+                  icon={<LinkOutlined />}
+                  onClick={handleOpenGoogleSheets}
+                  style={{
+                    color: '#1890ff',
+                    borderColor: '#1890ff',
+                    background: '#f0f9ff'
+                  }}
+                >
+                  Xem Google Sheets
+                </Button>
+              </Tooltip>
+
               {!bulkUpdateMode ? (
                 <>
                   <Button
@@ -1184,6 +1387,16 @@ const ContainerPage = () => {
                 </>
               ) : (
                 <>
+                  <Button
+                    type="default"
+                    icon={<ExportOutlined />}
+                    onClick={handleBulkExport}
+                    disabled={selectedContainers.length === 0}
+                    loading={isExporting}
+                    style={{ marginRight: 8 }}
+                  >
+                    Export {selectedContainers.length} cont vào Sheets
+                  </Button>
                   <Button
                     type="primary"
                     onClick={handleBulkUpdate}
@@ -1222,12 +1435,12 @@ const ContainerPage = () => {
           }}
           onChange={handleTableChange}
           scroll={{ 
-            x: 2400, // Tổng width của tất cả columns
+            x: 2600,
             y: 'calc(130vh - 550px)'
           }}
           size="small"
           sticky={{
-            offsetHeader: 0, // Sticky header
+            offsetHeader: 0,
           }}
         />
       </div>
@@ -1278,6 +1491,108 @@ const ContainerPage = () => {
         onCancel={() => setIsResultModalVisible(false)}
         createResult={createResult}
       />
+
+      {/* Export Result Modal */}
+      <Modal
+        title="Kết quả Export vào Google Sheets"
+        visible={isExportResultModalVisible}
+        onCancel={() => setIsExportResultModalVisible(false)}
+        footer={[
+          <Button key="open-sheets" icon={<LinkOutlined />} onClick={handleOpenGoogleSheets}>
+            Mở Google Sheets
+          </Button>,
+          <Button key="close" type="primary" onClick={() => setIsExportResultModalVisible(false)}>
+            Đóng
+          </Button>
+        ]}
+        width={700}
+      >
+        {exportResult && (
+          <div>
+            <div style={{ marginBottom: 16 }}>
+              <Tag color="blue">Tổng: {exportResult.data?.total || 0}</Tag>
+              <Tag color="green">Thành công: {exportResult.data?.successful || 0}</Tag>
+              <Tag color="red">Thất bại: {exportResult.data?.failed || 0}</Tag>
+            </div>
+            
+            {/* Success message with link */}
+            {exportResult.data?.successful > 0 && (
+              <div style={{ 
+                background: '#f6ffed', 
+                border: '1px solid #b7eb8f', 
+                borderRadius: 6, 
+                padding: 12, 
+                marginBottom: 16,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div>
+                  <div style={{ color: '#52c41a', fontWeight: '500' }}>
+                    ✅ Export thành công {exportResult.data.successful} container!
+                  </div>
+                  <div style={{ color: '#666', fontSize: '12px', marginTop: 4 }}>
+                    Dữ liệu đã được thêm vào Google Sheets
+                  </div>
+                </div>
+                <Button 
+                  type="primary" 
+                  size="small"
+                  icon={<LinkOutlined />}
+                  onClick={handleOpenGoogleSheets}
+                >
+                  Xem kết quả
+                </Button>
+              </div>
+            )}
+            
+            {exportResult.data?.results && exportResult.data.results.length > 0 && (
+              <Table
+                dataSource={exportResult.data.results}
+                columns={[
+                  {
+                    title: 'Container ID',
+                    dataIndex: 'containerId',
+                    key: 'containerId',
+                    width: 150,
+                    render: (id) => {
+                      const container = containers.find(c => c._id === id);
+                      return container?.containerNumber || id.slice(-8);
+                    }
+                  },
+                  {
+                    title: 'Trạng thái',
+                    dataIndex: 'success',
+                    key: 'success',
+                    width: 100,
+                    render: (success) => (
+                      <Tag color={success ? 'green' : 'red'}>
+                        {success ? 'Thành công' : 'Thất bại'}
+                      </Tag>
+                    )
+                  },
+                  {
+                    title: 'Thông báo',
+                    dataIndex: 'message',
+                    key: 'message',
+                    ellipsis: true,
+                  },
+                  {
+                    title: 'Thời gian',
+                    dataIndex: 'exportedAt',
+                    key: 'exportedAt',
+                    width: 150,
+                    render: (time) => time ? dayjs(time).format('DD/MM/YYYY HH:mm:ss') : '-'
+                  }
+                ]}
+                rowKey="containerId"
+                pagination={{ pageSize: 10 }}
+                size="small"
+              />
+            )}
+          </div>
+        )}
+      </Modal>
 
        {/* CSS cho styling */}
       <style>{`
@@ -1399,6 +1714,13 @@ const ContainerPage = () => {
         .ant-table-cell-fix-left-last::after,
         .ant-table-cell-fix-right-first::after {
           z-index: 11 !important;
+        }
+
+        /* Hover effect cho nút Google Sheets */
+        .ant-btn:hover.ant-btn-default[style*="color: rgb(24, 144, 255)"] {
+          background: #e6f7ff !important;
+          border-color: #40a9ff !important;
+          color: #096dd9 !important;
         }
       `}</style>
     </div>
