@@ -365,7 +365,7 @@ const ContainerIncidentalCost = () => {
       ),
     },
     {
-      title: 'THỰC CHU KHÁCH HÀNG',
+      title: 'KHÁCH HÀNG',
       dataIndex: 'khachHang',
       key: 'khachHang',
       width: 140,
@@ -387,7 +387,7 @@ const ContainerIncidentalCost = () => {
       ),
     },
     {
-      title: 'XÂY DỰNG S1',
+      title: 'CÔNG TY',
       dataIndex: 'congTy',
       key: 'congTy',
       width: 120,
