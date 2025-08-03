@@ -32,6 +32,8 @@ import ContainerPage from '../pages/CS/ContainerPage';
 import ShipSchedule from '../pages/CS/ShipSchedule';
 import ContainerCostPage from '../pages/CS/ContainerCostPage';
 import ContainerIncidentalCost from '../pages/CS/ContainerIncidentalCost';
+import UntilDatePage from '../pages/CS/UntilDatePage';
+import LinePage from '../pages/CS/Line';
 
 const ROLE_MENU = {
   dev: [
@@ -40,7 +42,7 @@ const ROLE_MENU = {
     '/driver/list', '/driver/wage', '/transport-route', '/transport-route/empty-distance',
     '/transport-route/packing/:id', '/transport-route/delivery/:id',
     '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route','/pending-orders','/incidental-cost','/cs/container-incidental-costs',
-    '/cs', '/cs/ship-schedules','/cs/container-costs'
+    '/cs', '/cs/ship-schedules','/cs/container-costs', '/cs/until-dates', '/cs/lines'
   ],
   admin: [
     '/', '/order/create', '/order/list', '/order/list-trip', '/order/cont-status',
@@ -48,15 +50,15 @@ const ROLE_MENU = {
     '/driver/list', '/driver/wage', '/transport-route', '/transport-route/empty-distance',
     '/transport-route/packing/:id', '/transport-route/delivery/:id',
     '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route','/incidental-cost',
-    '/cs', '/cs/ship-schedules','/cs/container-incidental-costs'
+    '/cs', '/cs/ship-schedules','/cs/container-incidental-costs', '/cs/until-dates'
   ],
-  CS: ['/', '/order/cont-status', '/sign-in', '/sign-up', '/landingpage','/trip-route','/cs', '/cs/ship-schedules','/cs/container-costs','/cs/container-incidental-costs'],
+  CS: ['/', '/order/cont-status', '/sign-in', '/sign-up', '/landingpage','/trip-route','/cs', '/cs/ship-schedules','/cs/container-costs','/cs/container-incidental-costs', '/cs/until-dates', '/cs/lines'],
   DHVT: [
     '/', '/order/create', '/order/list', '/order/list-trip','/order', '/order/delivery-orders/:orderId', '/order/packing-orders/:orderId',
     '/partner/list', '/customer/list', '/vehicle/create', '/vehicle/list', '/vehicle/detail/:id',
     '/driver/list', '/driver/wage', '/transport-route', '/transport-route/empty-distance',
     '/transport-route/packing/:id', '/transport-route/delivery/:id','/trip-route','/pending-orders','/incidental-cost',
-    '/sign-in', '/sign-up', '/landingpage'
+    '/sign-in', '/sign-up', '/landingpage', '/cs/lines'
   ],
   driver: ['/', '/sign-in', '/sign-up', '/landingpage'],
 };
@@ -208,5 +210,13 @@ export const routes = [
   {
     path: '/cs/container-incidental-costs',
     page: withRoleGuard(ContainerIncidentalCost, '/cs/container-incidental-costs'),
+  },
+  {
+    path: '/cs/until-dates',
+    page: withRoleGuard(UntilDatePage, '/cs/until-dates'),
+  },
+  {
+    path: '/cs/lines',
+    page: withRoleGuard(LinePage, '/cs/lines'),
   }
 ];

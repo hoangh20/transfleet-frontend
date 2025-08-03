@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Modal,
   Form,
@@ -12,10 +12,11 @@ import {
   Divider,
   Tooltip,
   Typography,
+  message,
 } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { containerFilters } from '../../services/CSSevice';
+import { containerFilters, getAllLinesForDropdown } from '../../services/CSSevice';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -34,23 +35,50 @@ const ContainerFormModal = ({
   onFetchShipSchedules,
 }) => {
   const [form] = Form.useForm();
+  const [lines, setLines] = useState([]);
+  const [loadingLines, setLoadingLines] = useState(false);
 
   useEffect(() => {
-    if (visible && editingRecord) {
-      form.setFieldsValue({
-        ...editingRecord,
-        customer: editingRecord.customer?._id || editingRecord.customer,
-        date: editingRecord.date ? dayjs(editingRecord.date) : null,
-        ETD: editingRecord.ETD ? dayjs(editingRecord.ETD) : null,
-        ETA: editingRecord.ETA ? dayjs(editingRecord.ETA) : null,
-        untilDate: editingRecord.untilDate ? dayjs(editingRecord.untilDate) : null,
-        returnDate: editingRecord.returnDate ? dayjs(editingRecord.returnDate) : null,
-        billingDate: editingRecord.billingDate ? dayjs(editingRecord.billingDate) : null,
-      });
-    } else if (visible && !editingRecord) {
-      form.resetFields();
+    if (visible) {
+      fetchLines();
+      
+      if (editingRecord) {
+        form.setFieldsValue({
+          ...editingRecord,
+          customer: editingRecord.customer?._id || editingRecord.customer,
+          date: editingRecord.date ? dayjs(editingRecord.date) : null,
+          ETD: editingRecord.ETD ? dayjs(editingRecord.ETD) : null,
+          ETA: editingRecord.ETA ? dayjs(editingRecord.ETA) : null,
+          untilDate: editingRecord.untilDate ? dayjs(editingRecord.untilDate) : null,
+          returnDate: editingRecord.returnDate ? dayjs(editingRecord.returnDate) : null,
+          billingDate: editingRecord.billingDate ? dayjs(editingRecord.billingDate) : null,
+        });
+      } else {
+        form.resetFields();
+      }
     }
   }, [visible, editingRecord, form]);
+
+  // Fetch lines for dropdown
+  const fetchLines = async () => {
+    try {
+      setLoadingLines(true);
+      const response = await getAllLinesForDropdown();
+      
+      if (response.status === 'OK' && Array.isArray(response.data)) {
+        setLines(response.data);
+      } else {
+        console.warn('Không tìm thấy lines trong response:', response);
+        setLines([]);
+      }
+    } catch (error) {
+      console.error('Error fetching lines:', error);
+      message.error('Lỗi khi tải danh sách line');
+      setLines([]);
+    } finally {
+      setLoadingLines(false);
+    }
+  };
 
   const handleSubmit = async (values) => {
     const submitData = {
@@ -113,8 +141,38 @@ const ContainerFormModal = ({
 
         <Row gutter={16}>
           <Col span={8}>
-            <Form.Item label="Line" name="line" rules={[{ required: true, message: 'Vui lòng nhập Line' }]}>
-              <Input placeholder="Nhập Line" />
+            <Form.Item 
+              label="Line" 
+              name="line" 
+              rules={[{ required: true, message: 'Vui lòng chọn line' }]}
+            >
+              <Select
+                placeholder={loadingLines ? "Đang tải danh sách line..." : "Chọn line"}
+                loading={loadingLines}
+                disabled={loadingLines}
+                allowClear
+                showSearch
+                filterOption={(input, option) => {
+                  return option.value.toLowerCase().includes(input.toLowerCase());
+                }}
+              >
+                {lines.map((lineItem) => (
+                  <Option key={lineItem._id} value={lineItem.line}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 500 }}>{lineItem.line}</span>
+                      <span style={{ 
+                        fontSize: 10, 
+                        color: '#666', 
+                        backgroundColor: '#f0f0f0', 
+                        padding: '1px 4px', 
+                        borderRadius: 3 
+                      }}>
+                        {lineItem.lineCode}
+                      </span>
+                    </div>
+                  </Option>
+                ))}
+              </Select>
             </Form.Item>
           </Col>
           <Col span={8}>

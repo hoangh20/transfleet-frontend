@@ -15,6 +15,7 @@ import {
   EnvironmentOutlined,
   ClockCircleOutlined,
   AccountBookOutlined,
+  DockerOutlined,
 } from '@ant-design/icons';
 
 const { SubMenu } = Menu;
@@ -23,16 +24,16 @@ const ROLE_MENU = {
   dev: [
     'overview', 'order', 'order/list', 'order/list-trip', 'order/cont-status',
     'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route','/pending-orders','/incidental-cost',
-    '/cs','cs', 'cs/ship-schedules','/cs/container-costs',
+    '/cs','cs', 'cs/ship-schedules','/cs/container-costs','/cs/until-dates', '/cs/lines',
   ],
   admin: [
     'overview', 'order', 'order/list', 'order/list-trip', 'order/cont-status',
-    'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route','/incidental-cost','/cs','cs', 'cs/ship-schedules'
+    'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route','/incidental-cost','/cs','cs', 'cs/ship-schedules','/cs/until-dates'
   ],
-  CS: ['overview', 'order/cont-status','trip-route','/cs','cs', 'cs/ship-schedules','/cs/container-costs','customer'],
+  CS: ['overview', 'order/cont-status','trip-route','/cs','cs', 'cs/ship-schedules','/cs/container-costs','/cs/until-dates', '/cs/lines','customer'],
   DHVT: [
     'overview', 'order/create', 'order/list', 'order/list-trip',
-    'partner-cost', 'vehicle', 'driver', 'partner', 'customer','trip-route','/pending-orders','/incidental-cost',
+    'partner-cost', 'vehicle', 'driver', 'partner', 'customer','trip-route','/pending-orders','/incidental-cost', '/cs/lines',
   ],
   driver: ['overview'],
 };
@@ -137,9 +138,17 @@ const AdminMenu = () => {
           <Menu.Item key='cs/ship-schedules' style={{ fontSize: '18px' }}>
             <Link to='/cs/ship-schedules'>Quản lý chuyến tàu</Link>
           </Menu.Item>
+          <Menu.Item key='/cs/until-dates' style={{ fontSize: '18px' }}>
+            <Link to='/cs/until-dates'>Quản lý ngày lưu</Link>
+          </Menu.Item>
+          
         </SubMenu>
       )}
-
+      {canView('/cs/lines') && (
+            <Menu.Item key='/cs/lines' style={{ fontSize: '18px' }} icon ={<DockerOutlined />}>
+              <Link to='/cs/lines'>Quản lý Line</Link>
+            </Menu.Item>
+      )}
       {canView('trip-route') && (
         <Menu.Item
           key='/trip-route'

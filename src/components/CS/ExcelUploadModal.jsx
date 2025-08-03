@@ -69,10 +69,41 @@ const ExcelUploadModal = ({ visible, onCancel, onSuccess }) => {
     { value: 'nangBac', label: 'Nâng Bắc' },
     { value: 'haBac', label: 'Hạ Bắc' },
     { value: 'nangNam', label: 'Nâng Nam' },
-    { value: 'cuocBien', label: 'Cước biển' },
-    { value: 'phiDOVS', label: 'Phí DOVS' },
     { value: 'com', label: 'COM' },
   ];
+
+  const parseNumberWithDots = (value) => {
+    if (value === null || value === undefined || value === '') return 0;
+    
+    if (typeof value === 'number') {
+      const stringValue = value.toString();
+      const cleanValue = stringValue.replace(/\./g, '');
+      const parsed = parseFloat(cleanValue);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+        if (typeof value === 'string') {
+      let cleanValue = value.replace(/\s/g, '');
+            if (cleanValue.includes('.')) {
+        const dotCount = (cleanValue.match(/\./g) || []).length;
+                if (dotCount >= 1) {
+          const parts = cleanValue.split('.');
+          const lastPart = parts[parts.length - 1];
+
+          if (lastPart.length === 3 || dotCount > 1) {
+            cleanValue = cleanValue.replace(/\./g, '');
+          }
+          else if (lastPart.length <= 2 && dotCount === 1) {
+            cleanValue = cleanValue.replace(/\./g, '');
+          }
+        }
+      }
+      
+      const parsed = parseFloat(cleanValue);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    
+    return 0;
+  };
 
   // Hàm chuyển đổi dữ liệu Excel sang JSON cho cả 2 template
   const convertExcelToJson = (rawData, updateField, templateType) => {
@@ -136,7 +167,8 @@ const ExcelUploadModal = ({ visible, onCancel, onSuccess }) => {
             } else if (header === 'Số Cont' || header.trim() === 'Số Cont') {
               rowObject.containerNumber = cellValue ? cellValue.toString().trim() : '';
             } else if (header === 'Tiền') {
-              rowObject[updateField] = cellValue ? parseFloat(cellValue) : 0;
+              // Sử dụng hàm parseNumberWithDots để xử lý số có dấu chấm
+              rowObject[updateField] = parseNumberWithDots(cellValue);
             }
           });
 
@@ -203,17 +235,17 @@ const ExcelUploadModal = ({ visible, onCancel, onSuccess }) => {
             else if (header === 'Đội xe trả' || header.trim() === 'Đội xe trả') {
               rowObject.fleetReturned = cellValue ? cellValue.toString().trim() : '';
             }
-            // Cước bộ HCM
+            // Cước bộ HCM - sử dụng parseNumberWithDots
             else if (header === 'Cước bộ HCM' || header.trim() === 'Cước bộ HCM') {
-              rowObject.cuocBoHCM = cellValue ? parseFloat(cellValue) : 0;
+              rowObject.cuocBoHCM = parseNumberWithDots(cellValue);
             }
-            // Bốc xếp HCM
+            // Bốc xếp HCM - sử dụng parseNumberWithDots
             else if (header === 'Bốc xếp HCM' || header.trim() === 'Bốc xếp HCM') {
-              rowObject.bocXepHCM = cellValue ? parseFloat(cellValue) : 0;
+              rowObject.bocXepHCM = parseNumberWithDots(cellValue);
             }
-            // Hạ hàng/vỏ Nam
+            // Hạ hàng/vỏ Nam - sử dụng parseNumberWithDots
             else if (header === 'Hạ hàng/vỏ Nam' || header.trim() === 'Hạ hàng/vỏ Nam') {
-              rowObject.haNam = cellValue ? parseFloat(cellValue) : 0;
+              rowObject.haNam = parseNumberWithDots(cellValue);
             }
           });
 

@@ -13,9 +13,9 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import {  InfoCircleOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { containerFilters } from '../../services/CSSevice';
+import { containerFilters, getAllLinesForDropdown } from '../../services/CSSevice';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -36,14 +36,38 @@ const BulkUpdateModal = ({
   const [form] = Form.useForm();
   const [localShipSearchText, setLocalShipSearchText] = useState('');
   const [, setIsManualTrainTrip] = useState(false);
+  const [lines, setLines] = useState([]);
+  const [loadingLines, setLoadingLines] = useState(false);
 
   useEffect(() => {
     if (visible) {
       form.resetFields();
       setLocalShipSearchText('');
       setIsManualTrainTrip(false);
+      fetchLines();
     }
   }, [visible, form]);
+
+  // Fetch lines for dropdown
+  const fetchLines = async () => {
+    try {
+      setLoadingLines(true);
+      const response = await getAllLinesForDropdown();
+      
+      if (response.status === 'OK' && Array.isArray(response.data)) {
+        setLines(response.data);
+      } else {
+        console.warn('Không tìm thấy lines trong response:', response);
+        setLines([]);
+      }
+    } catch (error) {
+      console.error('Error fetching lines:', error);
+      message.error('Lỗi khi tải danh sách line');
+      setLines([]);
+    } finally {
+      setLoadingLines(false);
+    }
+  };
 
   const handleSubmit = async () => {
     try {
@@ -178,7 +202,33 @@ const BulkUpdateModal = ({
         <Row gutter={16}>
           <Col span={8}>
             <Form.Item label="Line" name="line">
-              <Input placeholder="Nhập Line" />
+              <Select
+                placeholder={loadingLines ? "Đang tải danh sách line..." : "Chọn line"}
+                loading={loadingLines}
+                disabled={loadingLines}
+                allowClear
+                showSearch
+                filterOption={(input, option) => {
+                  return option.value.toLowerCase().includes(input.toLowerCase());
+                }}
+              >
+                {lines.map((lineItem) => (
+                  <Option key={lineItem._id} value={lineItem.line}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 500 }}>{lineItem.line}</span>
+                      <span style={{ 
+                        fontSize: 10, 
+                        color: '#666', 
+                        backgroundColor: '#f0f0f0', 
+                        padding: '1px 4px', 
+                        borderRadius: 3 
+                      }}>
+                        {lineItem.lineCode}
+                      </span>
+                    </div>
+                  </Option>
+                ))}
+              </Select>
             </Form.Item>
           </Col>
           <Col span={8}>

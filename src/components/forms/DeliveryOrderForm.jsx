@@ -30,8 +30,9 @@ import { Link } from 'react-router-dom';
 import CreateExternalFleetCost from '../location/CreateExternalFleetCost';
 import AddCustomerTripFareModal from '../popup/AddCustomerTripFareModal';
 import AddSalesPersonModal from '../popup/AddSalesPersonModal';
-import SystemService from '../../services/SystemService'; // Import APIs
-import WarehouseSelector from '../popup/WarehouseSelector'; // Import component map và danh sách kho
+import SystemService from '../../services/SystemService';
+import WarehouseSelector from '../popup/WarehouseSelector';
+import { getAllLinesForDropdown } from '../../services/CSSevice';
 
 const { Option } = Select;
 
@@ -44,22 +45,45 @@ const DeliveryOrderForm = () => {
   const [loading, setLoading] = useState(false);
   const [selectedRouteId, setSelectedRouteId] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isAddCustomerModalVisible, setIsAddCustomerModalVisible] =
-    useState(false);
+  const [isAddCustomerModalVisible, setIsAddCustomerModalVisible] = useState(false);
   const [modalData, setModalData] = useState({});
-  const [isAddSalesPersonModalVisible, setIsAddSalesPersonModalVisible] =
-    useState(false);
+  const [isAddSalesPersonModalVisible, setIsAddSalesPersonModalVisible] = useState(false);
   const [salesPersonList, setSalesPersonList] = useState([]);
   const [isWarehouseModalVisible, setIsWarehouseModalVisible] = useState(false);
+  const [lines, setLines] = useState([]);
+  const [loadingLines, setLoadingLines] = useState(false);
 
   useEffect(() => {
     fetchAllCustomers();
+    fetchSalesPersons();
+    fetchLines();
     if (selectedRouteId) {
       fetchCustomersByRoute(selectedRouteId);
     } else {
       setCustomers([]);
     }
   }, [selectedRouteId]);
+
+  // Fetch lines for dropdown
+  const fetchLines = async () => {
+    try {
+      setLoadingLines(true);
+      const response = await getAllLinesForDropdown();
+      
+      if (response.status === 'OK' && Array.isArray(response.data)) {
+        setLines(response.data);
+      } else {
+        console.warn('Không tìm thấy lines trong response:', response);
+        setLines([]);
+      }
+    } catch (error) {
+      console.error('Error fetching lines:', error);
+      message.error('Lỗi khi tải danh sách line');
+      setLines([]);
+    } finally {
+      setLoadingLines(false);
+    }
+  };
 
   const fetchCustomersByRoute = async (routeId) => {
     setLoading(true);
@@ -449,13 +473,37 @@ const DeliveryOrderForm = () => {
             </Col>
             <Col span={6}>
               <Form.Item
-                label='Chủ Vỏ'
-                name='owner'
-                rules={[
-                  { required: false, message: 'Vui lòng nhập tên chủ sở hữu' },
-                ]}
+                label="Line"
+                name="owner"
+                rules={[{ required: false, message: 'Vui lòng chọn line' }]}
               >
-                <Input placeholder='Nhập tên chủ sở hữu' />
+                <Select
+                  placeholder={loadingLines ? "Đang tải danh sách line..." : "Chọn line"}
+                  loading={loadingLines}
+                  disabled={loadingLines}
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) => {
+                    return option.value.toLowerCase().includes(input.toLowerCase());
+                  }}
+                >
+                  {lines.map((lineItem) => (
+                    <Option key={lineItem._id} value={lineItem.line}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 500 }}>{lineItem.line}</span>
+                        <span style={{ 
+                          fontSize: 10, 
+                          color: '#666', 
+                          backgroundColor: '#f0f0f0', 
+                          padding: '1px 4px', 
+                          borderRadius: 3 
+                        }}>
+                          {lineItem.lineCode}
+                        </span>
+                      </div>
+                    </Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
             <Col span={6}>

@@ -1,16 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Card, Row, Col, Table, message, Modal } from 'antd';
-import { HistoryOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Card, Row, Col, Table, message, Modal, Tag } from 'antd';
+import { HistoryOutlined, PlusOutlined,  } from '@ant-design/icons';
 import SystemService from '../../services/SystemService';
-
 
 
 const NumberInput = (props) => {
   const { value, onChange, ...rest } = props;
 
   const handleChange = (e) => {
-    const newValue = e.target.value.replace(/[^0-9]/g, ''); // Chỉ cho phép nhập số
+    const newValue = e.target.value.replace(/[^0-9.]/g, ''); // Cho phép nhập số và dấu chấm
+    // Đảm bảo chỉ có một dấu chấm
+    const parts = newValue.split('.');
+    if (parts.length > 2) {
+      return; // Không cho phép nhiều hơn một dấu chấm
+    }
     onChange(newValue);
   };
 
@@ -26,6 +30,10 @@ const SystemDefaultsPage = () => {
   const [historyData, setHistoryData] = useState([]);
   const [modalTitle, setModalTitle] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  
+  // State cho maCty
+  const [maCtyList, setMaCtyList] = useState([]);
+  const [newMaCty, setNewMaCty] = useState('');
 
   useEffect(() => {
     fetchFixedCosts();
@@ -37,6 +45,7 @@ const SystemDefaultsPage = () => {
       const response = await SystemService.getFixedCost();
       setFixedCosts(response);
       setInitialValues(response);
+      setMaCtyList(response.maCty || []);
       form.setFieldsValue(response);
     } catch (error) {
       message.error('Lỗi khi tải chi phí cố định');
@@ -50,12 +59,20 @@ const SystemDefaultsPage = () => {
     try {
       const user = JSON.parse(localStorage.getItem('user')); 
       const userId = user?.id;
-      const updatedFields = Object.keys(values).reduce((acc, key) => {
-        if (values[key] !== initialValues[key]) {
-          acc[key] = values[key];
+      
+      // Thêm maCty vào values
+      const valuesWithMaCty = {
+        ...values,
+        maCty: maCtyList
+      };
+      
+      const updatedFields = Object.keys(valuesWithMaCty).reduce((acc, key) => {
+        if (JSON.stringify(valuesWithMaCty[key]) !== JSON.stringify(initialValues[key])) {
+          acc[key] = valuesWithMaCty[key];
         }
         return acc;
       }, {});
+      
       if (Object.keys(updatedFields).length > 0) {
         await SystemService.updateFixedCost(fixedCosts._id, updatedFields, userId);
         message.success('Cập nhật chi phí cố định thành công');
@@ -84,6 +101,20 @@ const SystemDefaultsPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Xử lý maCty
+  const handleAddMaCty = () => {
+    if (newMaCty.trim() && !maCtyList.includes(newMaCty.trim().toUpperCase())) {
+      setMaCtyList([...maCtyList, newMaCty.trim().toUpperCase()]);
+      setNewMaCty('');
+    } else if (maCtyList.includes(newMaCty.trim().toUpperCase())) {
+      message.warning('Mã công ty đã tồn tại');
+    }
+  };
+
+  const handleRemoveMaCty = (maCtyToRemove) => {
+    setMaCtyList(maCtyList.filter(maCty => maCty !== maCtyToRemove));
   };
 
   const columns = [
@@ -124,6 +155,70 @@ const SystemDefaultsPage = () => {
             )
           }
         >
+          {/* Phần Mã Công ty */}
+          <Card 
+            type="inner" 
+            title="Danh sách mã công ty" 
+            style={{ marginBottom: 24 }}
+            size="small"
+          >
+            <Row gutter={16} style={{ marginBottom: 16 }}>
+              <Col span={20}>
+                <Input
+                  placeholder="Nhập mã công ty (VD: TRANSFLEET)"
+                  value={newMaCty}
+                  onChange={(e) => setNewMaCty(e.target.value.toUpperCase())}
+                  onPressEnter={handleAddMaCty}
+                  disabled={!isEditing}
+                  style={{ textTransform: 'uppercase' }}
+                />
+              </Col>
+              <Col span={4}>
+                <Button 
+                  type="primary" 
+                  icon={<PlusOutlined />}
+                  onClick={handleAddMaCty}
+                  disabled={!isEditing || !newMaCty.trim()}
+                  block
+                >
+                  Thêm
+                </Button>
+              </Col>
+            </Row>
+            
+            <div style={{ minHeight: '60px' }}>
+              {maCtyList.length > 0 ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {maCtyList.map((maCty, index) => (
+                    <Tag
+                      key={index}
+                      color="blue"
+                      closable={isEditing}
+                      onClose={() => handleRemoveMaCty(maCty)}
+                      style={{ 
+                        fontSize: '14px', 
+                        padding: '4px 8px',
+                        marginBottom: '8px'
+                      }}
+                    >
+                      {maCty}
+                    </Tag>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ 
+                  color: '#999', 
+                  fontStyle: 'italic',
+                  textAlign: 'center',
+                  padding: '20px 0'
+                }}>
+                  Chưa có mã công ty nào được thêm
+                </div>
+              )}
+            </div>
+          </Card>
+
+          {/* Phần Chi phí cố định */}
           <Row gutter={16}>
             <Col span={8}>
               <Form.Item
@@ -261,7 +356,6 @@ const SystemDefaultsPage = () => {
                   placeholder="Nhập định mức cấp dầu < 15T"
                   suffix={
                     <HistoryOutlined
-                name="rate15"
                       onClick={() => showHistoryModal('Lịch sử thay đổi định mức nhẹ', 'rate15')}
                       style={{ cursor: 'pointer' }}
                     />
@@ -316,7 +410,25 @@ const SystemDefaultsPage = () => {
                   placeholder="Nhập định mức rỗng"
                   suffix={
                     <HistoryOutlined
-                      onClick={() => showHistoryModal('Lịch sử thay đổi định mức rỗng', 'emtyRate')}
+                      onClick={() => showHistoryModal('Lịch sử thay đổi định mức rỗng', 'emptyRate')}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  }
+                  disabled={!isEditing}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label="Công tác phí kết hợp"
+                name="combinedDriverAllowance"
+                rules={[{ required: true, message: 'Vui lòng nhập công tác phí kết hợp' }]}
+              >
+                <NumberInput
+                  placeholder="Nhập công tác phí kết hợp"
+                  suffix={
+                    <HistoryOutlined
+                      onClick={() => showHistoryModal('Lịch sử thay đổi công tác phí kết hợp', 'combinedDriverAllowance')}
                       style={{ cursor: 'pointer' }}
                     />
                   }
@@ -343,11 +455,27 @@ const SystemDefaultsPage = () => {
               </Form.Item>
             </Col>
           </Row>
+          
           {isEditing && (
             <Form.Item>
-              <Button type="primary" htmlType="submit" loading={loading}>
-                Cập nhật
-              </Button>
+              <Row gutter={16}>
+                <Col>
+                  <Button type="primary" htmlType="submit" loading={loading}>
+                    Cập nhật
+                  </Button>
+                </Col>
+                <Col>
+                  <Button 
+                    onClick={() => {
+                      setIsEditing(false);
+                      setMaCtyList(initialValues.maCty || []);
+                      form.setFieldsValue(initialValues);
+                    }}
+                  >
+                    Hủy
+                  </Button>
+                </Col>
+              </Row>
             </Form.Item>
           )}
         </Card>

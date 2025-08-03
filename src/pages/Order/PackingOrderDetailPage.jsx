@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, Row, Col, Spin, message, Button, Modal, Form, Input, Select,DatePicker } from 'antd';
+import { Card, Row, Col, Spin, message, Button, Modal, Form, Input, Select, DatePicker } from 'antd';
 import { getPackingOrderDetails, updatePackingOrder } from '../../services/OrderService';
 import { fetchProvinceName, fetchDistrictName, fetchWardName } from '../../services/LocationService';
 import CostCard from '../../components/card/CostCard';
@@ -9,6 +9,8 @@ import LocationSelector from '../../components/location/LocationSelector';
 import dayjs from 'dayjs';
 import IncidentalCostCard from '../../components/card/IncidentalCostCard';
 import { reExportOrderToSheet } from '../../services/OrderService';
+import { getAllLinesForDropdown } from '../../services/CSSevice';
+
 const PackingOrderDetailPage = () => {
   const { orderId } = useParams();
   const [orderDetails, setOrderDetails] = useState(null);
@@ -16,6 +18,8 @@ const PackingOrderDetailPage = () => {
   const [startLocation, setStartLocation] = useState('');
   const [endLocation, setEndLocation] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [lines, setLines] = useState([]);
+  const [loadingLines, setLoadingLines] = useState(false);
   const [form] = Form.useForm();
 
   const statusMap = {
@@ -36,26 +40,26 @@ const PackingOrderDetailPage = () => {
         setOrderDetails(response);
 
         // Fetch start location details
-              const startProvince = await fetchProvinceName(response.location.startPoint.provinceCode);
-              const startDistrict = await fetchDistrictName(response.location.startPoint.districtCode);
-              const startWard = response.location.startPoint.wardCode
-                ? await fetchWardName(response.location.startPoint.wardCode)
-                : null;
-              const startLocationText = response.location.startPoint.locationText || '';
-              setStartLocation(
-                `${startLocationText ? startLocationText + ', ' : ''}${startWard ? startWard + ', ' : ''}${startDistrict}, ${startProvince}`
-              );
-        
-              // Fetch end location details
-              const endProvince = await fetchProvinceName(response.location.endPoint.provinceCode);
-              const endDistrict = await fetchDistrictName(response.location.endPoint.districtCode);
-              const endWard = response.location.endPoint.wardCode
-                ? await fetchWardName(response.location.endPoint.wardCode)
-                : null;
-              const endLocationText = response.location.endPoint.locationText || '';
-              setEndLocation(
-                `${endLocationText ? endLocationText + ', ' : ''}${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`
-              );
+        const startProvince = await fetchProvinceName(response.location.startPoint.provinceCode);
+        const startDistrict = await fetchDistrictName(response.location.startPoint.districtCode);
+        const startWard = response.location.startPoint.wardCode
+          ? await fetchWardName(response.location.startPoint.wardCode)
+          : null;
+        const startLocationText = response.location.startPoint.locationText || '';
+        setStartLocation(
+          `${startLocationText ? startLocationText + ', ' : ''}${startWard ? startWard + ', ' : ''}${startDistrict}, ${startProvince}`
+        );
+
+        // Fetch end location details
+        const endProvince = await fetchProvinceName(response.location.endPoint.provinceCode);
+        const endDistrict = await fetchDistrictName(response.location.endPoint.districtCode);
+        const endWard = response.location.endPoint.wardCode
+          ? await fetchWardName(response.location.endPoint.wardCode)
+          : null;
+        const endLocationText = response.location.endPoint.locationText || '';
+        setEndLocation(
+          `${endLocationText ? endLocationText + ', ' : ''}${endWard ? endWard + ', ' : ''}${endDistrict}, ${endProvince}`
+        );
       } catch (error) {
         message.error('Lỗi khi tải chi tiết đơn đóng hàng');
       } finally {
@@ -64,15 +68,39 @@ const PackingOrderDetailPage = () => {
     };
 
     fetchOrderDetails();
+    fetchLines();
   }, [orderId]);
-  const handleReExport = async () => {
-  try {
-    await reExportOrderToSheet({ orderId: orderDetails._id, type: 'packing' });
-    message.success('Xuất lại file thành công!');
-  } catch (error) {
-    message.error(error.message || 'Xuất lại file thất bại!');
-  }
+
+  // Fetch lines for dropdown
+  const fetchLines = async () => {
+    try {
+      setLoadingLines(true);
+      const response = await getAllLinesForDropdown();
+      
+      if (response.status === 'OK' && Array.isArray(response.data)) {
+        setLines(response.data);
+      } else {
+        console.warn('Không tìm thấy lines trong response:', response);
+        setLines([]);
+      }
+    } catch (error) {
+      console.error('Error fetching lines:', error);
+      message.error('Lỗi khi tải danh sách line');
+      setLines([]);
+    } finally {
+      setLoadingLines(false);
+    }
   };
+
+  const handleReExport = async () => {
+    try {
+      await reExportOrderToSheet({ orderId: orderDetails._id, type: 'packing' });
+      message.success('Xuất lại file thành công!');
+    } catch (error) {
+      message.error(error.message || 'Xuất lại file thất bại!');
+    }
+  };
+
   const handleUpdateStatus = () => {
     setIsModalVisible(true);
     form.setFieldsValue({
@@ -129,17 +157,17 @@ const PackingOrderDetailPage = () => {
         title="Chi tiết đơn đóng hàng"
         bordered={false}
         extra={
-            <div>
-              {orderDetails.writeToSheet === 1 && (
-                <Button type="primary" onClick={handleReExport}>
-                  Xuất lại ra file
-                </Button>
-              )}
-              <Button onClick={handleUpdateStatus} style={{ marginLeft: 8 }}>
-                Cập nhật thông tin đơn hàng
+          <div>
+            {orderDetails.writeToSheet === 1 && (
+              <Button type="primary" onClick={handleReExport}>
+                Xuất lại ra file
               </Button>
-            </div>
-          }
+            )}
+            <Button onClick={handleUpdateStatus} style={{ marginLeft: 8 }}>
+              Cập nhật thông tin đơn hàng
+            </Button>
+          </div>
+        }
       >
         <Row gutter={[16, 16]}>
           <Col span={12}><strong>Khách hàng:</strong> {orderDetails.customer.name}</Col>
@@ -150,7 +178,7 @@ const PackingOrderDetailPage = () => {
           <Col span={12}><strong>Số container:</strong> {orderDetails.containerNumber}</Col>
           <Col span={12}><strong>Loại cont:</strong> {orderDetails.contType === 0 ? "20" : "40"}</Col>
           <Col span={12}><strong>Trọng lượng:</strong> {orderDetails.weight} Tấn</Col>
-          <Col span={12}><strong>Chủ sở hữu:</strong> {orderDetails.owner}</Col>
+          <Col span={12}><strong>Line:</strong> {orderDetails.owner}</Col>
           <Col span={12}><strong>Ghi chú:</strong> {orderDetails.note}</Col>
           <Col span={12}><strong>Trạng thái:</strong> {statusMap[orderDetails.status]}</Col>
           <Col span={12}><strong>Loại đóng hàng: </strong> {orderDetails.closeCombination === 1 ? 'Đóng kết hợp' : 'Gắp vỏ'}</Col>
@@ -187,26 +215,27 @@ const PackingOrderDetailPage = () => {
         cancelText="Hủy"
       >
         <Form form={form} layout="vertical">
-        <Form.Item
-          label="Ngày đóng hàng"
-          name="packingDate"
-          rules={[{ required: true, message: 'Vui lòng chọn ngày đóng hàng' }]}
-        >
-          <DatePicker style={{ width: '100%' }} placeholder="Chọn ngày đóng hàng" format="YYYY-MM-DD" />
-        </Form.Item>
+          <Form.Item
+            label="Ngày đóng hàng"
+            name="packingDate"
+            rules={[{ required: true, message: 'Vui lòng chọn ngày đóng hàng' }]}
+          >
+            <DatePicker style={{ width: '100%' }} placeholder="Chọn ngày đóng hàng" format="YYYY-MM-DD" />
+          </Form.Item>
 
-        <Form.Item
-          label="Thời gian dự kiến"
-          name="estimatedTime"
-          rules={[{ required: true, message: 'Vui lòng chọn thời gian dự kiến' }]}
-        >
-          <DatePicker
-            showTime={{ format: 'HH:mm:ss' }} 
-            format="YYYY-MM-DD HH:mm:ss"
-            style={{ width: '100%' }}
-            placeholder="Chọn thời gian dự kiến"
-          />
-        </Form.Item>
+          <Form.Item
+            label="Thời gian dự kiến"
+            name="estimatedTime"
+            rules={[{ required: true, message: 'Vui lòng chọn thời gian dự kiến' }]}
+          >
+            <DatePicker
+              showTime={{ format: 'HH:mm:ss' }} 
+              format="YYYY-MM-DD HH:mm:ss"
+              style={{ width: '100%' }}
+              placeholder="Chọn thời gian dự kiến"
+            />
+          </Form.Item>
+          
           <Form.Item
             label="Số container"
             name="containerNumber"
@@ -214,6 +243,7 @@ const PackingOrderDetailPage = () => {
           >
             <Input placeholder="Nhập số container" />
           </Form.Item>
+          
           <Form.Item
             label="Loại đóng hàng"
             name="closeCombination"
@@ -224,13 +254,41 @@ const PackingOrderDetailPage = () => {
               <Select.Option value={1}>Kết hợp</Select.Option>
             </Select>
           </Form.Item>
+          
           <Form.Item
-            label="Chủ vỏ"
+            label="Line"
             name="owner"
-            rules={[{ required: false, message: 'Vui lòng nhập chủ vỏ' }]}
+            rules={[{ required: false, message: 'Vui lòng chọn line' }]}
           >
-            <Input placeholder="Nhập chủ vỏ" />
+            <Select
+              placeholder={loadingLines ? "Đang tải danh sách line..." : "Chọn line"}
+              loading={loadingLines}
+              disabled={loadingLines}
+              allowClear
+              showSearch
+              filterOption={(input, option) => {
+                return option.value.toLowerCase().includes(input.toLowerCase());
+              }}
+            >
+              {lines.map((lineItem) => (
+                <Select.Option key={lineItem._id} value={lineItem.line}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 500 }}>{lineItem.line}</span>
+                    <span style={{ 
+                      fontSize: 10, 
+                      color: '#666', 
+                      backgroundColor: '#f0f0f0', 
+                      padding: '1px 4px', 
+                      borderRadius: 3 
+                    }}>
+                      {lineItem.lineCode}
+                    </span>
+                  </div>
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
+          
           <Form.Item
             label="Điểm đi"
             name="startPoint"
@@ -238,6 +296,7 @@ const PackingOrderDetailPage = () => {
           >
             <LocationSelector />
           </Form.Item>
+          
           <Form.Item
             label="Địa chỉ chi tiết"
             name="locationText"
@@ -245,6 +304,7 @@ const PackingOrderDetailPage = () => {
           >
             <Input placeholder="Nhập địa chỉ" />
           </Form.Item>
+          
           <Form.Item
             label="Ghi chú"
             name="note"

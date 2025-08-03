@@ -363,3 +363,170 @@ export const bulkExportContainersToSheets = async (containerIds, forceReExport =
         throw error.response ? error.response.data : new Error('Network Error');
     }
 };
+
+// ================== UNTIL DATE APIs ==================
+
+// Create until date record
+export const createUntilDate = async (untilDateData) => {
+    try {
+        const response = await axios.post(`${API_URL}/cs/until-dates`, untilDateData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating until date:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Get all until dates with pagination and filters
+export const getAllUntilDates = async (page = 1, limit = 10, filters = {}) => {
+    try {
+        const params = {
+            page,
+            limit,
+            ...filters
+        };
+        const response = await axios.get(`${API_URL}/cs/until-dates`, { params });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching until dates:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Get until date by ID
+export const getUntilDateById = async (id) => {
+    try {
+        const response = await axios.get(`${API_URL}/cs/until-dates/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching until date by ID:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Update until date
+export const updateUntilDate = async (id, updateData) => {
+    try {
+        const response = await axios.put(`${API_URL}/cs/until-dates/${id}`, updateData);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating until date:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Delete until date
+export const deleteUntilDate = async (id) => {
+    try {
+        const response = await axios.delete(`${API_URL}/cs/until-dates/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error deleting until date:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Get filter options for until dates
+export const getUntilDateFilterOptions = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/cs/until-dates/filter-options`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching until date filter options:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Until date filter options để sử dụng trong UI
+export const untilDateFilters = {
+    contType: [
+        { value: 0, label: '20' },
+        { value: 1, label: '40' }
+    ],
+    transportDirection: [
+        { value: 0, label: 'HP-HCM' },
+        { value: 1, label: 'HCM-HP' }
+    ]
+};
+
+// Auto calculate until date for containers
+export const autoCalculateUntilDate = async (filters = {}) => {
+    try {
+        const response = await axios.post(`${API_URL}/cs/until-dates/auto-calculate`, filters);
+        return response.data;
+    } catch (error) {
+        console.error('Error auto calculating until date:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Create line
+export const createLine = async (lineData) => {
+    try {
+        const response = await axios.post(`${API_URL}/cs/lines`, lineData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating line:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Get all lines with pagination and filters
+export const getAllLines = async (page = 1, limit = 10, filters = {}) => {
+    try {
+        const params = {
+            page,
+            limit,
+            ...filters
+        };
+        const response = await axios.get(`${API_URL}/cs/lines`, { params });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching lines:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Get all lines for dropdown (no pagination)
+export const getAllLinesForDropdown = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/cs/lines/dropdown`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching lines for dropdown:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Get line by ID
+export const getLineById = async (id) => {
+    try {
+        const response = await axios.get(`${API_URL}/cs/lines/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching line by ID:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Update line
+export const updateLine = async (id, updateData) => {
+    try {
+        const response = await axios.put(`${API_URL}/cs/lines/${id}`, updateData);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating line:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
+
+// Delete line
+export const deleteLine = async (id) => {
+    try {
+        const response = await axios.delete(`${API_URL}/cs/lines/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error deleting line:', error);
+        throw error.response ? error.response.data : new Error('Network Error');
+    }
+};
