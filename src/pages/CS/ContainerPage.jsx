@@ -1220,11 +1220,26 @@ const ContainerPage = () => {
         onFilter: () => true,
       },
       {
+      title: 'Mã khách',
+      dataIndex: 'maKhach',
+      key: 'maKhach',
+      width: 120,
+      render: (text) => (
+        <span style={{ whiteSpace: 'nowrap' }}>
+          {text || 'N/A'}
+        </span>
+      ),
+      ...getColumnSearchProps('maKhach', 'Tìm mã khách hàng'),
+      },
+      {
         title: 'HĐ / BK',
         dataIndex: 'bill',
         key: 'bill',
         width: 80,
         render: (bill) => {
+          if (bill === 2) {
+            return null; // Không hiển thị gì khi bill = 2
+          }
           const text = bill === 0 ? 'BK' : 'HĐ';
           const color = bill === 0 ? 'green' : 'blue';
           return <Tag color={color}>{text}</Tag>;
@@ -1245,6 +1260,25 @@ const ContainerPage = () => {
           );
         },
         ...getColumnDateRangeSearchProps('billingDate', 'Chọn khoảng ngày bill'),
+      },
+      {
+      title: 'Ghi chú',
+      dataIndex: 'note',
+      key: 'note',
+      width: 150,
+      render: (text) => (
+        <Tooltip title={text || 'N/A'}>
+          <div style={{ 
+            maxWidth: 140, 
+            overflow: 'hidden', 
+            textOverflow: 'ellipsis', 
+            whiteSpace: 'nowrap' 
+          }}>
+            {text || 'N/A'}
+          </div>
+        </Tooltip>
+      ),
+      ...getColumnSearchProps('note', 'Tìm ghi chú'),
       },
       {
         title: 'Hành Động',

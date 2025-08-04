@@ -103,7 +103,8 @@ export const containerFilters = {
     ],
     bill: [
         { value: 0, label: 'BK' },
-        { value: 1, label: 'HĐ' }
+        { value: 1, label: 'HĐ' },
+        { value: 2, label: '(Trống)' }
     ]
 };
 
