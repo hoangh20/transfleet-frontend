@@ -303,6 +303,18 @@ const ContainerFormModal = ({
             </Form.Item>
           </Col>
         </Row>
+        <Row gutter={16}>
+          <Col span={8}>
+            <Form.Item label="Mã khách" name="maKhach">
+              <Input placeholder="Nhập mã khách hàng (không bắt buộc)" />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item label="Ghi chú" name="note">
+              <Input.TextArea placeholder="Nhập ghi chú (không bắt buộc)" rows={4} />
+            </Form.Item>
+          </Col>
+        </Row>
 
         <Divider orientation="left">Chọn Chuyến Tàu (Tùy chọn)</Divider>
         

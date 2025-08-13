@@ -70,6 +70,7 @@ const ExcelUploadModal = ({ visible, onCancel, onSuccess }) => {
     { value: 'haBac', label: 'Hạ Bắc' },
     { value: 'nangNam', label: 'Nâng Nam' },
     { value: 'com', label: 'COM' },
+    { value: 'cuocBan', label: 'Cước Bán' }
   ];
 
   const parseNumberWithDots = (value) => {
