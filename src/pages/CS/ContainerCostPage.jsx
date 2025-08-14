@@ -59,7 +59,6 @@ const ContainerCostPage = () => {
     trainTrips: [],
     PTVCs: []
   });
-
   // State cho selection type và selected keys
   const [selectionType, ] = useState('radio');
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -115,12 +114,77 @@ const ContainerCostPage = () => {
     if (!amount) return '0';
     return new Intl.NumberFormat('vi-VN').format(amount);
   };
+  // Hàm filter cho số (range và dấu)
+const getNumberRangeFilterProps = (dataIndex, label) => ({
+  filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => {
+    const [from, to, sign] = selectedKeys[0] || [undefined, undefined, undefined];
+    return (
+      <div style={{ padding: 8, minWidth: 220 }}>
+        <div style={{ marginBottom: 8 }}>
+          <Input
+            placeholder="Từ"
+            type="number"
+            value={from}
+            onChange={e => setSelectedKeys([[e.target.value, to, sign]])}
+            style={{ width: 90, marginRight: 8 }}
+          />
+          <Input
+            placeholder="Đến"
+            type="number"
+            value={to}
+            onChange={e => setSelectedKeys([[from, e.target.value, sign]])}
+            style={{ width: 90 }}
+          />
+        </div>
+        <div style={{ marginBottom: 8 }}>
+          <Select
+            placeholder="Chọn dấu"
+            value={sign}
+            onChange={v => setSelectedKeys([[from, to, v]])}
+            style={{ width: '100%' }}
+            allowClear
+          >
+            <Option value="gt0">&gt; 0</Option>
+            <Option value="lt0">&lt; 0</Option>
+          </Select>
+        </div>
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => confirm()}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Tìm
+          </Button>
+          <Button
+            onClick={() => {
+              clearFilters();
+              confirm();
+            }}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Xóa
+          </Button>
+        </Space>
+      </div>
+    );
+  },
+  filterIcon: (filtered) => (
+    <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+  ),
+  onFilterDropdownVisibleChange: (visible) => {
+    if (visible) setTimeout(() => searchInput.current?.select(), 100);
+  },
+  onFilter: () => true,
+});
 
-  // Thêm function cho multi-select dropdown filter
-  const getColumnMultiSelectProps = (dataIndex, options, placeholder = '') => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8, minWidth: 220 }} onKeyDown={(e) => e.stopPropagation()}>
-        <Select
+// Thêm function cho multi-select dropdown filter
+const getColumnMultiSelectProps = (dataIndex, options, placeholder = '') => ({
+  filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+    <div style={{ padding: 8, minWidth: 220 }} onKeyDown={(e) => e.stopPropagation()}>
+      <Select
           mode="multiple"
           placeholder={placeholder || `Chọn ${dataIndex}`}
           style={{ width: '100%', marginBottom: 8 }}
@@ -295,17 +359,39 @@ const ContainerCostPage = () => {
 
   const handleTableChange = (paginationConfig, tableFilters, sorter) => {
     const apiFilters = {};
-    
+
     Object.keys(tableFilters).forEach(key => {
       if (tableFilters[key] && tableFilters[key].length > 0) {
         if (key === 'customer.shortName') {
           apiFilters['customer'] = tableFilters[key][0];
         } else {
-          // Gửi mảng cho các field hỗ trợ multiple selection
           apiFilters[key] = tableFilters[key];
         }
       }
     });
+
+    // Filter cho cước bán
+    if (tableFilters.cuocBan && tableFilters.cuocBan[0]) {
+      const [from, to, sign] = tableFilters.cuocBan[0];
+      if (from !== undefined && from !== '') apiFilters.cuocBanFrom = from;
+      if (to !== undefined && to !== '') apiFilters.cuocBanTo = to;
+      if (sign) apiFilters.cuocBanSign = sign;
+    }
+
+    // Filter cho tổng chi phí hoạt động
+    if (tableFilters.tongChiPhiNoVAT && tableFilters.tongChiPhiNoVAT[0]) {
+      const [from, to, sign] = tableFilters.tongChiPhiNoVAT[0];
+      if (from !== undefined && from !== '') apiFilters.tongChiPhiNoVATFrom = from;
+      if (to !== undefined && to !== '') apiFilters.tongChiPhiNoVATTo = to;
+      if (sign) apiFilters.tongChiPhiNoVATSign = sign;
+    }
+    // Filter cho lợi nhuận
+    if (tableFilters.loiNhuan && tableFilters.loiNhuan[0]) {
+      const [from, to, sign] = tableFilters.loiNhuan[0];
+      if (from !== undefined && from !== '') apiFilters.loiNhuanFrom = from;
+      if (to !== undefined && to !== '') apiFilters.loiNhuanTo = to;
+      if (sign) apiFilters.loiNhuanSign = sign;
+    }
 
     setFilters(apiFilters);
     fetchContainers(paginationConfig.current, paginationConfig.pageSize, apiFilters);
@@ -761,6 +847,18 @@ const ContainerCostPage = () => {
       ),
     },
     {
+      title: 'Doanh thu',
+      dataIndex: ['containerCost', 'cuocBanNoVAT'],
+      key: 'cuocBan',
+      width: 120,
+      render: (amount, record) => renderCurrencyWithTooltip(
+        amount,
+        record.containerCost?.cuocBan,
+        'Doanh thu'
+      ),
+      ...getNumberRangeFilterProps('cuocBan', 'Doanh thu'),
+    },
+    {
       title: 'Tổng Chi phí',
       dataIndex: ['containerCost', 'tongChiPhiNoVAT'],
       key: 'tongChiPhiNoVAT',
@@ -779,21 +877,11 @@ const ContainerCostPage = () => {
           </span>
         </Tooltip>
       ),
-    },
-    {
-      title: 'Doanh thu',
-      dataIndex: ['containerCost', 'cuocBanNoVAT'],
-      key: 'doanhthu',
-      width: 120,
-      render: (amount, record) => renderCurrencyWithTooltip(
-        amount,
-        record.containerCost?.cuocBan,
-        'Doanh thu'
-      ),
+      ...getNumberRangeFilterProps('tongChiPhiNoVAT', 'Tổng chi phí'),
     },
     {
       title: 'Lợi nhuận',
-      key: 'loinhuan',
+      key: 'loiNhuan',
       width: 120,
       render: (_, record) => {
         const profit = (record.containerCost?.cuocBanNoVAT || 0) - (record.containerCost?.tongChiPhiNoVAT || 0);
@@ -817,6 +905,7 @@ const ContainerCostPage = () => {
           </Tooltip>
         );
       },
+          ...getNumberRangeFilterProps('loiNhuan', 'Lợi nhuận'),
     },
     {
       title: 'Tháng chốt BK',

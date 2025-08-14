@@ -652,11 +652,9 @@ const ExcelUploadModal = ({ visible, onCancel, onSuccess }) => {
         width: 120,
         render: (check) => {
           if (check === 0) {
-            return <Tag color="green">Sẵn sàng</Tag>;
+            return <Tag color="green">Sẵn sàng cộng dồn</Tag>;
           } else if (check === 1) {
             return <Tag color="red">Không tìm thấy</Tag>;
-          } else if (check === 2) {
-            return <Tag color="orange">Đã có giá trị</Tag>;
           }
           return <Tag color="gray">Không xác định</Tag>;
         },
@@ -666,6 +664,22 @@ const ExcelUploadModal = ({ visible, onCancel, onSuccess }) => {
         dataIndex: 'message',
         key: 'message',
         ellipsis: true,
+        render: (msg, record) => {
+          if (record.check === 0) {
+            if (record.existingValue && Number(record.existingValue) > 0) {
+              return (
+                <span>
+                  Đã có giá trị cũ ({Number(record.existingValue).toLocaleString()}), sẽ cộng thêm giá trị mới ({Number(record[selectedUpdateField]).toLocaleString()})
+                </span>
+              );
+            }
+            return 'Chưa có giá trị, sẽ cập nhật giá trị mới';
+          }
+          if (record.check === 1) {
+            return 'Không tìm thấy container phù hợp';
+          }
+          return msg || '';
+        },
       },
     ];
 
@@ -793,18 +807,8 @@ const ExcelUploadModal = ({ visible, onCancel, onSuccess }) => {
           {summary && (
             <Space wrap>
               <Tag color="blue">Tổng: {summary.total}</Tag>
-              <Tag color="green">Sẵn sàng: {summary.readyForUpdate}</Tag>
-              {templateType === 'container' ? (
-                <>
-                  <Tag color="orange">Đã có giá trị: {summary.fieldAlreadyHasValue || 0}</Tag>
-                  <Tag color="red">Không tìm thấy: {summary.containerNotFound}</Tag>
-                </>
-              ) : (
-                <>
-                  <Tag color="orange">Có xung đột: {summary.hasConflicts || 0}</Tag>
-                  <Tag color="red">Không tìm thấy: {summary.containerNotFound}</Tag>
-                </>
-              )}
+              <Tag color="green">Sẵn sàng cộng dồn: {summary.readyForUpdate}</Tag>
+              <Tag color="red">Không tìm thấy: {summary.containerNotFound}</Tag>
             </Space>
           )}
         </div>
@@ -1188,10 +1192,11 @@ const ExcelUploadModal = ({ visible, onCancel, onSuccess }) => {
                 <li>File tối đa 10MB</li>
                 <li>Kiểm tra kỹ dữ liệu trước khi tải lên</li>
                 <li><strong>Đối với template 1truong: Bắt buộc phải chọn trường cần cập nhật</strong></li>
+                <li><strong>Đối với template 1truong: Nếu trường đã có giá trị, hệ thống sẽ cộng dồn thêm giá trị mới vào giá trị cũ</strong></li>
                 <li><strong>Đối với template kehoachgiaohang: Tự động cập nhật tất cả thông tin giao hàng</strong></li>
                 <li><strong>Kiểm tra dữ liệu trước khi thực hiện cập nhật</strong></li>
-                <li><strong>Cập nhật an toàn: Chỉ cập nhật records chưa có giá trị</strong></li>
-                <li><strong>Ghi đè tất cả: Cần xác nhận, sẽ thay thế giá trị hiện tại</strong></li>
+                <li><strong>Cập nhật an toàn: Chỉ cập nhật records hợp lệ</strong></li>
+                <li><strong>Ghi đè tất cả: Cần xác nhận, sẽ thay thế giá trị hiện tại (không áp dụng cho cộng dồn)</strong></li>
               </ul>
             </div>
           </Card>
