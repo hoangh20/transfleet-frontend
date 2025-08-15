@@ -25,13 +25,13 @@ const ROLE_MENU = {
     'overview', 'order', 'order/list', 'order/list-trip', 'order/cont-status',
     'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route','/pending-orders','/incidental-cost',
     '/cs','cs', 'cs/ship-schedules','/cs/container-costs','/cs/until-dates', '/cs/lines',
-    '/cs/dovs', // Thêm quyền cho dev
+    '/cs/dovs', 
   ],
   admin: [
     'overview', 'order', 'order/list', 'order/list-trip', 'order/cont-status',
     'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route','/incidental-cost','/cs','cs', 'cs/ship-schedules','/cs/until-dates'
   ],
-  CS: ['overview', 'order/cont-status','trip-route','/cs','cs', 'cs/ship-schedules','/cs/container-costs','/cs/until-dates', '/cs/lines','customer','/cs/dovs', // Thêm quyền cho CS
+  CS: ['overview', 'order/cont-status','trip-route','customer','/cs','cs', 'cs/ship-schedules','/cs/container-costs','/cs/until-dates', '/cs/lines','customer','/cs/dovs', // Thêm quyền cho CS
   ],
   DHVT: [
     'overview', 'order/create', 'order/list', 'order/list-trip',
