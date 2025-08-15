@@ -53,7 +53,7 @@ const ROLE_MENU = {
     '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route','/incidental-cost',
     '/cs', '/cs/ship-schedules','/cs/container-incidental-costs', '/cs/until-dates'
   ],
-  CS: ['/', '/order/cont-status', '/sign-in', '/sign-up', '/landingpage','/trip-route','/cs', '/cs/ship-schedules','/cs/container-costs','/cs/container-incidental-costs', '/cs/until-dates', '/cs/lines', '/cs/dovs'],
+  CS: ['/', '/order/cont-status','/customer/list' ,'/sign-in', '/sign-up', '/landingpage','/trip-route','/cs', '/cs/ship-schedules','/cs/container-costs','/cs/container-incidental-costs', '/cs/until-dates', '/cs/lines', '/cs/dovs'],
   DHVT: [
     '/', '/order/create', '/order/list', '/order/list-trip','/order', '/order/delivery-orders/:orderId', '/order/packing-orders/:orderId',
     '/partner/list', '/customer/list', '/vehicle/create', '/vehicle/list', '/vehicle/detail/:id',
