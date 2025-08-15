@@ -34,6 +34,7 @@ import ContainerCostPage from '../pages/CS/ContainerCostPage';
 import ContainerIncidentalCost from '../pages/CS/ContainerIncidentalCost';
 import UntilDatePage from '../pages/CS/UntilDatePage';
 import LinePage from '../pages/CS/Line';
+import DOVSPage from '../pages/CS/DOVSPage';
 
 const ROLE_MENU = {
   dev: [
@@ -42,7 +43,7 @@ const ROLE_MENU = {
     '/driver/list', '/driver/wage', '/transport-route', '/transport-route/empty-distance',
     '/transport-route/packing/:id', '/transport-route/delivery/:id',
     '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route','/pending-orders','/incidental-cost','/cs/container-incidental-costs',
-    '/cs', '/cs/ship-schedules','/cs/container-costs', '/cs/until-dates', '/cs/lines'
+    '/cs', '/cs/ship-schedules','/cs/container-costs', '/cs/until-dates', '/cs/lines', '/cs/dovs'
   ],
   admin: [
     '/', '/order/create', '/order/list', '/order/list-trip', '/order/cont-status',
@@ -52,7 +53,7 @@ const ROLE_MENU = {
     '/system', '/system/account-management', '/sign-in', '/sign-up', '/landingpage','/trip-route','/incidental-cost',
     '/cs', '/cs/ship-schedules','/cs/container-incidental-costs', '/cs/until-dates'
   ],
-  CS: ['/', '/order/cont-status', '/sign-in', '/sign-up', '/landingpage','/trip-route','/cs', '/cs/ship-schedules','/cs/container-costs','/cs/container-incidental-costs', '/cs/until-dates', '/cs/lines'],
+  CS: ['/', '/order/cont-status', '/sign-in', '/sign-up', '/landingpage','/trip-route','/cs', '/cs/ship-schedules','/cs/container-costs','/cs/container-incidental-costs', '/cs/until-dates', '/cs/lines', '/cs/dovs'],
   DHVT: [
     '/', '/order/create', '/order/list', '/order/list-trip','/order', '/order/delivery-orders/:orderId', '/order/packing-orders/:orderId',
     '/partner/list', '/customer/list', '/vehicle/create', '/vehicle/list', '/vehicle/detail/:id',
@@ -218,5 +219,9 @@ export const routes = [
   {
     path: '/cs/lines',
     page: withRoleGuard(LinePage, '/cs/lines'),
+  },
+  {
+    path: '/cs/dovs',
+    page: withRoleGuard(DOVSPage, '/cs/dovs'),
   }
 ];

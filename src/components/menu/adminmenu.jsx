@@ -25,12 +25,14 @@ const ROLE_MENU = {
     'overview', 'order', 'order/list', 'order/list-trip', 'order/cont-status',
     'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route','/pending-orders','/incidental-cost',
     '/cs','cs', 'cs/ship-schedules','/cs/container-costs','/cs/until-dates', '/cs/lines',
+    '/cs/dovs', // Thêm quyền cho dev
   ],
   admin: [
     'overview', 'order', 'order/list', 'order/list-trip', 'order/cont-status',
     'partner-cost', 'vehicle', 'driver', 'partner', 'customer', 'system','trip-route','/incidental-cost','/cs','cs', 'cs/ship-schedules','/cs/until-dates'
   ],
-  CS: ['overview', 'order/cont-status','trip-route','/cs','cs', 'cs/ship-schedules','/cs/container-costs','/cs/until-dates', '/cs/lines','customer'],
+  CS: ['overview', 'order/cont-status','trip-route','/cs','cs', 'cs/ship-schedules','/cs/container-costs','/cs/until-dates', '/cs/lines','customer','/cs/dovs', // Thêm quyền cho CS
+  ],
   DHVT: [
     'overview', 'order/create', 'order/list', 'order/list-trip',
     'partner-cost', 'vehicle', 'driver', 'partner', 'customer','trip-route','/pending-orders','/incidental-cost', '/cs/lines',
@@ -131,6 +133,9 @@ const AdminMenu = () => {
           </Menu.Item>
           <Menu.Item key='/cs/container-costs' style={{ fontSize: '18px' }}>
             <Link to='/cs/container-costs'>Quản lý chi phí</Link>
+          </Menu.Item>
+          <Menu.Item key='/cs/dovs' style={{ fontSize: '18px' }}>
+            <Link to='/cs/dovs'>Cước biển & Phí DOVS</Link>
           </Menu.Item>
           <Menu.Item key='/cs/container-incidental-costs' style={{ fontSize: '18px' }}>
             <Link to='/cs/container-incidental-costs'>Chi phí phát sinh</Link>
