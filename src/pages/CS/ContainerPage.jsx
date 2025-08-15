@@ -76,7 +76,9 @@ const ContainerPage = () => {
     items: [],
     salesPersons: [],
     trainTrips: [],
-    PTVCs: []
+    PTVCs: [],
+    maKhach: [],
+    notes: []
   });
   
   // Thêm state cho popup thông báo kết quả
@@ -948,7 +950,7 @@ const ContainerPage = () => {
             {text || 'N/A'}
           </span>
         ),
-        ...getColumnMultiSelectProps('line', filterOptions.lines, 'Chọn Line'), // Thay đổi từ search thành multi-select
+        ...getColumnMultiSelectProps('line', filterOptions.lines || [], 'Chọn Line'),
       },
       {
         title: 'PTVC',
@@ -956,18 +958,18 @@ const ContainerPage = () => {
         key: 'PTVC',
         width: 100,
         render: (text) => (
-          <Tooltip title={text || 'N/A'}>
+          <Tooltip title={text || ' '}>
             <div style={{ 
               maxWidth: 90, 
               overflow: 'hidden', 
               textOverflow: 'ellipsis', 
               whiteSpace: 'nowrap' 
             }}>
-              {text || 'N/A'}
+              {text || ' '}
             </div>
           </Tooltip>
         ),
-        ...getColumnMultiSelectProps('PTVC', filterOptions.PTVCs, 'Chọn PTVC'), // Thay đổi từ search thành multi-select
+        ...getColumnMultiSelectProps('PTVC', filterOptions.PTVCs || [], 'Chọn PTVC'),
       },
       {
         title: 'Kết hợp',
@@ -977,7 +979,7 @@ const ContainerPage = () => {
         render: (type) => {
           const typeMap = { 0: 'Gắp vỏ', 1: 'Kết hợp' };
           const color = type === 0 ? 'blue' : 'green';
-          return <Tag color={color}>{typeMap[type] || 'N/A'}</Tag>;
+          return <Tag color={color}>{typeMap[type] || ' '}</Tag>;
         },
         ...getColumnSelectProps('closeCombination', containerFilters.closeCombination),
       },
@@ -989,7 +991,7 @@ const ContainerPage = () => {
         render: (direction) => {
           const dirMap = { 0: 'HP→HCM', 1: 'HCM→HP' };
           const color = direction === 0 ? 'orange' : 'purple';
-          return <Tag color={color}>{dirMap[direction] || 'N/A'}</Tag>;
+          return <Tag color={color}>{dirMap[direction] || ' '}</Tag>;
         },
         ...getColumnSelectProps('transportDirection', containerFilters.transportDirection),
       },
@@ -999,18 +1001,18 @@ const ContainerPage = () => {
         key: 'item',
         width: 100,
         render: (text) => (
-          <Tooltip title={text || 'N/A'}>
+          <Tooltip title={text || ' '}>
             <div style={{ 
               maxWidth: 90, 
               overflow: 'hidden', 
               textOverflow: 'ellipsis', 
               whiteSpace: 'nowrap' 
             }}>
-              {text || 'N/A'}
+              {text || ' '}
             </div>
           </Tooltip>
         ),
-        ...getColumnMultiSelectProps('item', filterOptions.items, 'Chọn mặt hàng'), // Thay đổi từ search thành multi-select
+        ...getColumnMultiSelectProps('item', filterOptions.items || [], 'Chọn mặt hàng'),
       },
       {
         title: 'Khách hàng',
@@ -1026,7 +1028,7 @@ const ContainerPage = () => {
               whiteSpace: 'nowrap',
               fontWeight: '500'
             }}>
-              {record.customer?.shortName || 'N/A'}
+              {record.customer?.shortName || ' '}
             </div>
           </Tooltip>
         ),
@@ -1042,7 +1044,7 @@ const ContainerPage = () => {
             {text || 'N/A'}
           </span>
         ),
-        ...getColumnMultiSelectProps('salesPerson', filterOptions.salesPersons, 'Chọn KD'), 
+        ...getColumnMultiSelectProps('salesPerson', filterOptions.salesPersons || [], 'Chọn KD'), 
       },
       {
         title: 'Điểm đóng',
@@ -1128,7 +1130,7 @@ const ContainerPage = () => {
             {text || 'N/A'}
           </span>
         ),
-        ...getColumnMultiSelectProps('trainTrip', filterOptions.trainTrips, 'Chọn chuyến tàu'), // Thay đổi từ search thành multi-select
+        ...getColumnMultiSelectProps('trainTrip', filterOptions.trainTrips || [], 'Chọn chuyến tàu'), 
       },
       {
         title: 'ETD',
@@ -1226,10 +1228,10 @@ const ContainerPage = () => {
       width: 120,
       render: (text) => (
         <span style={{ whiteSpace: 'nowrap' }}>
-          {text || 'N/A'}
+          {text || ' '}
         </span>
       ),
-      ...getColumnSearchProps('maKhach', 'Tìm mã khách hàng'),
+      ...getColumnMultiSelectProps('maKhach', filterOptions.maKhach || [], 'Chọn mã khách hàng'),
       },
       {
         title: 'HĐ / BK',
@@ -1252,7 +1254,7 @@ const ContainerPage = () => {
         key: 'billingDate',
         width: 120,
         render: (date) => {
-          if (!date) return 'N/A';
+          if (!date) return ' ';
           return (
             <span style={{ whiteSpace: 'nowrap' }}>
               {dayjs(date).format('DD/MM/YYYY')}
@@ -1267,18 +1269,18 @@ const ContainerPage = () => {
       key: 'note',
       width: 150,
       render: (text) => (
-        <Tooltip title={text || 'N/A'}>
+        <Tooltip title={text || ' '}>
           <div style={{ 
             maxWidth: 140, 
             overflow: 'hidden', 
             textOverflow: 'ellipsis', 
             whiteSpace: 'nowrap' 
           }}>
-            {text || 'N/A'}
+            {text || ' '}
           </div>
         </Tooltip>
       ),
-      ...getColumnSearchProps('note', 'Tìm ghi chú'),
+      ...getColumnMultiSelectProps('note', filterOptions.notes || [], 'Tìm ghi chú'),
       },
       {
         title: 'Hành Động',
