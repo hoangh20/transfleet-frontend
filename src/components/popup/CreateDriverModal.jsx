@@ -46,6 +46,7 @@ const CreateDriverModal = ({ visible, onCancel, onSuccess }) => {
       // Tạo FormData và thêm từng trường riêng biệt
       const formData = new FormData();
       formData.append('name', values.name.trim());
+      formData.append('citizenID', values.citizenID.trim()); // Thêm dòng này
       formData.append('phone', values.phone.trim());
       formData.append('hometown', values.hometown.trim());
       formData.append('birthDate', values.birthDate.toISOString());
@@ -230,6 +231,18 @@ const CreateDriverModal = ({ visible, onCancel, onSuccess }) => {
           ]}
         >
           <Input placeholder='Nhập tài khoản ngân hàng (VD: MB - 20092222)' />
+        </Form.Item>
+
+        <Form.Item
+          name='citizenID'
+          label='CCCD/CMND'
+          rules={[
+            { required: true, message: 'Vui lòng nhập số CCCD/CMND!' },
+            { pattern: /^[0-9]{9,12}$/, message: 'CCCD/CMND phải là 9-12 số!' },
+            { whitespace: true, message: 'Không được chỉ nhập khoảng trắng!' },
+          ]}
+        >
+          <Input placeholder='Nhập số CCCD/CMND' maxLength={12} />
         </Form.Item>
       </Form>
     </Modal>
