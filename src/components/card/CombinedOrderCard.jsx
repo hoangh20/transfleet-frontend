@@ -22,6 +22,7 @@ const CombinedOrderCard = ({
   onViewDetailDelivery,
   onViewDetailPacking,
   onDeleteCombinedOrder,
+  deliveryLineCode,
 }) => {
   const [deliveryLocation, setDeliveryLocation] = useState({});
   const [packingLocation, setPackingLocation] = useState({});
@@ -229,7 +230,7 @@ const CombinedOrderCard = ({
         <div style={blockStyle}>
           <Title level={5} style={{ margin: 0 }}>
             <Link onClick={() => onViewDetailDelivery(deliveryTrip._id)}>
-              Chuyến giao hàng: {deliveryTrip.customer.shortName}
+              Chuyến giao hàng: {deliveryTrip.customerName}
             </Link>
           </Title>
           <Row gutter={[4, 2]}>
@@ -254,6 +255,9 @@ const CombinedOrderCard = ({
                 <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <Text>{deliveryTrip.containerNumber || '--'}</Text>
                   <Text> - {deliveryTrip.owner}</Text>
+                  {deliveryLineCode && (
+                    <Text> ({deliveryLineCode})</Text>
+                  )}
                   {deliveryTrip.containerStatus === 1 &&
                     (deliveryTrip.noteCS ? (
                       <Tooltip title={deliveryTrip.noteCS}>
@@ -314,7 +318,7 @@ const CombinedOrderCard = ({
             <Col>
               <Title level={5} style={{ margin: 0 }}>
                 <Link onClick={() => onViewDetailPacking(packingTrip._id)}>
-                  Chuyến đóng hàng: {packingTrip.customer.shortName}
+                  Chuyến đóng hàng: {packingTrip.customerName}
                 </Link>
               </Title>
             </Col>

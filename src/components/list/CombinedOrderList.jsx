@@ -19,11 +19,14 @@ const CombinedOrderList = ({ startDate, endDate }) => {
     const fetchCombinedOrders = async () => {
       setLoading(true);
       try {
-        const fuelPrice = parseFloat(localStorage.getItem('fuelPrice')) || 0; // Lấy giá trị fuelPrice từ localStorage
+        const fuelPrice = parseFloat(localStorage.getItem('fuelPrice')) || 0;
         const combinedOrders = await getOrderConnectionsByDeliveryDate(startDate, endDate);
+        const filteredConnections = combinedOrders.filter(
+          order => order.deliveryOrderId?.hasVehicle === 0
+        );
 
         const ordersWithDetails = await Promise.all(
-          combinedOrders.map(async (orderConnection) => {
+          filteredConnections.map(async (orderConnection) => {
             const enrichOrder = async (order) => {
               const startProvince = await fetchProvinceName(order.location.startPoint.provinceCode);
                         const startDistrict = await fetchDistrictName(order.location.startPoint.districtCode);
@@ -40,7 +43,7 @@ const CombinedOrderList = ({ startDate, endDate }) => {
                         const endLocationText = order.location.endPoint.locationText || '';
               const cost = await getCostByOrderId(order._id);
               const tripFare = cost ? cost.tripFare : 0;
-
+              
               // Tính fuelCost
               const fuelCost = cost ? fuelPrice * cost.fuel * 1000 : 0;
 
@@ -81,14 +84,12 @@ const CombinedOrderList = ({ startDate, endDate }) => {
               deliveryOrder: await enrichOrder(orderConnection.deliveryOrderId),
               packingOrder: await enrichOrder(orderConnection.packingOrderId),
               type: orderConnection.type,
+              deliveryLineCode: orderConnection.deliveryLineCode
             };
           })
         );
 
-        // Filter out orders where deliveryOrder.hasVehicle === 1
-        const filteredOrders = ordersWithDetails.filter(order => order.deliveryOrder.hasVehicle === 0);
-
-        setOrders(filteredOrders);
+        setOrders(ordersWithDetails);
       } catch (error) {
         message.error('Lỗi khi tải danh sách đơn hàng');
       } finally {
@@ -123,14 +124,21 @@ const CombinedOrderList = ({ startDate, endDate }) => {
     }
   };
 
-  const renderOrderCard = (order, type) => (
+  const renderOrderCard = (order, type, deliveryLineCode) => (
     <Card
       size="small"
       title={
         <Link to={`/order/${type}-orders/${order._id}`} style={{ display: 'block' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text strong style={{ fontSize: 14 }}>
-              {type === 'delivery' ? '🚚 ' : '📦 '} {order.customerName}
+              {type === 'delivery' ? '🚚 ' : '📦 '}
+              {order.customerName}
+              {order.customer?.maCty && order.customer.maCty.length > 0 && (
+                <span style={{ color: '#888', fontWeight: 400 }}>
+                  {' - '}
+                  {order.customer.maCty.join('/')}
+                </span>
+              )}
             </Text>
             <Tag color={order.moocType === "20" ? "blue" : "purple"}>{order.moocType}</Tag>
           </div>
@@ -216,7 +224,10 @@ const CombinedOrderList = ({ startDate, endDate }) => {
 
           {/* Thông tin phụ */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
-          <Text>Cont: {order.containerNumber || '--'} - {order.owner}</Text>
+          <Text>
+            Cont: {order.containerNumber || '--'} - {order.owner}
+            {deliveryLineCode && ` (${deliveryLineCode})`}
+          </Text>
           {order.note && (
             <Tooltip title={order.note}>
               <InfoCircleOutlined style={{ color: '#8c8c8c' }} />
@@ -288,9 +299,9 @@ const CombinedOrderList = ({ startDate, endDate }) => {
                 </Popconfirm>
               </div>
               <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                {renderOrderCard(order.deliveryOrder, 'delivery')}
+                {renderOrderCard(order.deliveryOrder, 'delivery', order.deliveryLineCode)}
                 <ArrowRightOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
-                {renderOrderCard(order.packingOrder, 'packing')}
+                {renderOrderCard(order.packingOrder, 'packing', order.deliveryLineCode)}
               </div>
             </Card>
           );

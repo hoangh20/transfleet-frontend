@@ -119,6 +119,12 @@ const PackingOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange 
                   >
                     <Text strong style={{ fontSize: 14 }}>
                       📦 {order.shortName}
+                      {order.customer?.maCty && order.customer.maCty.length > 0 && (
+                        <span style={{ color: '#888', fontWeight: 400 }}>
+                          {' - '}
+                          {order.customer.maCty.join('/')}
+                        </span>
+                      )}
                     </Text>
                     <Tag
                       color={
@@ -338,7 +344,12 @@ const PackingOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange 
                         </Tag>
                       ))}
                   </span>
-                  {order.owner && <Text>Line: {order.owner}</Text>}
+                  {order.owner && (
+                    <Text>
+                      Line: {order.owner}
+                      {order.lineCode ? ` - ${order.lineCode}` : ''}
+                    </Text>
+                  )}
                   {order.note && (
                     <Tooltip title={order.note}>
                       <InfoCircleOutlined style={{ color: '#8c8c8c' }} />

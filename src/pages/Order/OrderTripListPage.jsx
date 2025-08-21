@@ -341,36 +341,55 @@ const OrderTripListPage = () => {
       
       <Row gutter={[16, 16]}>
         {/* Đơn lẻ */}
-        {sortedSingleToShow.map((trip) => (
-          <Col key={trip._id} xs={24} md={12}>
-            <OrderTripCard
-              trip={trip}
-              customerName={trip.customerName}
-              type={trip.type}
-              onViewDetail={() => handleViewDetail(trip)}
-              onUpdateStatus={handleUpdateStatus}
-            />
-          </Col>
-        ))}
+        {sortedSingleToShow.map((trip) => {
+          // Gộp shortName - maCty/macty nếu có
+          let customerDisplay = trip.customer?.shortName || trip.customerName || '';
+          if (trip.customer?.maCty && trip.customer.maCty.length > 0) {
+            customerDisplay += ' - ' + trip.customer.maCty.join('/');
+          }
+          return (
+            <Col key={trip._id} xs={24} md={12}>
+              <OrderTripCard
+                trip={trip}
+                customerName={customerDisplay}
+                type={trip.type}
+                onViewDetail={() => handleViewDetail(trip)}
+                onUpdateStatus={handleUpdateStatus}
+              />
+            </Col>
+          );
+        })}
 
         {/* Đơn ghép */}
-        {sortedCombinedToShow.map((conn) => (
-          <Col key={conn._id} xs={24} md={12}>
-            <CombinedOrderCard
-              combinedStatus={conn.status}
-              combinedOrderId={conn._id}
-              deliveryTrip={conn.deliveryOrderId}
-              packingTrip={conn.packingOrderId}
-              onUpdateCombinedStatus={handleUpdateCombinedStatus}
-              onViewDetailDelivery={(id) =>
-                handleViewDetail({ ...conn.deliveryOrderId, _id: id, type: 'delivery' })
-              }
-              onViewDetailPacking={(id) =>
-                handleViewDetail({ ...conn.packingOrderId, _id: id, type: 'packing' })
-              }
-            />
-          </Col>
-        ))}
+        {sortedCombinedToShow.map((conn) => {
+          // Gộp shortName - maCty/macty cho cả 2 đơn
+          let deliveryDisplay = conn.deliveryOrderId?.customer?.shortName || conn.deliveryOrderId?.customerName || '';
+          if (conn.deliveryOrderId?.customer?.maCty && conn.deliveryOrderId.customer.maCty.length > 0) {
+            deliveryDisplay += ' - ' + conn.deliveryOrderId.customer.maCty.join('/');
+          }
+          let packingDisplay = conn.packingOrderId?.customer?.shortName || conn.packingOrderId?.customerName || '';
+          if (conn.packingOrderId?.customer?.maCty && conn.packingOrderId.customer.maCty.length > 0) {
+            packingDisplay += ' - ' + conn.packingOrderId.customer.maCty.join('/');
+          }
+          return (
+            <Col key={conn._id} xs={24} md={12}>
+              <CombinedOrderCard
+                combinedStatus={conn.status}
+                deliveryLineCode={conn.deliveryLineCode}
+                combinedOrderId={conn._id}
+                deliveryTrip={{ ...conn.deliveryOrderId, customerName: deliveryDisplay }}
+                packingTrip={{ ...conn.packingOrderId, customerName: packingDisplay }}
+                onUpdateCombinedStatus={handleUpdateCombinedStatus}
+                onViewDetailDelivery={(id) =>
+                  handleViewDetail({ ...conn.deliveryOrderId, _id: id, type: 'delivery' })
+                }
+                onViewDetailPacking={(id) =>
+                  handleViewDetail({ ...conn.packingOrderId, _id: id, type: 'packing' })
+                }
+              />
+            </Col>
+          );
+        })}
       </Row>
 
       {/* Modal hiển thị kết quả xuất */}

@@ -123,7 +123,15 @@ const DeliveryOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange
             title={
               <Link to={`/order/delivery-orders/${order._id}`} style={{ display: 'block' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text strong style={{ fontSize: 14 }}>🚚 {order.shortName}</Text>
+                  <Text strong style={{ fontSize: 14 }}>
+                    🚚 {order.shortName}
+                    {order.customer?.maCty && order.customer.maCty.length > 0 && (
+                      <span style={{ color: '#888', fontWeight: 400 }}>
+                        {' - '}
+                        {order.customer.maCty.join('/')}
+                      </span>
+                    )}
+                  </Text>
                   <Tag color={order.contType === "20" ? "blue" : "purple"}>{order.contType}</Tag>
                 </div>
               </Link>
@@ -257,7 +265,12 @@ const DeliveryOrderList = ({ startDate, endDate, selectedRowKeys, onSelectChange
                     )
                   )}
                 </span>
-                <Text>Line: {order.owner}</Text>
+                {order.owner && (
+                  <Text>
+                    Line: {order.owner}
+                    {order.lineCode ? ` - ${order.lineCode}` : ''}
+                  </Text>
+                )}
                 {order.note && (
                   <Tooltip title={order.note}>
                     <InfoCircleOutlined style={{ color: '#8c8c8c' }} />
