@@ -196,6 +196,7 @@ const OrderTripCard = ({ trip, customerName, type, onViewDetail, onUpdateStatus 
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <strong>{trip.containerNumber || '--'}</strong>
               <span>{`- ${trip.owner || ''}`}</span>
+              <span> {trip.lineCode ? `(${trip.lineCode})` : ''}</span>
               {type === 'delivery' && trip.containerStatus === 1 &&
                 (trip.noteCS ? (
                   <Tooltip title={trip.noteCS}>
